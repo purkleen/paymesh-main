@@ -11,12 +11,12 @@ No build step, no dependencies — plain HTML, CSS and ES modules.
 
 | # | Journey | Path through the prototype |
 |---|---------|----------------------------|
-| 1 | Log in from the Paymesh website | split-screen log in → one-time code → app home |
+| 1 | Log in from the Paymesh website | split-screen log in → verification email → one-time code → app home |
 | 2 | Logged in, balance covers the order | payment → authorize → order complete |
-| 3 | Logged out, balance covers the order | log in → code → payment → authorize → complete |
-| 4 | Logged out, signs in with Google | Google chooser → confirm → code → payment → … |
-| 5 | Registration, then add a card | sign up → create account → verify → details → account ready → payment → add card → top up → complete |
-| 6 | Registration via Google, then add a card | sign up → Google → verify → details → account ready → payment → add card → … |
+| 3 | Logged out, balance covers the order | log in → email → code → payment → authorize → complete |
+| 4 | Logged out, signs in with Google | Google chooser → confirm → email → code → payment → … |
+| 5 | Registration, then add a card | sign up → create account → email → verify → details → account ready → payment → add card → top up → complete |
+| 6 | Registration via Google, then add a card | sign up → Google → email → verify → details → account ready → payment → add card → … |
 | 7 | Error while authorizing | payment → *Pay* fails with a mismatch error → retry succeeds |
 
 Switch journeys from the dropdown on the merchant page, from the **Journey n of 7**
@@ -83,7 +83,8 @@ assets/               logo, 3D check illustration, split-login artwork
 - The merchant checkout is a neutral stand-in ("Lumen Market"), not the real
   retailer used as a backdrop in the file, so the prototype can be shared and
   deployed without borrowing another company's branding. Change it in
-  `src/config.js`.
+  `src/config.js`. The mail client on the verification-email screen is generic
+  for the same reason — its layout matches the frame, its branding does not.
 - The Paymesh app home (end of journey 1) is a placeholder frame in the source
   file, so it is deliberately minimal here.
 
@@ -101,7 +102,12 @@ this pattern; use them on any new screen with a primary action.
 
 ## Prototype behaviour
 
-- Any password is accepted, and any six digits pass the one-time-code screen.
+- Any password is accepted, and any six digits pass the one-time-code screen —
+  including the `123456` shown in the verification email.
+- The verification email step shows the message inside a mail client. **Back to
+  Paymesh** (or clicking the code) returns to the code screen. The email's
+  contents live in `VERIFICATION_EMAIL`, the mail client's branding in
+  `MAIL_CLIENT` — both in `src/config.js`.
 - The postcode field suggests addresses as you type and fills the street, city
   and state when you pick one. It searches a fixed list in `src/config.js`
   (`DEMO_ADDRESSES`) — try `bs7`, `e1`, `m1` or a street name.

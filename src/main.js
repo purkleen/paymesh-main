@@ -8,6 +8,7 @@ import { mountDevPanel } from "./devpanel.js";
 
 import merchant from "./screens/merchant.js";
 import login from "./screens/login.js";
+import verificationEmail from "./screens/email.js";
 import otp from "./screens/otp.js";
 import { accounts, confirm } from "./screens/google.js";
 import { email as signupEmail, account as signupAccount, details as signupDetails } from "./screens/signup.js";
@@ -20,6 +21,7 @@ import appHome from "./screens/app.js";
 
 register("#/", merchant);
 register("#/login", login);
+register("#/email", verificationEmail);
 register("#/otp", otp);
 register("#/google/accounts", accounts);
 register("#/google/confirm", confirm);
