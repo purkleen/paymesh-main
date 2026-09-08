@@ -364,16 +364,10 @@ select.input { appearance: none; cursor: pointer; background-image: none; }
    ========================================================================== */
 
 .stepper { display: flex; justify-content: center; gap: 28px; margin-bottom: 32px; }
-.step { display: inline-flex; align-items: center; gap: 8px; font-size: 14px; color: var(--muted); }
-.step__dot {
-  width: 18px; height: 18px; border-radius: 50%;
-  border: 1.5px dashed var(--ink);
-  display: grid; place-items: center;
-  flex: 0 0 auto;
-}
+.step { display: inline-flex; align-items: center; gap: 8px; font-size: 14px; color: var(--ink); white-space: nowrap; }
+.step__dot { display: inline-flex; flex: 0 0 auto; }
 .step--done { color: var(--brand); }
-.step--done .step__dot { border: 0; }
-.step--current { color: var(--ink); font-weight: 500; }
+.step--current { font-weight: 500; }
 
 /* ==========================================================================
    Card (payment / pending payment)

@@ -10,12 +10,9 @@ export function stepper(current) {
   <nav class="stepper" aria-label="Registration progress">
     ${STEPS.map((label, i) => {
       const state = i < current ? "done" : i === current ? "current" : "todo";
-      const dot =
-        state === "done"
-          ? `<span class="step__dot" style="color:var(--brand)">${icons.checkCircle(18)}</span>`
-          : `<span class="step__dot"></span>`;
+      const dot = { done: icons.circleCheck, current: icons.circleDashed, todo: icons.circle }[state];
       return `<span class="step step--${state}" ${state === "current" ? 'aria-current="step"' : ""}>
-                ${dot}${label}
+                <span class="step__dot">${dot(20)}</span>${label}
               </span>`;
     }).join("")}
   </nav>`;

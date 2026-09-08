@@ -34,9 +34,9 @@ export const mark = (color = "currentColor", size = 22) => `
    UI glyphs — 20px stroke icons unless noted
    -------------------------------------------------------------------------- */
 
-const svg = (body, size = 20) =>
+const svg = (body, size = 20, strokeWidth = 1.7) =>
   `<svg viewBox="0 0 24 24" width="${size}" height="${size}" fill="none" stroke="currentColor"
-        stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${body}</svg>`;
+        stroke-width="${strokeWidth}" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${body}</svg>`;
 
 export const icons = {
   wallet: (s) => svg(`<path d="M3 8.5A2.5 2.5 0 0 1 5.5 6H19a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2H5.5A2.5 2.5 0 0 1 3 16.5v-8Z"/><path d="M3 9h13"/><circle cx="17" cy="13.5" r="1.1" fill="currentColor" stroke="none"/>`, s),
@@ -48,7 +48,20 @@ export const icons = {
   arrowRight: (s) => svg(`<path d="M4 12h15m0 0-5.5-5.5M19 12l-5.5 5.5"/>`, s),
   arrowLeft: (s) => svg(`<path d="M20 12H5m0 0 5.5-5.5M5 12l5.5 5.5"/>`, s),
   alert: (s = 16) => svg(`<circle cx="12" cy="12" r="9"/><path d="m9.2 9.2 5.6 5.6M14.8 9.2l-5.6 5.6"/>`, s),
-  checkCircle: (s = 18) => svg(`<circle cx="12" cy="12" r="9"/><path d="m8.3 12.2 2.6 2.6 4.8-5"/>`, s),
+
+  /* Registration stepper — lucide circle-check, circle and circle-dashed */
+  circleCheck: (s = 20) =>
+    svg(`<circle cx="12" cy="12" r="10"/><path d="m16 9-5.5 5.5L8 12"/>`, s, 1.75),
+  circle: (s = 20) => svg(`<circle cx="12" cy="12" r="10"/>`, s, 1.75),
+  circleDashed: (s = 20) =>
+    svg(
+      `<path d="M10.1 2.182a10 10 0 0 1 3.8 0"/><path d="M13.9 21.818a10 10 0 0 1-3.8 0"/>` +
+        `<path d="M17.609 3.721a10 10 0 0 1 2.69 2.7"/><path d="M2.182 13.9a10 10 0 0 1 0-3.8"/>` +
+        `<path d="M20.279 17.609a10 10 0 0 1-2.7 2.69"/><path d="M21.818 10.1a10 10 0 0 1 0 3.8"/>` +
+        `<path d="M3.721 6.391a10 10 0 0 1 2.7-2.69"/><path d="M6.391 20.279a10 10 0 0 1-2.69-2.7"/>`,
+      s,
+      1.75
+    ),
   lock: (s) => svg(`<rect x="4.5" y="10.5" width="15" height="9.5" rx="2.2"/><path d="M8 10.5V8a4 4 0 0 1 8 0v2.5"/>`, s),
 };
 
