@@ -8,7 +8,10 @@ export default {
     return shellRaw({
       content: `
       <div class="result" style="width:396px;max-width:100%">
-        <img class="result__art" src="assets/check-3d.png" alt="" width="240" height="240" />
+        <video class="result__art" width="240" height="240" autoplay muted playsinline
+               poster="assets/check-3d.png" aria-hidden="true">
+          <source src="assets/success.mp4" type="video/mp4" />
+        </video>
         <h1 class="result__title">Order complete!</h1>
         <p class="result__body">
           Your payment has been authorized and sent. A receipt is on its way to your inbox.

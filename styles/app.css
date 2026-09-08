@@ -479,7 +479,7 @@ select.input { appearance: none; cursor: pointer; background-image: none; }
    ========================================================================== */
 
 .result { text-align: center; }
-.result__art { width: 168px; margin: 0 auto 8px; }
+.result__art { display: block; width: 168px; height: auto; margin: 0 auto 8px; }
 .result__title { font-family: var(--font-display); font-size: 24px; font-weight: 700; }
 .result__body { font-size: 14px; margin: 10px auto 26px; max-width: 340px; }
 
