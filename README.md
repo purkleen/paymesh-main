@@ -2,12 +2,13 @@
 
 A clickable prototype of the Paymesh login, registration and payment flows,
 built from the Figma source file. It covers the seven journeys drawn on the
-canvas, end to end, with real form behaviour: validation, one-time codes,
+canvas plus a top-up flow, end to end, with real form behaviour: validation,
+one-time codes,
 password strength, card formatting, loading states and error recovery.
 
 No build step, no dependencies — plain HTML, CSS and ES modules.
 
-## The seven journeys
+## The journeys
 
 | # | Journey | Path through the prototype |
 |---|---------|----------------------------|
@@ -18,8 +19,9 @@ No build step, no dependencies — plain HTML, CSS and ES modules.
 | 5 | Registration, then add a card | sign up → create account → verify → details → account ready → payment → add card → top up → complete |
 | 6 | Registration via Google, then add a card | sign up → Google → verify → details → account ready → payment → add card → … |
 | 7 | Error while authorizing | payment → *Pay* fails with a mismatch error → retry succeeds |
+| 8 | Logged in, balance falls short | payment → pick a saved card (or add one) to top up → authorize → complete |
 
-Switch journeys from the dropdown on the merchant page, from the **Journey n of 7**
+Switch journeys from the dropdown on the merchant page, from the **Journey n of 8**
 pill in the bottom-left corner, or with a query string:
 
 ```
@@ -114,5 +116,8 @@ this pattern; use them on any new screen with a primary action.
   selected country and never come back empty — close matches first, the
   country's other addresses otherwise. Type `bs7`, `10013`, or anything at all.
   The list is `DEMO_ADDRESSES` in `src/config.js`.
+- When the balance falls short, the payment sheet lists the wallet's cards and
+  asks for one to be chosen; **Add another card** appends a card built from the
+  digits you type and selects it. Cards live in `SAVED_CARDS` (`src/config.js`).
 - Nothing is sent anywhere. State lives in memory and `sessionStorage`, so a
   refresh keeps you in place and a new tab starts clean.

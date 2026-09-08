@@ -22,7 +22,7 @@ import {
   MISSING_FIELDS,
 } from "../ui.js";
 import { icons } from "../icons.js";
-import { getState, attachTopupCard } from "../store.js";
+import { getState, addCard } from "../store.js";
 import { cardAdded } from "../flow.js";
 import { go } from "../router.js";
 
@@ -141,7 +141,16 @@ export default {
         return;
       }
 
-      attachTopupCard();
+      // Build the card from what was typed so it reads back convincingly.
+      const digits = v.cardNumber.replace(/\s/g, "");
+      const scheme = digits.startsWith("4") ? "visa" : "mastercard";
+      const [month, year] = v.expiry.split("/");
+      addCard({
+        id: `card-${Date.now()}`,
+        scheme,
+        label: `${scheme === "visa" ? "Visa" : "Mastercard"} ending in ${digits.slice(-4)}`,
+        expiry: `Expiry ${month}/20${year}`,
+      });
       cardAdded();
     });
   },

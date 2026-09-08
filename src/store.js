@@ -11,7 +11,7 @@ import {
   RETURNING_USER,
   ORDER,
   MERCHANT,
-  TOPUP_CARD,
+  SAVED_CARDS,
 } from "./config.js";
 
 const KEY = "paymesh.prototype.v1";
@@ -38,9 +38,11 @@ function blankState(scenarioId) {
     /** Wallet */
     wallet: {
       registered: seed.registered,
-      balance: seed.hasBalance ? RETURNING_USER.balance : 0,
+      balance: seed.balance,
       fundingCard: seed.registered ? RETURNING_USER.fundingCard : null,
-      topupCard: null,
+      /** Cards available to top up a shortfall */
+      cards: seed.savedCards ? SAVED_CARDS.map((c) => ({ ...c })) : [],
+      selectedCardId: null,
       address: seed.registered ? { ...RETURNING_USER.address } : null,
     },
 
@@ -129,7 +131,17 @@ export function shortfall() {
   return Math.max(0, state.order.amount - state.wallet.balance);
 }
 
-/** Mark the wallet as funded by the card added during registration. */
-export function attachTopupCard() {
-  update("wallet", { topupCard: { ...TOPUP_CARD } });
+/** The card chosen to cover a shortfall, if any. */
+export function selectedCard() {
+  return state.wallet.cards.find((c) => c.id === state.wallet.selectedCardId) || null;
+}
+
+export function selectCard(id) {
+  update("wallet", { selectedCardId: id });
+}
+
+/** Link a newly added card and select it straight away. */
+export function addCard(card) {
+  state.wallet.cards = [...state.wallet.cards, card];
+  update("wallet", { selectedCardId: card.id });
 }

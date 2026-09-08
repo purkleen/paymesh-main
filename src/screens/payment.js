@@ -21,7 +21,7 @@ import {
   isBusy,
 } from "../ui.js";
 import { icons, schemes } from "../icons.js";
-import { getState, update, balanceCovers, shortfall } from "../store.js";
+import { getState, update, balanceCovers, shortfall, selectCard, selectedCard } from "../store.js";
 import { paymentAuthorized, addCardRequested, backToMerchant } from "../flow.js";
 import { AUTHORIZE_MS } from "../config.js";
 
@@ -33,7 +33,7 @@ function balanceRow(wallet) {
   // added it shows up as the top-up choice further down the sheet.
   const sub = wallet.fundingCard
     ? wallet.fundingCard.label
-    : wallet.topupCard
+    : wallet.cards.length
       ? ""
       : "You need to add a card for the first payment";
 
@@ -64,19 +64,31 @@ function missingRow(amount) {
   <p class="note">Your Paymesh balance doesn't cover this payment. Choose a card to top up the difference.</p>`;
 }
 
-function topupChoice(card) {
+function cardChoices(cards, selectedId) {
   return `
-  <div class="rowline">
-    <button class="choice" role="radio" aria-checked="true" data-topup>
-      <span class="choice__brand">${schemes[card.scheme] ? schemes[card.scheme]() : ""}</span>
-      <span class="choice__main">
-        <span class="row__title">${esc(card.label)}</span>
-        <span class="row__sub">${esc(card.expiry)}</span>
-      </span>
-      <span class="choice__radio"></span>
-    </button>
+  <div role="radiogroup" aria-label="Card to top up with">
+    ${cards
+      .map(
+        (card) => `
+      <div class="rowline">
+        <button class="choice" role="radio" aria-checked="${card.id === selectedId}" data-card="${esc(card.id)}">
+          <span class="choice__brand">${schemes[card.scheme] ? schemes[card.scheme]() : ""}</span>
+          <span class="choice__main">
+            <span class="row__title">${esc(card.label)}</span>
+            <span class="row__sub">${esc(card.expiry)}</span>
+          </span>
+          <span class="choice__radio"></span>
+        </button>
+      </div>`
+      )
+      .join("")}
   </div>`;
 }
+
+const addCardButton = (label) => `
+  <div style="padding-bottom:14px">
+    <button class="btn btn--secondary" data-action="add-card">${label}</button>
+  </div>`;
 
 function addressRow(name, address) {
   if (!address) return "";
@@ -97,7 +109,10 @@ export default {
     if (!order) return shellRaw({ content: `<p class="center">No pending payment.</p>` });
 
     const covers = balanceCovers();
-    const needsCard = !covers && !wallet.topupCard;
+    const hasCards = wallet.cards.length > 0;
+    // A brand-new wallet has no card at all; a short balance with cards on file
+    // asks the buyer to pick one instead.
+    const needsFirstCard = !covers && !hasCards;
     const missing = shortfall();
 
     return shellRaw({
@@ -119,12 +134,16 @@ export default {
           <div class="rowline"></div>
           ${balanceRow(wallet)}
 
-          ${needsCard ? `<div style="padding-bottom:14px">
-              <button class="btn btn--secondary" data-action="add-card">Add new card</button>
-            </div>` : ""}
+          ${needsFirstCard ? addCardButton("Add new card") : ""}
 
-          ${!covers && wallet.topupCard ? missingRow(missing) : ""}
-          ${wallet.topupCard ? topupChoice(wallet.topupCard) : ""}
+          ${
+            !covers && hasCards
+              ? missingRow(missing) +
+                cardChoices(wallet.cards, wallet.selectedCardId) +
+                `<div class="rowline" style="padding-top:14px"></div>` +
+                addCardButton("Add another card")
+              : ""
+          }
 
           ${addressRow(session.name, wallet.address)}
 
@@ -145,6 +164,17 @@ export default {
     root.querySelector('[data-action="add-card"]')?.addEventListener("click", addCardRequested);
     root.querySelector('[data-action="cancel"]').addEventListener("click", backToMerchant);
 
+    // Choosing which card tops up the shortfall.
+    const choices = [...root.querySelectorAll("[data-card]")];
+    choices.forEach((choice) =>
+      choice.addEventListener("click", () => {
+        choices.forEach((c) => c.setAttribute("aria-checked", "false"));
+        choice.setAttribute("aria-checked", "true");
+        selectCard(choice.dataset.card);
+        clearFormError(root);
+      })
+    );
+
     payBtn.addEventListener("click", () => {
       if (isBusy(payBtn)) return;
 
@@ -153,14 +183,18 @@ export default {
       // Second press, once authorization has succeeded.
       if (payBtn.dataset.state === "ready") return paymentAuthorized();
 
-      // Nothing to pay with yet — say so rather than blocking the button.
-      if (!balanceCovers() && !wallet.topupCard) {
-        showFormError(
-          root,
-          "Add a card to cover this payment before continuing."
-        );
-        root.querySelector('[data-action="add-card"]')?.focus();
-        return;
+      // Short of funds — say what's missing rather than blocking the button.
+      if (!balanceCovers()) {
+        if (!wallet.cards.length) {
+          showFormError(root, "Add a card to cover this payment before continuing.");
+          root.querySelector('[data-action="add-card"]')?.focus();
+          return;
+        }
+        if (!selectedCard()) {
+          showFormError(root, "Choose a card to top up the difference, or add a new one.");
+          root.querySelector("[data-card]")?.focus();
+          return;
+        }
       }
 
       clearFormError(root);

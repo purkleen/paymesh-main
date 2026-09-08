@@ -37,7 +37,7 @@ export function mountDevPanel(host) {
       </div>
       <button class="dev__toggle" data-act="toggle" aria-expanded="${open}">
         <span class="dev__dot"></span>
-        Journey ${currentScenario().number} of 7
+        Journey ${currentScenario().number} of ${SCENARIOS.length}
       </button>`;
   };
 

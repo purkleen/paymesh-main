@@ -48,12 +48,14 @@ export const GOOGLE_ACCOUNT = {
   initials: "JW",
 };
 
-/** The card a brand new user adds during registration, used to top up. */
-export const TOPUP_CARD = {
-  scheme: "mastercard",
-  label: "Mastercard ending in 1234",
-  expiry: "Expiry 06/2027",
-};
+/**
+ * Cards already linked to the wallet, offered when the balance falls short.
+ * Distinct from the card funding the balance itself (`RETURNING_USER`).
+ */
+export const SAVED_CARDS = [
+  { id: "mc-1234", scheme: "mastercard", label: "Mastercard ending in 1234", expiry: "Expiry 06/2027" },
+  { id: "visa-8842", scheme: "visa", label: "Visa ending in 8842", expiry: "Expiry 11/2029" },
+];
 
 /** Seconds shown on the "resend code" countdown. */
 export const RESEND_SECONDS = 26;
@@ -146,7 +148,8 @@ export const countryByName = (name) =>
   COUNTRIES.find((c) => c.name === name) || COUNTRIES[0];
 
 /**
- * The seven journeys captured in the Figma file.
+ * The journeys the prototype covers: the seven drawn in the Figma file
+ * plus a top-up flow.
  * `entry` is the route the merchant hand-off (or the direct visit) lands on.
  */
 export const SCENARIOS = [
@@ -157,7 +160,7 @@ export const SCENARIOS = [
     blurb: "Not a checkout — the user signs in to the wallet app itself.",
     entry: "#/login",
     fromMerchant: false,
-    seed: { loggedIn: false, registered: true, hasBalance: true, useGoogle: false, failFirstAuth: false },
+    seed: { loggedIn: false, registered: true, balance: RETURNING_USER.balance, savedCards: false, useGoogle: false, failFirstAuth: false },
   },
   {
     id: "logged-in",
@@ -166,7 +169,7 @@ export const SCENARIOS = [
     blurb: "Session already active — straight to the payment sheet.",
     entry: "#/payment",
     fromMerchant: true,
-    seed: { loggedIn: true, registered: true, hasBalance: true, useGoogle: false, failFirstAuth: false },
+    seed: { loggedIn: true, registered: true, balance: RETURNING_USER.balance, savedCards: false, useGoogle: false, failFirstAuth: false },
   },
   {
     id: "logged-out",
@@ -175,7 +178,7 @@ export const SCENARIOS = [
     blurb: "Email and password, then the one-time code, then pay.",
     entry: "#/login",
     fromMerchant: true,
-    seed: { loggedIn: false, registered: true, hasBalance: true, useGoogle: false, failFirstAuth: false },
+    seed: { loggedIn: false, registered: true, balance: RETURNING_USER.balance, savedCards: false, useGoogle: false, failFirstAuth: false },
   },
   {
     id: "google-login",
@@ -184,7 +187,7 @@ export const SCENARIOS = [
     blurb: "Google account chooser, then the one-time code, then pay.",
     entry: "#/login",
     fromMerchant: true,
-    seed: { loggedIn: false, registered: true, hasBalance: true, useGoogle: true, failFirstAuth: false },
+    seed: { loggedIn: false, registered: true, balance: RETURNING_USER.balance, savedCards: false, useGoogle: true, failFirstAuth: false },
   },
   {
     id: "register",
@@ -193,7 +196,7 @@ export const SCENARIOS = [
     blurb: "Unrecognised email → sign up, verify, details, add a card, pay.",
     entry: "#/signup",
     fromMerchant: true,
-    seed: { loggedIn: false, registered: false, hasBalance: false, useGoogle: false, failFirstAuth: false },
+    seed: { loggedIn: false, registered: false, balance: 0, savedCards: false, useGoogle: false, failFirstAuth: false },
   },
   {
     id: "register-google",
@@ -202,7 +205,7 @@ export const SCENARIOS = [
     blurb: "Same as 5 but the account is created with Google.",
     entry: "#/signup",
     fromMerchant: true,
-    seed: { loggedIn: false, registered: false, hasBalance: false, useGoogle: true, failFirstAuth: false },
+    seed: { loggedIn: false, registered: false, balance: 0, savedCards: false, useGoogle: true, failFirstAuth: false },
   },
   {
     id: "auth-error",
@@ -211,7 +214,16 @@ export const SCENARIOS = [
     blurb: "The first attempt fails with a mismatch error; the retry succeeds.",
     entry: "#/login",
     fromMerchant: true,
-    seed: { loggedIn: false, registered: true, hasBalance: true, useGoogle: false, failFirstAuth: true },
+    seed: { loggedIn: false, registered: true, balance: RETURNING_USER.balance, savedCards: false, useGoogle: false, failFirstAuth: true },
+  },
+  {
+    id: "top-up",
+    number: 8,
+    title: "Logged in, balance doesn't cover the order",
+    blurb: "Pick a saved card to top up the difference, or add a new one.",
+    entry: "#/payment",
+    fromMerchant: true,
+    seed: { loggedIn: true, registered: true, balance: 1250, savedCards: true, useGoogle: false, failFirstAuth: false },
   },
 ];
 
