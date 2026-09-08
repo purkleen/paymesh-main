@@ -39,7 +39,13 @@ const svg = (body, size = 20, strokeWidth = 1.7) =>
         stroke-width="${strokeWidth}" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${body}</svg>`;
 
 export const icons = {
-  wallet: (s) => svg(`<path d="M3 8.5A2.5 2.5 0 0 1 5.5 6H19a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2H5.5A2.5 2.5 0 0 1 3 16.5v-8Z"/><path d="M3 9h13"/><circle cx="17" cy="13.5" r="1.1" fill="currentColor" stroke="none"/>`, s),
+  wallet: (s) =>
+    svg(
+      `<path d="M19 7V4a1 1 0 0 0-1-1H5a2 2 0 0 0 0 4h15a1 1 0 0 1 1 1v4h-3a2 2 0 0 0 0 4h3a1 1 0 0 0 1-1v-2a1 1 0 0 0-1-1"/>` +
+        `<path d="M3 5v14a2 2 0 0 0 2 2h15a1 1 0 0 0 1-1v-4"/>`,
+      s,
+      1.75
+    ),
   pin: (s) => svg(`<path d="M12 21s7-5.6 7-11a7 7 0 1 0-14 0c0 5.4 7 11 7 11Z"/><circle cx="12" cy="10" r="2.6"/>`, s),
   missing: (s) => svg(`<rect x="2.5" y="6.5" width="19" height="11" rx="2.2"/><path d="m9 9.8 4.5 4.4M13.5 9.8 9 14.2"/>`, s),
   eye: (s) => svg(`<path d="M2.5 12S6 5.8 12 5.8 21.5 12 21.5 12 18 18.2 12 18.2 2.5 12 2.5 12Z"/><circle cx="12" cy="12" r="3"/>`, s),
