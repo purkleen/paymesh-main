@@ -82,7 +82,7 @@ function addressRow(name, address) {
   if (!address) return "";
   return `
   <div class="row rowline">
-    <span class="row__icon">${icons.pin(20)}</span>
+    <span class="row__icon">${icons.home(20)}</span>
     <span class="row__main">
       <span class="row__title">${esc(name)}</span>
       <span class="row__sub">${esc(address.line1)}</span>

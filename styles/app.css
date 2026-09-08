@@ -406,8 +406,8 @@ img.merchant__logo { display: block; object-fit: cover; }
 
 .amount { text-align: center; margin: 18px 0 20px; }
 .amount__value { font-family: var(--font-display); font-size: 38px; line-height: 1.1; font-weight: 700; letter-spacing: -0.02em; }
-.amount__sub { font-size: 12px; color: var(--muted); margin-top: 6px; }
-.amount__label { font-size: 13px; font-weight: 600; }
+.amount__sub { font-size: 16px; color: var(--muted); margin-top: 6px; }
+.amount__label { display: block; font-size: 13px; font-weight: 600; margin-bottom: 8px; }
 
 /* Rows inside the payment card */
 .rowline { border-top: 1px solid var(--line-soft); }
