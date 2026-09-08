@@ -51,38 +51,6 @@ export const TOPUP_CARD = {
   expiry: "Expiry 06/2027",
 };
 
-/**
- * The verification email the buyer receives between entering their
- * credentials and the one-time-code screen.
- */
-export const VERIFICATION_EMAIL = {
-  code: "123456",
-  subject: "Email Subject",
-  sender: "Paymesh Support Team",
-  address: "support@pay-mesh.com",
-  time: "9:14 AM (8 hours ago)",
-  expiry: "This code will expire in 10 minutes and can only be used once.",
-  company: [
-    "Paymesh LTDA",
-    "Av. Presidente Juscelino Kubitschek",
-    "nº 1.545, 6º Floor",
-    "Vila Nova Conceição",
-    "ZIP Code 04.543-011",
-    "São Paulo/SP - Brazil",
-    "CNPJ: 50.522.210/0001-18",
-  ],
-};
-
-/** Branding for the mail client the email is shown inside. */
-export const MAIL_CLIENT = {
-  name: "Mail",
-  domain: "mail.example.com",
-  inboxCount: 3,
-  draftCount: 1,
-  spamCount: 3,
-  pagination: "1–50 of 2,619",
-};
-
 /** Seconds shown on the "resend code" countdown. */
 export const RESEND_SECONDS = 26;
 

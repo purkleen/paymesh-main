@@ -19,11 +19,6 @@ export function handOffToPaymesh() {
 /** Email + password accepted on the log-in screen. */
 export function loginSubmitted(email) {
   update("session", { email });
-  go("#/email");
-}
-
-/** The buyer has read the verification email and is heading back. */
-export function emailRead() {
   go("#/otp");
 }
 
@@ -38,7 +33,7 @@ export function googleAccountChosen() {
 
 export function googleConfirmed(account) {
   update("session", { email: account.email, name: account.name, viaGoogle: true });
-  go("#/email");
+  go("#/otp");
 }
 
 /** Sign-up screen: the buyer submitted an email we don't recognise. */
@@ -53,7 +48,7 @@ export function signupEmailSubmitted(email) {
 /** Name + password captured. */
 export function accountCreated({ name }) {
   update("session", { name, firstName: name.split(" ")[0] || name });
-  go("#/email");
+  go("#/otp");
 }
 
 /** The one-time code was accepted. */
