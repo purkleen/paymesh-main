@@ -5,7 +5,7 @@
 
 import { logo, icons, googleG, appleLogo, ukFlag } from "./icons.js";
 import { go } from "./router.js";
-import { ORDER, COUNTRIES } from "./config.js";
+import { ORDER, COUNTRIES, DEMO_ADDRESSES } from "./config.js";
 
 /* --------------------------------------------------------------------------
    Formatting
@@ -162,6 +162,124 @@ export function selectField({ label, name, options, value = "", required = false
 
 export const countryField = (value = COUNTRIES[0]) =>
   selectField({ label: "Country of residence", name: "country", options: COUNTRIES, value, required: true });
+
+/* --------------------------------------------------------------------------
+   Postcode → address lookup
+   -------------------------------------------------------------------------- */
+
+const normalise = (s) => String(s).toLowerCase().replace(/\s+/g, "");
+
+/** Addresses matching a postcode fragment or street text. */
+export function searchAddresses(query) {
+  const q = normalise(query);
+  if (q.length < 2) return [];
+  return DEMO_ADDRESSES.filter(
+    (a) => normalise(a.postcode).startsWith(q) || normalise(`${a.line1}${a.city}`).includes(q)
+  ).slice(0, 8);
+}
+
+/** Postcode field that suggests addresses as you type. */
+export function addressLookupField(value = "") {
+  return `
+  <div class="field" data-field="postcode">
+    <label class="field__label" for="f-postcode">
+      Enter postcode to find address<span class="field__req">*</span>
+    </label>
+    <div class="combo">
+      <input class="input" id="f-postcode" name="postcode" type="text"
+             value="${esc(value)}" autocomplete="off" spellcheck="false"
+             role="combobox" aria-expanded="false" aria-autocomplete="list"
+             aria-controls="address-results" />
+      <ul class="combo__list" id="address-results" role="listbox"
+          aria-label="Matching addresses" hidden></ul>
+    </div>
+    <p class="field__hint">Start typing to find the address</p>
+    <p class="field__error" hidden></p>
+  </div>`;
+}
+
+/**
+ * Wires the lookup. `onSelect(address)` receives the chosen address so the
+ * screen can fill in the rest of the form.
+ */
+export function wireAddressLookup(root, onSelect) {
+  const input = root.querySelector("#f-postcode");
+  const list = root.querySelector("#address-results");
+  if (!input || !list) return;
+
+  let matches = [];
+  let active = -1;
+
+  const close = () => {
+    list.hidden = true;
+    list.innerHTML = "";
+    input.setAttribute("aria-expanded", "false");
+    active = -1;
+  };
+
+  const paint = () => {
+    if (!matches.length) {
+      list.innerHTML =
+        input.value.trim().length >= 2
+          ? `<li class="combo__empty">No addresses found for "${esc(input.value.trim())}"</li>`
+          : "";
+      list.hidden = !list.innerHTML;
+      input.setAttribute("aria-expanded", String(!list.hidden));
+      return;
+    }
+    list.innerHTML = matches
+      .map(
+        (a, i) => `
+        <li class="combo__opt" role="option" id="addr-${i}" data-index="${i}"
+            aria-selected="${i === active}">
+          ${esc([a.line1, a.line2].filter(Boolean).join(", "))}
+          <small>${esc(a.city)}, ${esc(a.postcode)}</small>
+        </li>`
+      )
+      .join("");
+    list.hidden = false;
+    input.setAttribute("aria-expanded", "true");
+  };
+
+  const choose = (index) => {
+    const address = matches[index];
+    if (!address) return;
+    input.value = address.postcode;
+    close();
+    onSelect(address);
+  };
+
+  input.addEventListener("input", () => {
+    matches = searchAddresses(input.value);
+    active = -1;
+    paint();
+  });
+
+  input.addEventListener("keydown", (e) => {
+    if (list.hidden || !matches.length) return;
+    if (e.key === "ArrowDown" || e.key === "ArrowUp") {
+      e.preventDefault();
+      active = (active + (e.key === "ArrowDown" ? 1 : -1) + matches.length) % matches.length;
+      paint();
+      input.setAttribute("aria-activedescendant", `addr-${active}`);
+    } else if (e.key === "Enter" && active >= 0) {
+      e.preventDefault();
+      choose(active);
+    } else if (e.key === "Escape") {
+      close();
+    }
+  });
+
+  // mousedown, not click — blur would close the list first
+  list.addEventListener("mousedown", (e) => {
+    const option = e.target.closest("[data-index]");
+    if (!option) return;
+    e.preventDefault();
+    choose(Number(option.dataset.index));
+  });
+
+  input.addEventListener("blur", () => setTimeout(close, 120));
+}
 
 export function phoneField(value = "") {
   return `

@@ -15,6 +15,8 @@ import {
   helpLine,
   countryField,
   phoneField,
+  addressLookupField,
+  wireAddressLookup,
   cancelLink,
   wirePasswordFields,
   values,
@@ -171,21 +173,19 @@ export const details = {
       })}
       ${countryField(flow.draft.country)}
       ${phoneField(flow.draft.phone || "")}
-      ${field({
-        label: "Enter postcode to find address",
-        name: "postcode",
-        value: flow.draft.postcode || "",
-        required: true,
-        hint: "Start typing to find the address",
-      })}
+      ${addressLookupField(flow.draft.postcode || "")}
 
       ${
         manual
           ? `
-        ${field({ label: "Street address", name: "street", required: true })}
-        ${field({ label: "Building, apartment, floor, suite, unit office, etc.", name: "street2" })}
-        ${field({ label: "City", name: "city", required: true })}
-        ${field({ label: "State", name: "state" })}`
+        ${field({ label: "Street address", name: "street", value: flow.draft.street || "", required: true })}
+        ${field({
+          label: "Building, apartment, floor, suite, unit office, etc.",
+          name: "street2",
+          value: flow.draft.street2 || "",
+        })}
+        ${field({ label: "City", name: "city", value: flow.draft.city || "", required: true })}
+        ${field({ label: "State", name: "state", value: flow.draft.state || "" })}`
           : `<p style="margin:14px 0 0">
                <button class="link" data-action="manual">Enter address manually</button>
              </p>`
@@ -199,11 +199,25 @@ export const details = {
   },
 
   mount(root) {
-    // Keep what has been typed so far, then re-render with the manual fields shown.
-    root.querySelector('[data-action="manual"]')?.addEventListener("click", () => {
+    // Keep what has been typed so far, then re-render with the address fields shown.
+    const revealAddress = (extra = {}) => {
       const v = values(root);
-      update("flow", { draft: { ...getState().flow.draft, ...v, manualAddress: true } });
+      update("flow", { draft: { ...getState().flow.draft, ...v, ...extra, manualAddress: true } });
       rerender();
+    };
+
+    root.querySelector('[data-action="manual"]')?.addEventListener("click", () => revealAddress());
+
+    // Picking a suggestion fills the address fields and reveals them.
+    wireAddressLookup(root, (address) => {
+      clearError(root, "postcode");
+      revealAddress({
+        postcode: address.postcode,
+        street: address.line1,
+        street2: address.line2,
+        city: address.city,
+        state: address.state,
+      });
     });
 
     root.querySelector('[data-action="cancel"]').addEventListener("click", backToMerchant);

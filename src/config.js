@@ -60,6 +60,24 @@ export const RESEND_SECONDS = 26;
 /** How long the simulated authorization takes, in ms. */
 export const AUTHORIZE_MS = 1600;
 
+/**
+ * Addresses returned by the postcode lookup. A real integration would call a
+ * lookup service; this stands in for it, matching on postcode or street text.
+ */
+export const DEMO_ADDRESSES = [
+  { postcode: "BS7 9QT", line1: "12 Marlow Gardens", line2: "", city: "Bristol", state: "Avon" },
+  { postcode: "BS7 9QT", line1: "14 Marlow Gardens", line2: "", city: "Bristol", state: "Avon" },
+  { postcode: "BS7 9QT", line1: "16 Marlow Gardens", line2: "Flat 2", city: "Bristol", state: "Avon" },
+  { postcode: "BS7 9QT", line1: "18 Marlow Gardens", line2: "", city: "Bristol", state: "Avon" },
+  { postcode: "BS1 4ND", line1: "3 Harbour Wharf", line2: "Apartment 401", city: "Bristol", state: "Avon" },
+  { postcode: "BS1 4ND", line1: "5 Harbour Wharf", line2: "", city: "Bristol", state: "Avon" },
+  { postcode: "E1 6AN", line1: "72 Brune Street", line2: "Unit 3", city: "London", state: "Greater London" },
+  { postcode: "E1 6AN", line1: "74 Brune Street", line2: "", city: "London", state: "Greater London" },
+  { postcode: "EC2A 4NE", line1: "120 Curtain Road", line2: "Second floor", city: "London", state: "Greater London" },
+  { postcode: "M1 4ET", line1: "9 Ducie Street", line2: "", city: "Manchester", state: "Greater Manchester" },
+  { postcode: "EH1 1TH", line1: "41 Cockburn Street", line2: "", city: "Edinburgh", state: "Midlothian" },
+];
+
 export const COUNTRIES = [
   "United Kingdom",
   "Ireland",

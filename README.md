@@ -103,5 +103,8 @@ this pattern; use them on any new screen with a primary action.
 
 - Any password is accepted; the one-time code is always `123456` and the
   **Fill code** button in the demo-inbox strip enters it for you.
+- The postcode field suggests addresses as you type and fills the street, city
+  and state when you pick one. It searches a fixed list in `src/config.js`
+  (`DEMO_ADDRESSES`) — try `bs7`, `e1`, `m1` or a street name.
 - Nothing is sent anywhere. State lives in memory and `sessionStorage`, so a
   refresh keeps you in place and a new tab starts clean.

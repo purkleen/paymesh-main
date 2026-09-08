@@ -8,6 +8,8 @@ import {
   field,
   countryField,
   phoneField,
+  addressLookupField,
+  wireAddressLookup,
   values,
   showError,
   clearError,
@@ -36,7 +38,7 @@ export default {
 
       ${sectionTitle("Card details")}
       ${field({ label: "Cardholder's name", name: "cardName", required: true, autofocus: true })}
-      ${field({ label: "Card number", name: "cardNumber", required: true, placeholder: "0000 0000 0000 0000" })}
+      ${field({ label: "Card number", name: "cardNumber", required: true })}
       ${field({ label: "Expiration day (MM/YY)", name: "expiry", required: true, placeholder: "MM/YY" })}
       ${field({
         label: "CVC Security number",
@@ -52,7 +54,7 @@ export default {
 
       ${sectionTitle("Billing address")}
       ${countryField()}
-      ${field({ label: "Enter postcode to find address", name: "postcode", required: true, hint: "Start typing to find the address" })}
+      ${addressLookupField()}
       ${field({ label: "Street address", name: "street", required: true })}
       ${field({ label: "Building, apartment, floor, suite, unit office, etc.", name: "street2" })}
       ${field({ label: "City", name: "city", required: true })}
@@ -85,6 +87,21 @@ export default {
     const cvc = root.querySelector("#f-cvc");
     cvc.addEventListener("input", () => {
       cvc.value = cvc.value.replace(/\D/g, "").slice(0, 3);
+    });
+
+    // Picking a suggested address fills the rest of the billing block.
+    wireAddressLookup(root, (address) => {
+      const fill = (name, value) => {
+        const el = root.querySelector(`#f-${name}`);
+        if (!el) return;
+        el.value = value;
+        clearError(root, name);
+      };
+      fill("street", address.line1);
+      fill("street2", address.line2);
+      fill("city", address.city);
+      fill("state", address.state);
+      clearError(root, "postcode");
     });
 
     root.querySelector('[data-action="add"]').addEventListener("click", () => {

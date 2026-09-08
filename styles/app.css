@@ -40,7 +40,7 @@
 
   /* Metrics */
   --col: 396px;
-  --control-h: 56px;
+  --control-h: 50px;
   --page-pad: 40px;
 }
 
@@ -274,6 +274,30 @@ select.input { appearance: none; cursor: pointer; background-image: none; }
 }
 .input-affix__btn:hover { background: var(--surface-3); }
 
+/* Postcode lookup with an address dropdown */
+.combo { position: relative; }
+.combo__list {
+  position: absolute; z-index: 20;
+  top: calc(100% + 6px); left: 0; right: 0;
+  margin: 0; padding: 6px;
+  list-style: none;
+  background: #fff;
+  border: 1px solid var(--line-soft);
+  border-radius: 12px;
+  box-shadow: 0 16px 36px rgba(0, 0, 0, .13);
+  max-height: 268px; overflow-y: auto;
+}
+.combo__opt {
+  padding: 10px 12px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 14px;
+}
+.combo__opt:hover,
+.combo__opt[aria-selected="true"] { background: var(--brand-soft); }
+.combo__opt small { display: block; font-size: 12px; color: var(--muted); margin-top: 2px; }
+.combo__empty { padding: 10px 12px; font-size: 13px; color: var(--muted); }
+
 /* Phone field: dial-code select + number */
 .phone { display: grid; grid-template-columns: 116px 1fr; }
 .phone .phone__code {
@@ -303,7 +327,7 @@ select.input { appearance: none; cursor: pointer; background-image: none; }
 
 .otp { display: flex; gap: 14px; margin: 24px 0 18px; }
 .otp__box {
-  width: 54px; height: 54px;
+  width: var(--control-h); height: var(--control-h);
   text-align: center;
   font-size: 20px;
   font-weight: 600;
