@@ -23,5 +23,15 @@ export default {
 
   mount(root) {
     root.querySelector('[data-action="back"]').addEventListener("click", backToMerchant);
+
+    // The `autoplay` attribute covers most cases; this catches the rest, and
+    // rewinds so the animation always plays from the start on arrival.
+    const video = root.querySelector("video");
+    if (video) {
+      video.currentTime = 0;
+      video.play().catch(() => {
+        /* autoplay blocked — the poster frame stands in */
+      });
+    }
   },
 };
