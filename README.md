@@ -108,6 +108,9 @@ this pattern; use them on any new screen with a primary action.
   Paymesh** (or clicking the code) returns to the code screen. The email's
   contents live in `VERIFICATION_EMAIL`, the mail client's branding in
   `MAIL_CLIENT` — both in `src/config.js`.
+- Changing the country of residence updates the phone field's flag and dial
+  code. Countries, their ISO codes and dial codes live in `COUNTRIES`
+  (`src/config.js`); the flags are drawn inline in `src/icons.js`.
 - The postcode field suggests addresses as you type and fills the street, city
   and state when you pick one. It searches a fixed list in `src/config.js`
   (`DEMO_ADDRESSES`) — try `bs7`, `e1`, `m1` or a street name.

@@ -72,11 +72,47 @@ export const schemes = {
   mastercard: () => `<svg viewBox="0 0 40 24" width="30" height="18" aria-label="Mastercard"><circle cx="15" cy="12" r="9" fill="#EB001B"/><circle cx="25" cy="12" r="9" fill="#F79E1B"/><path d="M20 5.2a9 9 0 0 0 0 13.6 9 9 0 0 0 0-13.6Z" fill="#FF5F00"/></svg>`,
 };
 
-export const ukFlag = () => `
-<svg class="flag" viewBox="0 0 60 40" aria-hidden="true">
-  <rect width="60" height="40" fill="#012169"/>
-  <path d="M0 0 60 40M60 0 0 40" stroke="#fff" stroke-width="8"/>
-  <path d="M0 0 60 40M60 0 0 40" stroke="#C8102E" stroke-width="4"/>
-  <path d="M30 0v40M0 20h60" stroke="#fff" stroke-width="13"/>
-  <path d="M30 0v40M0 20h60" stroke="#C8102E" stroke-width="8"/>
-</svg>`;
+/* --------------------------------------------------------------------------
+   Flags — 3:2, drawn simply at the 22×16px they render at
+   -------------------------------------------------------------------------- */
+
+const flagSvg = (body) =>
+  `<svg class="flag" viewBox="0 0 60 40" aria-hidden="true">${body}</svg>`;
+
+const vertical = (a, b, c) =>
+  flagSvg(
+    `<rect width="20" height="40" fill="${a}"/><rect x="20" width="20" height="40" fill="${b}"/><rect x="40" width="20" height="40" fill="${c}"/>`
+  );
+
+const horizontal = (...bands) =>
+  flagSvg(
+    bands
+      .map((color, i) => `<rect y="${(i * 40) / bands.length}" width="60" height="${40 / bands.length}" fill="${color}"/>`)
+      .join("")
+  );
+
+export const flags = {
+  gb: flagSvg(`
+    <rect width="60" height="40" fill="#012169"/>
+    <path d="M0 0 60 40M60 0 0 40" stroke="#fff" stroke-width="8"/>
+    <path d="M0 0 60 40M60 0 0 40" stroke="#C8102E" stroke-width="4"/>
+    <path d="M30 0v40M0 20h60" stroke="#fff" stroke-width="13"/>
+    <path d="M30 0v40M0 20h60" stroke="#C8102E" stroke-width="8"/>`),
+  ie: vertical("#169B62", "#ffffff", "#FF883E"),
+  fr: vertical("#002395", "#ffffff", "#ED2939"),
+  nl: horizontal("#AE1C28", "#ffffff", "#21468B"),
+  de: horizontal("#000000", "#DD0000", "#FFCE00"),
+  pl: horizontal("#ffffff", "#DC143C"),
+  es: flagSvg(`
+    <rect width="60" height="40" fill="#AA151B"/>
+    <rect y="10" width="60" height="20" fill="#F1BF00"/>`),
+  us: flagSvg(`
+    <rect width="60" height="40" fill="#ffffff"/>
+    ${[0, 2, 4, 6, 8, 10, 12]
+      .map((i) => `<rect y="${((i * 40) / 13).toFixed(2)}" width="60" height="${(40 / 13).toFixed(2)}" fill="#B22234"/>`)
+      .join("")}
+    <rect width="26" height="${((7 * 40) / 13).toFixed(2)}" fill="#3C3B6E"/>`),
+};
+
+/** Flag for an ISO country code, falling back to the UK. */
+export const flag = (iso) => flags[iso] || flags.gb;

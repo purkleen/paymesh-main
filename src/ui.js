@@ -3,9 +3,9 @@
  * Screens return HTML strings; behaviour is wired up in their `mount`.
  */
 
-import { logo, icons, googleG, appleLogo, ukFlag } from "./icons.js";
+import { logo, icons, googleG, appleLogo, flag } from "./icons.js";
 import { go } from "./router.js";
-import { ORDER, COUNTRIES, DEMO_ADDRESSES } from "./config.js";
+import { ORDER, COUNTRIES, DEMO_ADDRESSES, countryByName } from "./config.js";
 
 /* --------------------------------------------------------------------------
    Formatting
@@ -160,8 +160,14 @@ export function selectField({ label, name, options, value = "", required = false
   </div>`;
 }
 
-export const countryField = (value = COUNTRIES[0]) =>
-  selectField({ label: "Country of residence", name: "country", options: COUNTRIES, value, required: true });
+export const countryField = (value) =>
+  selectField({
+    label: "Country of residence",
+    name: "country",
+    options: COUNTRIES.map((c) => c.name),
+    value: value || COUNTRIES[0].name,
+    required: true,
+  });
 
 /* --------------------------------------------------------------------------
    Postcode → address lookup
@@ -281,17 +287,30 @@ export function wireAddressLookup(root, onSelect) {
   input.addEventListener("blur", () => setTimeout(close, 120));
 }
 
-export function phoneField(value = "") {
+export function phoneField(value = "", country) {
+  const c = countryByName(country);
   return `
   <div class="field" data-field="phone">
     <label class="field__label" for="f-phone">Phone number<span class="field__req">*</span></label>
     <div class="phone">
-      <span class="phone__code">${ukFlag()} +44</span>
+      <span class="phone__code" data-dial>${flag(c.iso)} ${c.dial}</span>
       <input class="input" id="f-phone" name="phone" type="tel" inputmode="tel"
              value="${esc(value)}" placeholder="add your number" />
     </div>
     <p class="field__error" hidden></p>
   </div>`;
+}
+
+/** Keeps the phone field's flag and dial code in step with the country select. */
+export function wireCountryPhone(root) {
+  const select = root.querySelector("#f-country");
+  const dial = root.querySelector("[data-dial]");
+  if (!select || !dial) return;
+
+  select.addEventListener("change", () => {
+    const c = countryByName(select.value);
+    dial.innerHTML = `${flag(c.iso)} ${c.dial}`;
+  });
 }
 
 /* --------------------------------------------------------------------------

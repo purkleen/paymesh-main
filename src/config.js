@@ -107,16 +107,20 @@ export const DEMO_ADDRESSES = [
   { postcode: "EH1 1TH", line1: "41 Cockburn Street", line2: "", city: "Edinburgh", state: "Midlothian" },
 ];
 
+/** Countries offered, with the dial code and flag their phone field uses. */
 export const COUNTRIES = [
-  "United Kingdom",
-  "Ireland",
-  "France",
-  "Germany",
-  "Netherlands",
-  "Poland",
-  "Spain",
-  "United States",
+  { name: "United Kingdom", iso: "gb", dial: "+44" },
+  { name: "Ireland", iso: "ie", dial: "+353" },
+  { name: "France", iso: "fr", dial: "+33" },
+  { name: "Germany", iso: "de", dial: "+49" },
+  { name: "Netherlands", iso: "nl", dial: "+31" },
+  { name: "Poland", iso: "pl", dial: "+48" },
+  { name: "Spain", iso: "es", dial: "+34" },
+  { name: "United States", iso: "us", dial: "+1" },
 ];
+
+export const countryByName = (name) =>
+  COUNTRIES.find((c) => c.name === name) || COUNTRIES[0];
 
 /**
  * The seven journeys captured in the Figma file.

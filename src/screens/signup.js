@@ -15,6 +15,7 @@ import {
   helpLine,
   countryField,
   phoneField,
+  wireCountryPhone,
   addressLookupField,
   wireAddressLookup,
   cancelLink,
@@ -172,7 +173,7 @@ export const details = {
         autofocus: true,
       })}
       ${countryField(flow.draft.country)}
-      ${phoneField(flow.draft.phone || "")}
+      ${phoneField(flow.draft.phone || "", flow.draft.country)}
       ${addressLookupField(flow.draft.postcode || "")}
 
       ${
@@ -199,6 +200,8 @@ export const details = {
   },
 
   mount(root) {
+    wireCountryPhone(root);
+
     // Keep what has been typed so far, then re-render with the address fields shown.
     const revealAddress = (extra = {}) => {
       const v = values(root);

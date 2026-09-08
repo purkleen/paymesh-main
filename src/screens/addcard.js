@@ -8,6 +8,7 @@ import {
   field,
   countryField,
   phoneField,
+  wireCountryPhone,
   addressLookupField,
   wireAddressLookup,
   values,
@@ -68,6 +69,8 @@ export default {
   },
 
   mount(root) {
+    wireCountryPhone(root);
+
     root.querySelectorAll('[data-action="back"]').forEach((b) =>
       b.addEventListener("click", () => go("#/payment"))
     );
