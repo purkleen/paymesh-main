@@ -140,10 +140,16 @@ export function passwordField({ label = "Password", name = "password", value = "
 
 const strengthMeter = () => `
   <div class="strength" data-strength data-level="0">
-    <span class="field__hint" style="margin:0">Password strength</span>
-    <span class="strength__track"><span class="strength__bar"></span></span>
-    <span class="strength__label"></span>
+    <div class="strength__head">
+      <span class="strength__title">Password strength</span>
+      <span class="strength__label"></span>
+    </div>
+    <div class="strength__bars">
+      <span></span><span></span><span></span><span></span>
+    </div>
   </div>`;
+
+const STRENGTH_LABELS = ["", "Weak", "Fair", "Good", "Strong"];
 
 export function selectField({ label, name, options, value = "", required = false }) {
   return `
@@ -440,14 +446,15 @@ export function values(root) {
   return out;
 }
 
-/** 0–3 score used by the sign-up password meter. */
+/** 0–4 score, one point per filled segment of the sign-up strength meter. */
 export function scorePassword(v) {
   if (!v) return 0;
   let score = 0;
   if (v.length >= 8) score++;
+  if (v.length >= 12) score++;
   if (/[A-Z]/.test(v) && /[a-z]/.test(v)) score++;
   if (/\d/.test(v) || /[^A-Za-z0-9]/.test(v)) score++;
-  return v.length < 6 ? 1 : score;
+  return Math.min(4, Math.max(1, score));
 }
 
 /* --------------------------------------------------------------------------
@@ -469,13 +476,11 @@ export function wirePasswordFields(root) {
   const meter = root.querySelector("[data-strength]");
   if (!meter) return;
   const input = meter.closest("[data-field]").querySelector("input");
-  const bar = meter.querySelector(".strength__bar");
   const label = meter.querySelector(".strength__label");
   const paint = () => {
     const score = scorePassword(input.value);
     meter.dataset.level = String(score);
-    bar.style.width = `${(score / 3) * 100}%`;
-    label.textContent = ["", "Weak", "Medium", "Strong"][score];
+    label.textContent = STRENGTH_LABELS[score];
   };
   input.addEventListener("input", paint);
   paint();

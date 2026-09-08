@@ -26,7 +26,7 @@
   /* Status */
   --danger: #ea4335;
   --danger-soft: #fdeceb;
-  --success: #12805c;
+  --success: #16a34a;
 
   /* Shape */
   --r-input: 16px;
@@ -313,13 +313,32 @@ select.input { appearance: none; cursor: pointer; background-image: none; }
 .phone .input { border-radius: 0 var(--r-input) var(--r-input) 0; }
 .flag { width: 22px; height: 16px; border-radius: 3px; flex: 0 0 auto; }
 
-/* Password strength meter */
-.strength { margin-top: 10px; display: flex; align-items: center; gap: 10px; }
-.strength__track { flex: 1; height: 6px; border-radius: 999px; background: var(--line-soft); overflow: hidden; }
-.strength__bar { height: 100%; width: 0; border-radius: 999px; background: var(--danger); transition: width .2s ease, background-color .2s ease; }
-.strength__label { font-size: 12px; color: var(--muted); min-width: 54px; text-align: right; }
-.strength[data-level="2"] .strength__bar { background: #e8a33d; }
-.strength[data-level="3"] .strength__bar { background: var(--success); }
+/* Password strength: a label, a verdict, and four segments */
+.strength { margin-top: 16px; }
+
+.strength__head { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; }
+.strength__title { font-size: 14px; }
+.strength__label { font-size: 14px; font-weight: 600; color: var(--strength-color); }
+
+.strength__bars { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin-top: 10px; }
+.strength__bars span {
+  height: 4px;
+  border-radius: 2px;
+  background: var(--line-soft);
+  transition: background-color .2s ease;
+}
+
+.strength[data-level="1"] { --strength-color: var(--danger); }
+.strength[data-level="2"] { --strength-color: #f0932b; }
+.strength[data-level="3"] { --strength-color: #7cb342; }
+.strength[data-level="4"] { --strength-color: var(--success); }
+
+.strength[data-level="1"] .strength__bars span:nth-child(-n + 1),
+.strength[data-level="2"] .strength__bars span:nth-child(-n + 2),
+.strength[data-level="3"] .strength__bars span:nth-child(-n + 3),
+.strength[data-level="4"] .strength__bars span:nth-child(-n + 4) {
+  background: var(--strength-color);
+}
 
 /* ==========================================================================
    OTP input
