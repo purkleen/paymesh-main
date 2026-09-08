@@ -80,10 +80,9 @@ assets/               logo, 3D check illustration, split-login artwork
 - Headings in the source use **Rebond Grotesque**, a licensed typeface. The CSS
   asks for it first and falls back to Space Grotesk, so the real face appears
   automatically once the licence is added. Body copy is Inter, as designed.
-- The merchant checkout is a neutral stand-in ("Lumen Market"), not the real
-  retailer used as a backdrop in the file, so the prototype can be shared and
-  deployed without borrowing another company's branding. Change it in
-  `src/config.js`.
+- The merchant is Airbnb, matching the payment screens in the Figma file. Its
+  name, logo and colour are one object (`MERCHANT`) in `src/config.js`, so
+  swapping in a different merchant is a single edit.
 - The Paymesh app home (end of journey 1) is a placeholder frame in the source
   file, so it is deliberately minimal here.
 

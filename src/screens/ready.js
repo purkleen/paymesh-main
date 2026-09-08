@@ -3,7 +3,7 @@
  * pending payment the buyer arrived with.
  */
 
-import { shellRaw, money, tokens, esc } from "../ui.js";
+import { shellRaw, money, tokens, esc, merchantMark } from "../ui.js";
 import { getState } from "../store.js";
 import { continueToPayment, backToMerchant } from "../flow.js";
 
@@ -27,9 +27,7 @@ export default {
                  <div class="card__head"><h2>Pending payment</h2></div>
                  <div class="card__body">
                    <div class="merchant">
-                     <span class="merchant__logo" style="background:${order.merchant.color}">
-                       ${esc(order.merchant.initial)}
-                     </span>
+                     ${merchantMark(order.merchant)}
                      <span class="merchant__name">${esc(order.merchant.name)}</span>
                    </div>
                    <div class="amount" style="margin-bottom:4px">

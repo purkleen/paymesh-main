@@ -3,11 +3,15 @@
  * Everything a reviewer is likely to want to change lives in this file.
  */
 
-/** The shop the buyer is checking out from. */
+/**
+ * The shop the buyer is checking out from.
+ * `logo` is optional — without it the mark falls back to `initial` on `color`.
+ */
 export const MERCHANT = {
-  name: "Lumen Market",
+  name: "Airbnb",
+  logo: "assets/merchant-logo.svg",
   color: "#e8385a",
-  initial: "L",
+  initial: "A",
 };
 
 /** The order being paid for. Amounts mirror the Figma source. */

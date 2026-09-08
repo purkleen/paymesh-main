@@ -401,6 +401,7 @@ select.input { appearance: none; cursor: pointer; background-image: none; }
   font-weight: 700;
   font-family: var(--font-display);
 }
+img.merchant__logo { display: block; object-fit: cover; }
 .merchant__name { display: block; font-size: 14px; }
 
 .amount { text-align: center; margin: 18px 0 20px; }
@@ -462,6 +463,7 @@ select.input { appearance: none; cursor: pointer; background-image: none; }
   display: grid; place-items: center;
   color: #fff;
 }
+img.transfer__avatar { display: block; object-fit: cover; }
 .transfer__label { display: block; font-size: 12px; font-weight: 500; }
 .transfer__arrow { margin-top: 12px; color: var(--ink); }
 
@@ -557,6 +559,7 @@ select.input { appearance: none; cursor: pointer; background-image: none; }
 }
 .shop__brand { display: flex; align-items: center; gap: 10px; font-family: var(--font-display); font-weight: 700; font-size: 20px; }
 .shop__mark { width: 30px; height: 30px; border-radius: 8px; display: grid; place-items: center; color: #fff; }
+img.shop__mark { display: block; border-radius: 50%; object-fit: cover; }
 .shop__grid {
   max-width: 1040px; margin: 0 auto; padding: 36px 24px 80px;
   display: grid; grid-template-columns: 1fr 360px; gap: 48px; align-items: start;

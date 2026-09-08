@@ -1,13 +1,12 @@
 /**
  * Demo merchant checkout — the page the buyer starts from.
  *
- * The Figma source uses a real retailer's checkout as the backdrop; this is a
- * neutral stand-in with the same structure so the hand-off reads the same.
+ * Mirrors the structure of the checkout used as a backdrop in the Figma file.
  */
 
 import { MERCHANT, ORDER, SCENARIOS } from "../config.js";
 import { getState, setScenario } from "../store.js";
-import { money, esc } from "../ui.js";
+import { money, esc, merchantMark } from "../ui.js";
 import { mark, icons, appleLogo, schemes } from "../icons.js";
 import { handOffToPaymesh } from "../flow.js";
 import { render as rerender } from "../router.js";
@@ -34,7 +33,7 @@ export default {
       <div class="shop__bar">
         <div class="shop__bar-in">
           <span class="shop__brand">
-            <span class="shop__mark" style="background:${MERCHANT.color}">${MERCHANT.initial}</span>
+            ${merchantMark(MERCHANT, { className: "shop__mark", size: 30 })}
             ${esc(MERCHANT.name)} Checkout
           </span>
           <span class="small muted">Secure checkout</span>

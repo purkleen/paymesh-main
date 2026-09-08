@@ -2,7 +2,7 @@
  * "Complete order" — approve the transfer of tokens out of the Paymesh wallet.
  */
 
-import { shellRaw, money, tokens, esc, busy, isBusy } from "../ui.js";
+import { shellRaw, money, tokens, esc, merchantMark, busy, isBusy } from "../ui.js";
 import { mark, icons } from "../icons.js";
 import { getState } from "../store.js";
 import { transferAuthorized, backToMerchant } from "../flow.js";
@@ -34,9 +34,7 @@ export default {
             </span>
             <span class="transfer__arrow">${icons.chevronRight(20)}</span>
             <span class="transfer__end">
-              <span class="transfer__avatar" style="background:${order.merchant.color};font-weight:700">
-                ${esc(order.merchant.initial)}
-              </span>
+              ${merchantMark(order.merchant, { className: "transfer__avatar", size: 44 })}
               <span class="transfer__label">${esc(order.merchant.name)}</span>
             </span>
           </div>

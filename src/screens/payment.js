@@ -13,6 +13,7 @@ import {
   money,
   tokens,
   esc,
+  merchantMark,
   formAlert,
   showFormError,
   clearFormError,
@@ -106,9 +107,7 @@ export default {
         <div class="card__body">
 
           <div class="merchant">
-            <span class="merchant__logo" style="background:${order.merchant.color}">
-              ${esc(order.merchant.initial)}
-            </span>
+            ${merchantMark(order.merchant)}
             <span class="merchant__name">${esc(order.merchant.name)}</span>
           </div>
 

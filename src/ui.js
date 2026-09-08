@@ -88,6 +88,17 @@ export const helpLine = () => `
     Need help? <a class="link" href="#" data-noop>Contact us</a>
   </p>`;
 
+/**
+ * The merchant's mark: their logo where one is configured, otherwise a
+ * coloured circle carrying their initial.
+ */
+export function merchantMark(merchant, { className = "merchant__logo", size = 48 } = {}) {
+  if (merchant.logo) {
+    return `<img class="${className}" src="${esc(merchant.logo)}" alt="" width="${size}" height="${size}" />`;
+  }
+  return `<span class="${className}" style="background:${merchant.color}">${esc(merchant.initial)}</span>`;
+}
+
 export const cancelLink = (label, action) =>
   `<button class="link under-action" data-action="${action}">${label}</button>`;
 
