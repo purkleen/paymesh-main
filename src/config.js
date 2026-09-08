@@ -51,9 +51,6 @@ export const TOPUP_CARD = {
   expiry: "Expiry 06/2027",
 };
 
-/** Verification code accepted by every one-time-code screen. */
-export const DEMO_CODE = "123456";
-
 /** Seconds shown on the "resend code" countdown. */
 export const RESEND_SECONDS = 26;
 

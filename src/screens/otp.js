@@ -17,7 +17,7 @@ import {
 import { stepper } from "./_stepper.js";
 import { getState } from "../store.js";
 import { codeVerified, backToMerchant } from "../flow.js";
-import { DEMO_CODE, RESEND_SECONDS } from "../config.js";
+import { RESEND_SECONDS } from "../config.js";
 import { go } from "../router.js";
 
 const boxes = () =>
@@ -43,12 +43,6 @@ export default {
         We sent the code to <strong>${esc(session.email || "your email")}</strong>.
         This helps us keep your account secure by verifying that it's really you.
       </p>
-
-      <div class="inbox" style="margin-top:22px">
-        <span class="muted">Demo inbox</span>
-        <span class="inbox__code">${DEMO_CODE}</span>
-        <button class="link inbox__fill" data-action="fill">Fill code</button>
-      </div>
 
       <div class="otp" data-otp-group>${boxes()}</div>
       <p class="resend" data-resend></p>
@@ -91,6 +85,7 @@ export default {
       });
     });
 
+    // Any six digits are accepted — this is a prototype, not a real check.
     function verify() {
       const entered = code();
 
@@ -100,22 +95,11 @@ export default {
         inputs[entered.length].focus();
         return;
       }
-      if (entered !== DEMO_CODE) {
-        group.dataset.invalid = "true";
-        showFormError(root, "That code doesn't match. Check the digits and try again.");
-        inputs[0].focus();
-        return;
-      }
 
       clearFormError(root);
       stopCountdown();
       codeVerified();
     }
-
-    root.querySelector('[data-action="fill"]').addEventListener("click", () => {
-      DEMO_CODE.split("").forEach((ch, i) => (inputs[i].value = ch));
-      verify();
-    });
 
     root.querySelector('[data-action="verify"]').addEventListener("click", verify);
 

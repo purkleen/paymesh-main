@@ -91,8 +91,8 @@ assets/               logo, 3D check illustration, split-login artwork
 
 Buttons are never disabled. Every primary action stays in its active state, and
 pressing one before it can succeed reports the reason in an error status
-directly beneath it — a missing card on the payment sheet, an incomplete or
-wrong one-time code, empty required fields on a form (which are also outlined in
+directly beneath it — a missing card on the payment sheet, an incomplete
+one-time code, empty required fields on a form (which are also outlined in
 red). The one exception to instant feedback is the brief `Authorizing…` loading
 state, which ignores repeat presses without dimming the button.
 
@@ -101,8 +101,7 @@ this pattern; use them on any new screen with a primary action.
 
 ## Prototype behaviour
 
-- Any password is accepted; the one-time code is always `123456` and the
-  **Fill code** button in the demo-inbox strip enters it for you.
+- Any password is accepted, and any six digits pass the one-time-code screen.
 - The postcode field suggests addresses as you type and fills the street, city
   and state when you pick one. It searches a fixed list in `src/config.js`
   (`DEMO_ADDRESSES`) — try `bs7`, `e1`, `m1` or a street name.
