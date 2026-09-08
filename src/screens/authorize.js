@@ -40,7 +40,9 @@ export default {
           </div>
 
           <button class="btn btn--primary" data-action="authorize">Authorize transfer</button>
-          <button class="link under-action" data-action="cancel">or cancel and go back to merchant</button>
+          <button class="link under-action" data-action="cancel">
+            or cancel and go back to ${esc(order.merchant.name)}
+          </button>
         </div>
       </section>`,
     });

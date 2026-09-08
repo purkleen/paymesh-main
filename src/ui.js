@@ -5,6 +5,7 @@
 
 import { logo, icons, googleG, appleLogo, flag } from "./icons.js";
 import { go } from "./router.js";
+import { getState } from "./store.js";
 import { ORDER, COUNTRIES, DEMO_ADDRESSES, countryByName } from "./config.js";
 
 /* --------------------------------------------------------------------------
@@ -98,6 +99,9 @@ export function merchantMark(merchant, { className = "merchant__logo", size = 48
   }
   return `<span class="${className}" style="background:${merchant.color}">${esc(merchant.initial)}</span>`;
 }
+
+/** The merchant the buyer arrived from, for the cancel links. */
+export const merchantName = () => getState().order?.merchant?.name || "merchant";
 
 export const cancelLink = (label, action) =>
   `<button class="link under-action" data-action="${action}">${label}</button>`;

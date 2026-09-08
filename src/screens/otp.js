@@ -10,6 +10,7 @@ import {
   startResendCountdown,
   esc,
   cancelLink,
+  merchantName,
   formAlert,
   showFormError,
   clearFormError,
@@ -50,7 +51,9 @@ export default {
       <button class="btn btn--primary" data-action="verify">Verify code</button>
       ${formAlert()}
       ${cancelLink(
-        registering || flow.fromMerchant ? "Cancel and go back to merchant" : "Cancel and go back to log in",
+        registering || flow.fromMerchant
+          ? `Cancel and go back to ${esc(merchantName())}`
+          : "Cancel and go back to log in",
         "cancel"
       )}`,
     });

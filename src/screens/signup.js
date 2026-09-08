@@ -22,6 +22,8 @@ import {
   isValidPhone,
   phoneHint,
   cancelLink,
+  merchantName,
+  esc,
   wirePasswordFields,
   values,
   isEmail,
@@ -117,7 +119,7 @@ export const account = {
       <div style="height:26px"></div>
       <button class="btn btn--primary" data-action="create">Create account</button>
       ${formAlert()}
-      ${cancelLink("Cancel and go back to merchant", "cancel")}`,
+      ${cancelLink(`Cancel and go back to ${esc(merchantName())}`, "cancel")}`,
     });
   },
 
@@ -198,7 +200,7 @@ export const details = {
       <div style="height:26px"></div>
       <button class="btn btn--primary" data-action="finish">Finish registration</button>
       ${formAlert()}
-      ${cancelLink("Cancel and go back to merchant", "cancel")}`,
+      ${cancelLink(`Cancel and go back to ${esc(merchantName())}`, "cancel")}`,
     });
   },
 

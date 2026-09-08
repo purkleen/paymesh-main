@@ -1,6 +1,6 @@
 /** "Order complete!" — the end of every payment journey. */
 
-import { shellRaw } from "../ui.js";
+import { shellRaw, esc, merchantName } from "../ui.js";
 import { backToMerchant } from "../flow.js";
 
 export default {
@@ -16,7 +16,7 @@ export default {
         <p class="result__body">
           Your payment has been authorized and sent. A receipt is on its way to your inbox.
         </p>
-        <button class="btn btn--primary" data-action="back">Go back to merchant page</button>
+        <button class="btn btn--primary" data-action="back">Go back to ${esc(merchantName())}</button>
       </div>`,
     });
   },

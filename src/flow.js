@@ -90,7 +90,7 @@ export function transferAuthorized() {
   go("#/success");
 }
 
-/** "Cancel and go back to merchant" / "Go back to merchant page". */
+/** "Cancel and go back to <merchant>" on every Paymesh screen. */
 export function backToMerchant() {
   go("#/");
 }

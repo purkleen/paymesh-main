@@ -150,7 +150,9 @@ export default {
           <button class="btn btn--primary" data-action="pay">Pay</button>
           ${formAlert()}
 
-          <button class="link under-action" data-action="cancel">or cancel and go back to merchant</button>
+          <button class="link under-action" data-action="cancel">
+            or cancel and go back to ${esc(order.merchant.name)}
+          </button>
         </div>
       </section>`,
     });
