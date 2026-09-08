@@ -184,12 +184,15 @@ export function searchAddresses(query) {
   ).slice(0, 8);
 }
 
+/** What this country calls a postcode, e.g. "ZIP code" in the US. */
+export const postcodeTerm = (country) => countryByName(country).postcode;
+
 /** Postcode field that suggests addresses as you type. */
-export function addressLookupField(value = "") {
+export function addressLookupField(value = "", country) {
   return `
   <div class="field" data-field="postcode">
-    <label class="field__label" for="f-postcode">
-      Enter postcode to find address<span class="field__req">*</span>
+    <label class="field__label" for="f-postcode" data-postcode-label>
+      Enter ${esc(postcodeTerm(country))} to find address<span class="field__req">*</span>
     </label>
     <div class="combo">
       <input class="input" id="f-postcode" name="postcode" type="text"
@@ -301,15 +304,23 @@ export function phoneField(value = "", country) {
   </div>`;
 }
 
-/** Keeps the phone field's flag and dial code in step with the country select. */
-export function wireCountryPhone(root) {
+/**
+ * Keeps the country-dependent parts of an address form in step with the
+ * country select: the phone flag and dial code, and what a postcode is called.
+ */
+export function wireCountryFields(root) {
   const select = root.querySelector("#f-country");
+  if (!select) return;
+
   const dial = root.querySelector("[data-dial]");
-  if (!select || !dial) return;
+  const postcodeLabel = root.querySelector("[data-postcode-label]");
 
   select.addEventListener("change", () => {
     const c = countryByName(select.value);
-    dial.innerHTML = `${flag(c.iso)} ${c.dial}`;
+    if (dial) dial.innerHTML = `${flag(c.iso)} ${c.dial}`;
+    if (postcodeLabel) {
+      postcodeLabel.innerHTML = `Enter ${esc(c.postcode)} to find address<span class="field__req">*</span>`;
+    }
   });
 }
 

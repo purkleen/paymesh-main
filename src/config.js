@@ -107,16 +107,19 @@ export const DEMO_ADDRESSES = [
   { postcode: "EH1 1TH", line1: "41 Cockburn Street", line2: "", city: "Edinburgh", state: "Midlothian" },
 ];
 
-/** Countries offered, with the dial code and flag their phone field uses. */
+/**
+ * Countries offered, with the dial code and flag their phone field uses and
+ * the local name for a postcode.
+ */
 export const COUNTRIES = [
-  { name: "United Kingdom", iso: "gb", dial: "+44" },
-  { name: "Ireland", iso: "ie", dial: "+353" },
-  { name: "France", iso: "fr", dial: "+33" },
-  { name: "Germany", iso: "de", dial: "+49" },
-  { name: "Netherlands", iso: "nl", dial: "+31" },
-  { name: "Poland", iso: "pl", dial: "+48" },
-  { name: "Spain", iso: "es", dial: "+34" },
-  { name: "United States", iso: "us", dial: "+1" },
+  { name: "United Kingdom", iso: "gb", dial: "+44", postcode: "postcode" },
+  { name: "Ireland", iso: "ie", dial: "+353", postcode: "postcode" },
+  { name: "France", iso: "fr", dial: "+33", postcode: "postal code" },
+  { name: "Germany", iso: "de", dial: "+49", postcode: "postal code" },
+  { name: "Netherlands", iso: "nl", dial: "+31", postcode: "postal code" },
+  { name: "Poland", iso: "pl", dial: "+48", postcode: "postal code" },
+  { name: "Spain", iso: "es", dial: "+34", postcode: "postal code" },
+  { name: "United States", iso: "us", dial: "+1", postcode: "ZIP code" },
 ];
 
 export const countryByName = (name) =>

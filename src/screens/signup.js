@@ -15,9 +15,10 @@ import {
   helpLine,
   countryField,
   phoneField,
-  wireCountryPhone,
+  wireCountryFields,
   addressLookupField,
   wireAddressLookup,
+  postcodeTerm,
   cancelLink,
   wirePasswordFields,
   values,
@@ -174,7 +175,7 @@ export const details = {
       })}
       ${countryField(flow.draft.country)}
       ${phoneField(flow.draft.phone || "", flow.draft.country)}
-      ${addressLookupField(flow.draft.postcode || "")}
+      ${addressLookupField(flow.draft.postcode || "", flow.draft.country)}
 
       ${
         manual
@@ -200,7 +201,7 @@ export const details = {
   },
 
   mount(root) {
-    wireCountryPhone(root);
+    wireCountryFields(root);
 
     // Keep what has been typed so far, then re-render with the address fields shown.
     const revealAddress = (extra = {}) => {
@@ -240,7 +241,7 @@ export const details = {
         ok = false;
       }
       if (!v.postcode) {
-        showError(root, "postcode", "Enter your postcode.");
+        showError(root, "postcode", `Enter your ${postcodeTerm(v.country)}.`);
         ok = false;
       }
       if (!ok) return showFormError(root, MISSING_FIELDS);
