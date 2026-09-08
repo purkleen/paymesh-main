@@ -57,6 +57,7 @@ export const icons = {
   eye: (s) => svg(`<path d="M2.5 12S6 5.8 12 5.8 21.5 12 21.5 12 18 18.2 12 18.2 2.5 12 2.5 12Z"/><circle cx="12" cy="12" r="3"/>`, s),
   eyeOff: (s) => svg(`<path d="M3 3l18 18"/><path d="M10.6 6.1A9.7 9.7 0 0 1 12 6c6 0 9.5 6 9.5 6a17 17 0 0 1-3.4 4.1M6.4 7.9A17 17 0 0 0 2.5 12S6 18 12 18a9.4 9.4 0 0 0 3.3-.6"/><path d="M9.9 9.9a3 3 0 0 0 4.2 4.2"/>`, s),
   chevronRight: (s) => svg(`<path d="m9 5 7 7-7 7"/>`, s),
+  chevronDown: (s = 16) => svg(`<path d="m6 9 6 6 6-6"/>`, s),
   arrowRight: (s) => svg(`<path d="M4 12h15m0 0-5.5-5.5M19 12l-5.5 5.5"/>`, s),
   arrowLeft: (s) => svg(`<path d="M20 12H5m0 0 5.5-5.5M5 12l5.5 5.5"/>`, s),
   alert: (s = 16) => svg(`<circle cx="12" cy="12" r="9"/><path d="m9.2 9.2 5.6 5.6M14.8 9.2l-5.6 5.6"/>`, s),

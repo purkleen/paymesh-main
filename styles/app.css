@@ -300,17 +300,30 @@ select.input { appearance: none; cursor: pointer; background-image: none; }
 .combo__empty { padding: 10px 12px; font-size: 13px; color: var(--muted); }
 
 /* Phone field: dial-code select + number */
-.phone { display: grid; grid-template-columns: 116px 1fr; }
+.phone { display: grid; grid-template-columns: 126px 1fr; }
 .phone .phone__code {
+  position: relative;
   height: var(--control-h);
   display: flex; align-items: center; gap: 8px;
-  padding: 0 12px;
+  padding: 0 12px 0 14px;
   border: 1px solid var(--line);
   border-right: 0;
   border-radius: var(--r-input) 0 0 var(--r-input);
   font-size: 16px;
   background: #fff;
+  cursor: pointer;
 }
+.phone__code [data-dial] { display: flex; align-items: center; gap: 8px; white-space: nowrap; }
+.phone__code svg:last-of-type { margin-left: auto; flex: 0 0 auto; }
+
+/* A real select, laid over the prefix so the flag and dial code show through */
+.phone__select {
+  position: absolute; inset: 0;
+  width: 100%; height: 100%;
+  opacity: 0; cursor: pointer;
+  appearance: none; border: 0; background: none;
+}
+.phone__code:focus-within { border-color: var(--brand); box-shadow: 0 0 0 3px rgba(80, 63, 241, .12); }
 .phone .input { border-radius: 0 var(--r-input) var(--r-input) 0; }
 .flag { width: 22px; height: 16px; border-radius: 3px; flex: 0 0 auto; }
 

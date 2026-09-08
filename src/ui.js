@@ -328,7 +328,17 @@ export function phoneField(value = "", country) {
   <div class="field" data-field="phone">
     <label class="field__label" for="f-phone">Phone number<span class="field__req">*</span></label>
     <div class="phone">
-      <span class="phone__code" data-dial>${flag(c.iso)} ${c.dial}</span>
+      <span class="phone__code">
+        <span data-dial>${flag(c.iso)} ${c.dial}</span>
+        ${icons.chevronDown(16)}
+        <select class="phone__select" id="f-dial" name="dial" aria-label="Country dial code">
+          ${COUNTRIES.map(
+            (x) => `<option value="${esc(x.name)}" ${x.name === c.name ? "selected" : ""}>
+                      ${esc(x.dial)} ${esc(x.name)}
+                    </option>`
+          ).join("")}
+        </select>
+      </span>
       <input class="input" id="f-phone" name="phone" type="tel" inputmode="tel"
              value="${esc(value)}" placeholder="add your number" />
     </div>
@@ -369,31 +379,39 @@ export function phoneHint(country) {
  * postcode is called.
  */
 export function wireCountryFields(root) {
-  const select = root.querySelector("#f-country");
+  const countrySelect = root.querySelector("#f-country");
+  const dialSelect = root.querySelector("#f-dial");
   const dial = root.querySelector("[data-dial]");
   const postcodeLabel = root.querySelector("[data-postcode-label]");
   const phone = root.querySelector("#f-phone");
 
-  const country = () => countryByName(select ? select.value : undefined);
+  const current = () =>
+    countryByName((countrySelect || dialSelect)?.value);
 
   // Digits only, capped and grouped to the selected country's format.
   const formatPhone = () => {
     if (!phone) return;
-    const { max, groups } = country().phone;
+    const { max, groups } = current().phone;
     phone.value = groupDigits(phone.value.replace(/\D/g, "").slice(0, max), groups);
   };
 
-  phone?.addEventListener("input", formatPhone);
-  formatPhone();
-
-  select?.addEventListener("change", () => {
-    const c = country();
+  const apply = (name) => {
+    const c = countryByName(name);
+    if (countrySelect) countrySelect.value = c.name;
+    if (dialSelect) dialSelect.value = c.name;
     if (dial) dial.innerHTML = `${flag(c.iso)} ${c.dial}`;
     if (postcodeLabel) {
       postcodeLabel.innerHTML = `Enter ${esc(c.postcode)} to find address<span class="field__req">*</span>`;
     }
     formatPhone();
-  });
+  };
+
+  phone?.addEventListener("input", formatPhone);
+  formatPhone();
+
+  // The two selects stay in step, whichever one is used.
+  countrySelect?.addEventListener("change", () => apply(countrySelect.value));
+  dialSelect?.addEventListener("change", () => apply(dialSelect.value));
 }
 
 /* --------------------------------------------------------------------------
