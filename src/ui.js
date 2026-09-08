@@ -175,13 +175,24 @@ export const countryField = (value) =>
 
 const normalise = (s) => String(s).toLowerCase().replace(/\s+/g, "");
 
-/** Addresses matching a postcode fragment or street text. */
-export function searchAddresses(query) {
+/**
+ * Addresses to offer once at least two characters have been typed.
+ *
+ * Close matches come first, but a lookup never comes back empty — if nothing
+ * matches, the country's addresses are suggested anyway so there is always
+ * something to pick.
+ */
+export function suggestAddresses(query, country) {
+  if (normalise(query).length < 2) return [];
+
   const q = normalise(query);
-  if (q.length < 2) return [];
-  return DEMO_ADDRESSES.filter(
+  const inCountry = DEMO_ADDRESSES.filter((a) => a.country === country);
+  const pool = inCountry.length ? inCountry : DEMO_ADDRESSES;
+
+  const hits = pool.filter(
     (a) => normalise(a.postcode).startsWith(q) || normalise(`${a.line1}${a.city}`).includes(q)
-  ).slice(0, 8);
+  );
+  return (hits.length ? hits : pool).slice(0, 8);
 }
 
 /** What this country calls a postcode, e.g. "ZIP code" in the US. */
@@ -228,12 +239,7 @@ export function wireAddressLookup(root, onSelect) {
 
   const paint = () => {
     if (!matches.length) {
-      list.innerHTML =
-        input.value.trim().length >= 2
-          ? `<li class="combo__empty">No addresses found for "${esc(input.value.trim())}"</li>`
-          : "";
-      list.hidden = !list.innerHTML;
-      input.setAttribute("aria-expanded", String(!list.hidden));
+      close();
       return;
     }
     list.innerHTML = matches
@@ -259,7 +265,12 @@ export function wireAddressLookup(root, onSelect) {
   };
 
   input.addEventListener("input", () => {
-    matches = searchAddresses(input.value);
+    // Letters, digits and spaces only — postcodes carry no punctuation.
+    const cleaned = input.value.replace(/[^A-Za-z0-9 ]/g, "");
+    if (cleaned !== input.value) input.value = cleaned;
+
+    const country = root.querySelector("#f-country")?.value;
+    matches = suggestAddresses(cleaned, country);
     active = -1;
     paint();
   });
@@ -304,23 +315,63 @@ export function phoneField(value = "", country) {
   </div>`;
 }
 
+/** Spaces digits into a country's phone grouping, e.g. 7700 900123. */
+const groupDigits = (digits, groups) => {
+  const out = [];
+  let i = 0;
+  for (const size of groups) {
+    if (i >= digits.length) break;
+    out.push(digits.slice(i, i + size));
+    i += size;
+  }
+  if (i < digits.length) out.push(digits.slice(i));
+  return out.join(" ");
+};
+
+/** True when the number has a plausible length for the country. */
+export function isValidPhone(value, country) {
+  const { min, max } = countryByName(country).phone;
+  const digits = String(value).replace(/\D/g, "");
+  return digits.length >= min && digits.length <= max;
+}
+
+/** "United Kingdom numbers are 10 digits, e.g. 7700 900123." */
+export function phoneHint(country) {
+  const c = countryByName(country);
+  const length = c.phone.min === c.phone.max ? `${c.phone.max}` : `${c.phone.min}–${c.phone.max}`;
+  return `${c.name} numbers are ${length} digits, e.g. ${c.phone.example}.`;
+}
+
 /**
  * Keeps the country-dependent parts of an address form in step with the
- * country select: the phone flag and dial code, and what a postcode is called.
+ * country select: the phone flag, dial code and number format, and what a
+ * postcode is called.
  */
 export function wireCountryFields(root) {
   const select = root.querySelector("#f-country");
-  if (!select) return;
-
   const dial = root.querySelector("[data-dial]");
   const postcodeLabel = root.querySelector("[data-postcode-label]");
+  const phone = root.querySelector("#f-phone");
 
-  select.addEventListener("change", () => {
-    const c = countryByName(select.value);
+  const country = () => countryByName(select ? select.value : undefined);
+
+  // Digits only, capped and grouped to the selected country's format.
+  const formatPhone = () => {
+    if (!phone) return;
+    const { max, groups } = country().phone;
+    phone.value = groupDigits(phone.value.replace(/\D/g, "").slice(0, max), groups);
+  };
+
+  phone?.addEventListener("input", formatPhone);
+  formatPhone();
+
+  select?.addEventListener("change", () => {
+    const c = country();
     if (dial) dial.innerHTML = `${flag(c.iso)} ${c.dial}`;
     if (postcodeLabel) {
       postcodeLabel.innerHTML = `Enter ${esc(c.postcode)} to find address<span class="field__req">*</span>`;
     }
+    formatPhone();
   });
 }
 

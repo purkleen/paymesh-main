@@ -113,8 +113,13 @@ this pattern; use them on any new screen with a primary action.
   Ireland, "ZIP code" in the US, "postal code" elsewhere. Countries and those
   four values live in `COUNTRIES` (`src/config.js`); the flags are drawn inline
   in `src/icons.js`.
-- The postcode field suggests addresses as you type and fills the street, city
-  and state when you pick one. It searches a fixed list in `src/config.js`
-  (`DEMO_ADDRESSES`) — try `bs7`, `e1`, `m1` or a street name.
+- The phone field accepts digits only, capped and grouped to the selected
+  country's format (10 digits as `7700 900123` in the UK, 9 as
+  `6 12 34 56 78` in France, and so on). Formats live in `COUNTRIES`.
+- The postcode field suggests addresses after two characters and fills the
+  street, city and state when you pick one. Suggestions are scoped to the
+  selected country and never come back empty — close matches first, the
+  country's other addresses otherwise. Type `bs7`, `10013`, or anything at all.
+  The list is `DEMO_ADDRESSES` in `src/config.js`.
 - Nothing is sent anywhere. State lives in memory and `sessionStorage`, so a
   refresh keeps you in place and a new tab starts clean.

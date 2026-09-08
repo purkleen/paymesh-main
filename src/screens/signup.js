@@ -19,6 +19,8 @@ import {
   addressLookupField,
   wireAddressLookup,
   postcodeTerm,
+  isValidPhone,
+  phoneHint,
   cancelLink,
   wirePasswordFields,
   values,
@@ -236,8 +238,8 @@ export const details = {
         showError(root, "name", "Enter your first and last name.");
         ok = false;
       }
-      if (!/^\d[\d\s]{6,}$/.test(v.phone || "")) {
-        showError(root, "phone", "Enter a phone number.");
+      if (!isValidPhone(v.phone, v.country)) {
+        showError(root, "phone", phoneHint(v.country));
         ok = false;
       }
       if (!v.postcode) {

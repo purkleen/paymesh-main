@@ -11,6 +11,8 @@ import {
   wireCountryFields,
   addressLookupField,
   wireAddressLookup,
+  isValidPhone,
+  phoneHint,
   values,
   showError,
   clearError,
@@ -126,6 +128,11 @@ export default {
       }
       if (ok && !/^\d{2}\/\d{2}$/.test(v.expiry)) {
         showError(root, "expiry", "Use the MM/YY format.");
+        ok = false;
+      }
+      clearError(root, "phone");
+      if (!isValidPhone(v.phone, v.country)) {
+        showError(root, "phone", phoneHint(v.country));
         ok = false;
       }
       if (!ok) {
