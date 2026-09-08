@@ -117,7 +117,7 @@ this pattern; use them on any new screen with a primary action.
   country's other addresses otherwise. Type `bs7`, `10013`, or anything at all.
   The list is `DEMO_ADDRESSES` in `src/config.js`.
 - When the balance falls short, the payment sheet lists the wallet's cards and
-  asks for one to be chosen; **Add another card** appends a card built from the
+  asks for one to be chosen; **Add new card** appends a card built from the
   digits you type and selects it. Cards live in `SAVED_CARDS` (`src/config.js`).
 - Nothing is sent anywhere. State lives in memory and `sessionStorage`, so a
   refresh keeps you in place and a new tab starts clean.

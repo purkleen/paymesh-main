@@ -85,10 +85,10 @@ function cardChoices(cards, selectedId) {
   </div>`;
 }
 
-const addCardButton = (label) => `
-  <div style="padding-bottom:14px">
-    <button class="btn btn--secondary" data-action="add-card">${label}</button>
-  </div>`;
+const addCardLink = () => `
+  <button class="add-card" data-action="add-card">
+    ${icons.plus(20)}<span>Add new card</span>
+  </button>`;
 
 function addressRow(name, address) {
   if (!address) return "";
@@ -134,14 +134,13 @@ export default {
           <div class="rowline"></div>
           ${balanceRow(wallet)}
 
-          ${needsFirstCard ? addCardButton("Add new card") : ""}
+          ${needsFirstCard ? addCardLink() : ""}
 
           ${
             !covers && hasCards
               ? missingRow(missing) +
                 cardChoices(wallet.cards, wallet.selectedCardId) +
-                `<div class="rowline" style="padding-top:14px"></div>` +
-                addCardButton("Add another card")
+                addCardLink()
               : ""
           }
 

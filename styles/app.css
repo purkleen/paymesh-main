@@ -454,6 +454,17 @@ img.merchant__logo { display: block; object-fit: cover; }
 }
 .choice[aria-checked="true"] .choice__radio { border-color: var(--brand); border-width: 5px; }
 
+/* "Add new card" — a link, not a button, so the cards stay the emphasis */
+.add-card {
+  display: flex; align-items: center; gap: 10px;
+  width: 100%; padding: 16px 0;
+  background: none; border: 0;
+  font-size: 16px; text-align: left;
+  cursor: pointer;
+}
+.add-card span { text-decoration: underline; text-underline-offset: 3px; }
+.add-card:hover span { opacity: .7; }
+
 /* Transfer visual (authorize screen) */
 .transfer { display: flex; align-items: flex-start; justify-content: center; gap: 26px; margin: 22px 0 26px; }
 .transfer__end { text-align: center; width: 132px; }
