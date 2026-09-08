@@ -180,6 +180,36 @@ export function phoneField(value = "") {
    Validation helpers
    -------------------------------------------------------------------------- */
 
+/**
+ * Error status shown directly under a primary action.
+ * Buttons are never disabled — pressing one with something missing surfaces
+ * the reason here instead.
+ */
+export const formAlert = () => `<div data-form-error hidden></div>`;
+
+/** @param {string} html message; may contain links */
+export function showFormError(root, html) {
+  const box = root.querySelector("[data-form-error]");
+  if (!box) return;
+  box.innerHTML = `
+    <div class="alert" role="alert">
+      <span class="alert__icon">${icons.alert(16)}</span>
+      <span>${html}</span>
+    </div>`;
+  box.hidden = false;
+}
+
+export function clearFormError(root) {
+  const box = root.querySelector("[data-form-error]");
+  if (!box) return;
+  box.hidden = true;
+  box.innerHTML = "";
+}
+
+/** Standard message when required fields are empty or invalid. */
+export const MISSING_FIELDS =
+  "Some details are missing or incorrect. Check the highlighted fields and try again.";
+
 export function showError(root, name, message) {
   const wrap = root.querySelector(`[data-field="${name}"]`);
   if (!wrap) return;
@@ -268,18 +298,25 @@ export function wireCommon(root) {
   });
 }
 
-/** Puts a button into its loading state and returns a restore function. */
+/**
+ * Puts a button into its loading state and returns a restore function.
+ * The button keeps its active styling; a `busy` flag guards against a second
+ * press rather than the `disabled` attribute.
+ */
 export function busy(button, label) {
-  const original = button.innerHTML;
-  button.disabled = true;
+  button.dataset.busy = "1";
   button.classList.add("btn--busy");
   button.innerHTML = `<span class="btn__spinner"></span>${label}`;
-  return () => {
-    button.disabled = false;
+
+  return (finalLabel) => {
+    delete button.dataset.busy;
     button.classList.remove("btn--busy");
-    button.innerHTML = original;
+    button.textContent = finalLabel;
   };
 }
+
+/** True while a button is mid-action, so repeat presses can be ignored. */
+export const isBusy = (button) => button.dataset.busy === "1";
 
 /** Countdown used under the one-time-code inputs. */
 export function startResendCountdown(el, seconds) {

@@ -3,12 +3,22 @@
  *
  * Covers all three states drawn in the Figma file:
  *   • balance covers the order            → Pay
- *   • brand-new wallet with no card       → Add new card, Pay disabled
+ *   • brand-new wallet with no card       → Add new card, error under Pay
  *   • balance short after adding a card   → "Missing" row + top-up card choice
  * plus the authorization error from scenario 7.
  */
 
-import { shellRaw, money, tokens, esc } from "../ui.js";
+import {
+  shellRaw,
+  money,
+  tokens,
+  esc,
+  formAlert,
+  showFormError,
+  clearFormError,
+  busy,
+  isBusy,
+} from "../ui.js";
 import { icons, schemes } from "../icons.js";
 import { getState, update, balanceCovers, shortfall } from "../store.js";
 import { paymentAuthorized, addCardRequested, backToMerchant } from "../flow.js";
@@ -120,14 +130,8 @@ export default {
           ${addressRow(session.name, wallet.address)}
 
           <div style="height:8px"></div>
-          <button class="btn btn--primary" data-action="pay" ${needsCard ? "disabled" : ""}>Pay</button>
-
-          <div data-alert hidden>
-            <div class="alert">
-              <span class="alert__icon">${icons.alert(16)}</span>
-              <span>${ERROR_TEXT} <a href="#" data-noop>contact us</a>.</span>
-            </div>
-          </div>
+          <button class="btn btn--primary" data-action="pay">Pay</button>
+          ${formAlert()}
 
           <button class="link under-action" data-action="cancel">or cancel and go back to merchant</button>
         </div>
@@ -137,36 +141,42 @@ export default {
 
   mount(root) {
     const payBtn = root.querySelector('[data-action="pay"]');
-    const alertBox = root.querySelector("[data-alert]");
     let timer = null;
 
     root.querySelector('[data-action="add-card"]')?.addEventListener("click", addCardRequested);
     root.querySelector('[data-action="cancel"]').addEventListener("click", backToMerchant);
 
-    payBtn?.addEventListener("click", () => {
-      const { flow } = getState();
+    payBtn.addEventListener("click", () => {
+      if (isBusy(payBtn)) return;
+
+      const { flow, wallet } = getState();
 
       // Second press, once authorization has succeeded.
       if (payBtn.dataset.state === "ready") return paymentAuthorized();
 
+      // Nothing to pay with yet — say so rather than blocking the button.
+      if (!balanceCovers() && !wallet.topupCard) {
+        showFormError(
+          root,
+          "Add a card to cover this payment before continuing."
+        );
+        root.querySelector('[data-action="add-card"]')?.focus();
+        return;
+      }
+
+      clearFormError(root);
       const attempts = flow.authAttempts + 1;
       update("flow", { authAttempts: attempts });
 
-      payBtn.disabled = true;
-      payBtn.classList.add("btn--busy");
-      payBtn.innerHTML = `<span class="btn__spinner"></span>Authorizing...`;
+      const done = busy(payBtn, "Authorizing...");
 
       timer = setTimeout(() => {
-        const shouldFail = flow.failFirstAuth && attempts === 1;
-        payBtn.disabled = false;
-        payBtn.classList.remove("btn--busy");
-
-        if (shouldFail) {
-          payBtn.textContent = "Pay";
+        if (flow.failFirstAuth && attempts === 1) {
+          done("Pay");
           payBtn.dataset.state = "idle";
-          alertBox.hidden = false;
+          showFormError(root, `${ERROR_TEXT} <a href="#" data-noop>contact us</a>.`);
         } else {
-          payBtn.textContent = "Continue";
+          done("Continue");
           payBtn.dataset.state = "ready";
           payBtn.focus();
         }

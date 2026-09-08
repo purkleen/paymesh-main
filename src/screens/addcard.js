@@ -11,6 +11,10 @@ import {
   values,
   showError,
   clearError,
+  formAlert,
+  showFormError,
+  clearFormError,
+  MISSING_FIELDS,
 } from "../ui.js";
 import { icons } from "../icons.js";
 import { getState, attachTopupCard } from "../store.js";
@@ -56,6 +60,7 @@ export default {
 
       <div style="height:28px"></div>
       <button class="btn btn--primary" data-action="add">Add card</button>
+      ${formAlert()}
       <button class="link under-action" data-action="back">or cancel and go back to Payment process</button>`,
     });
   },
@@ -88,6 +93,7 @@ export default {
       let ok = true;
 
       required.forEach((n) => clearError(root, n));
+      clearFormError(root);
       required.forEach((n) => {
         if (!v[n]) {
           showError(root, n, "This field is required.");
@@ -103,6 +109,7 @@ export default {
         ok = false;
       }
       if (!ok) {
+        showFormError(root, MISSING_FIELDS);
         root.querySelector('[aria-invalid="true"]')?.scrollIntoView({ block: "center", behavior: "smooth" });
         return;
       }

@@ -87,6 +87,18 @@ assets/               logo, 3D check illustration, split-login artwork
 - The Paymesh app home (end of journey 1) is a placeholder frame in the source
   file, so it is deliberately minimal here.
 
+## Buttons and errors
+
+Buttons are never disabled. Every primary action stays in its active state, and
+pressing one before it can succeed reports the reason in an error status
+directly beneath it — a missing card on the payment sheet, an incomplete or
+wrong one-time code, empty required fields on a form (which are also outlined in
+red). The one exception to instant feedback is the brief `Authorizing…` loading
+state, which ignores repeat presses without dimming the button.
+
+`formAlert()` / `showFormError()` / `clearFormError()` in `src/ui.js` provide
+this pattern; use them on any new screen with a primary action.
+
 ## Prototype behaviour
 
 - Any password is accepted; the one-time code is always `123456` and the

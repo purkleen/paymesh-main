@@ -2,7 +2,7 @@
  * "Complete order" — approve the transfer of tokens out of the Paymesh wallet.
  */
 
-import { shellRaw, money, tokens, esc } from "../ui.js";
+import { shellRaw, money, tokens, esc, busy, isBusy } from "../ui.js";
 import { mark, icons } from "../icons.js";
 import { getState } from "../store.js";
 import { transferAuthorized, backToMerchant } from "../flow.js";
@@ -53,9 +53,8 @@ export default {
     let timer = null;
 
     btn?.addEventListener("click", () => {
-      btn.disabled = true;
-      btn.classList.add("btn--busy");
-      btn.innerHTML = `<span class="btn__spinner"></span>Authorizing...`;
+      if (isBusy(btn)) return;
+      busy(btn, "Authorizing...");
       timer = setTimeout(transferAuthorized, AUTHORIZE_MS);
     });
 

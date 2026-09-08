@@ -19,6 +19,10 @@ import {
   isEmail,
   showError,
   clearError,
+  formAlert,
+  showFormError,
+  clearFormError,
+  MISSING_FIELDS,
 } from "../ui.js";
 import { getState } from "../store.js";
 import { loginSubmitted, googleRequested } from "../flow.js";
@@ -47,6 +51,7 @@ function form(prefill) {
     </p>
 
     <button class="btn btn--primary" data-action="login">Log in</button>
+    ${formAlert()}
     ${socialButtons("Sign up")}
     ${helpLine()}`;
 }
@@ -80,6 +85,7 @@ export default {
 
       clearError(root, "email");
       clearError(root, "password");
+      clearFormError(root);
 
       if (!isEmail(v.email)) {
         showError(root, "email", "Enter a valid email address.");
@@ -89,7 +95,8 @@ export default {
         showError(root, "password", "Enter your password.");
         ok = false;
       }
-      if (ok) loginSubmitted(v.email);
+      if (!ok) return showFormError(root, MISSING_FIELDS);
+      loginSubmitted(v.email);
     };
 
     root.querySelector('[data-action="login"]').addEventListener("click", submit);

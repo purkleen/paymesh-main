@@ -181,15 +181,15 @@ img { max-width: 100%; display: block; }
 }
 
 .btn--primary { background: var(--brand); color: #fff; }
-.btn--primary:hover:not(:disabled) { background: var(--brand-press); }
+.btn--primary:hover { background: var(--brand-press); }
 
 .btn--secondary { background: #fff; color: var(--ink); border-color: var(--line); font-weight: 400; }
-.btn--secondary:hover:not(:disabled) { background: var(--surface-3); }
+.btn--secondary:hover { background: var(--surface-3); }
 
 .btn--ghost { background: transparent; border-color: transparent; font-weight: 500; }
 
-.btn:disabled { cursor: default; opacity: .55; }
-.btn--busy { cursor: progress; opacity: 1; }
+/* Buttons are never disabled — a missing detail is reported under the button. */
+.btn--busy { cursor: progress; }
 
 .btn__spinner {
   width: 16px; height: 16px; border-radius: 50%;
@@ -427,7 +427,7 @@ select.input { appearance: none; cursor: pointer; background-image: none; }
 .transfer__label { display: block; font-size: 12px; font-weight: 500; }
 .transfer__arrow { margin-top: 12px; color: var(--ink); }
 
-/* Inline error banner inside the payment card */
+/* Error status shown under a primary action */
 .alert {
   display: flex; gap: 8px;
   margin-top: 14px;

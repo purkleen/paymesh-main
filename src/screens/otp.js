@@ -5,7 +5,15 @@
  * verification step inside registration (where it carries the stepper).
  */
 
-import { shell, startResendCountdown, esc, cancelLink } from "../ui.js";
+import {
+  shell,
+  startResendCountdown,
+  esc,
+  cancelLink,
+  formAlert,
+  showFormError,
+  clearFormError,
+} from "../ui.js";
 import { stepper } from "./_stepper.js";
 import { getState } from "../store.js";
 import { codeVerified, backToMerchant } from "../flow.js";
@@ -46,6 +54,7 @@ export default {
       <p class="resend" data-resend></p>
 
       <button class="btn btn--primary" data-action="verify">Verify code</button>
+      ${formAlert()}
       ${cancelLink(
         registering || flow.fromMerchant ? "Cancel and go back to merchant" : "Cancel and go back to log in",
         "cancel"
@@ -64,6 +73,7 @@ export default {
       input.addEventListener("input", () => {
         input.value = input.value.replace(/\D/g, "").slice(0, 1);
         group.dataset.invalid = "false";
+        clearFormError(root);
         if (input.value && i < inputs.length - 1) inputs[i + 1].focus();
         if (code().length === 6) verify();
       });
@@ -82,11 +92,22 @@ export default {
     });
 
     function verify() {
-      if (code() !== DEMO_CODE) {
+      const entered = code();
+
+      if (entered.length < 6) {
         group.dataset.invalid = "true";
+        showFormError(root, "Enter all six digits of the code we sent you.");
+        inputs[entered.length].focus();
+        return;
+      }
+      if (entered !== DEMO_CODE) {
+        group.dataset.invalid = "true";
+        showFormError(root, "That code doesn't match. Check the digits and try again.");
         inputs[0].focus();
         return;
       }
+
+      clearFormError(root);
       stopCountdown();
       codeVerified();
     }

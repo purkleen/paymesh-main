@@ -22,6 +22,10 @@ import {
   showError,
   clearError,
   scorePassword,
+  formAlert,
+  showFormError,
+  clearFormError,
+  MISSING_FIELDS,
 } from "../ui.js";
 import { stepper } from "./_stepper.js";
 import { getState, update } from "../store.js";
@@ -58,6 +62,7 @@ export const email = {
       })}
       <div style="height:22px"></div>
       <button class="btn btn--primary" data-action="create">Create account</button>
+      ${formAlert()}
       ${socialButtons("Sign up")}
       ${helpLine()}`,
     });
@@ -67,7 +72,11 @@ export const email = {
     const submit = () => {
       const v = values(root);
       clearError(root, "email");
-      if (!isEmail(v.email)) return showError(root, "email", "Enter a valid email address.");
+      clearFormError(root);
+      if (!isEmail(v.email)) {
+        showError(root, "email", "Enter a valid email address.");
+        return showFormError(root, "Enter the email address you want to sign up with.");
+      }
       signupEmailSubmitted(v.email);
     };
 
@@ -101,6 +110,7 @@ export const account = {
       ${passwordField({ label: "Password", name: "password", required: true, strength: true })}
       <div style="height:26px"></div>
       <button class="btn btn--primary" data-action="create">Create account</button>
+      ${formAlert()}
       ${cancelLink("Cancel and go back to merchant", "cancel")}`,
     });
   },
@@ -113,6 +123,7 @@ export const account = {
       let ok = true;
       clearError(root, "name");
       clearError(root, "password");
+      clearFormError(root);
 
       if (!v.name || v.name.trim().split(/\s+/).length < 2) {
         showError(root, "name", "Enter your first and last name.");
@@ -122,7 +133,8 @@ export const account = {
         showError(root, "password", "Use at least 8 characters with a number or symbol.");
         ok = false;
       }
-      if (ok) accountCreated({ name: v.name });
+      if (!ok) return showFormError(root, MISSING_FIELDS);
+      accountCreated({ name: v.name });
     };
 
     root.querySelector('[data-action="create"]').addEventListener("click", submit);
@@ -181,6 +193,7 @@ export const details = {
 
       <div style="height:26px"></div>
       <button class="btn btn--primary" data-action="finish">Finish registration</button>
+      ${formAlert()}
       ${cancelLink("Cancel and go back to merchant", "cancel")}`,
     });
   },
@@ -199,6 +212,7 @@ export const details = {
       const v = values(root);
       let ok = true;
       ["name", "phone", "postcode"].forEach((n) => clearError(root, n));
+      clearFormError(root);
 
       if (!v.name || v.name.trim().split(/\s+/).length < 2) {
         showError(root, "name", "Enter your first and last name.");
@@ -212,7 +226,7 @@ export const details = {
         showError(root, "postcode", "Enter your postcode.");
         ok = false;
       }
-      if (!ok) return;
+      if (!ok) return showFormError(root, MISSING_FIELDS);
 
       detailsSubmitted({
         name: v.name,
