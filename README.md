@@ -51,6 +51,12 @@ npx vercel deploy --prod
 Or connect the GitHub repo in the Vercel dashboard and accept the defaults:
 framework **Other**, build command empty, output directory `.`.
 
+**Web Analytics** is wired up with the script tag at the bottom of
+`index.html` — the static-site route, since there's no bundler for the
+`@vercel/analytics` package. Turn it on under the project's Analytics tab and
+it starts collecting on the next deploy. The script 404s on a local server,
+which is expected and harmless.
+
 ## Layout
 
 ```
