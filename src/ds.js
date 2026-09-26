@@ -293,10 +293,15 @@ export function wirePage(root, onCancel) {
     })
   );
 
+  // The clear button only shows while its field has something to clear.
   root.querySelectorAll("[data-clear]").forEach((btn) => {
+    const field = root.querySelector(`#f-${btn.dataset.clear}`);
+    const sync = () => (btn.hidden = !field.value);
+    field.addEventListener("input", sync);
+    sync();
     btn.addEventListener("click", () => {
-      const field = root.querySelector(`#f-${btn.dataset.clear}`);
       field.value = "";
+      sync();
       field.focus();
     });
   });
