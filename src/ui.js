@@ -571,10 +571,10 @@ export const isBusy = (button) => button.dataset.busy === "1";
 /**
  * Six single-digit inputs (`[data-otp]` inside `[data-otp-group]`) that behave
  * as one code field: auto-advance, backspace to the previous box, paste the
- * whole code. `submit` runs when the sixth digit lands or Enter is pressed.
- * Returns a getter for the code typed so far.
+ * whole code. `submit` runs on Enter and — unless `autoSubmit` is false —
+ * as soon as the sixth digit lands. Returns a getter for the code typed so far.
  */
-export function wireOtpInputs(root, submit) {
+export function wireOtpInputs(root, submit, { autoSubmit = true } = {}) {
   const group = root.querySelector("[data-otp-group]");
   const inputs = [...root.querySelectorAll("[data-otp]")];
   const code = () => inputs.map((i) => i.value).join("");
@@ -585,7 +585,7 @@ export function wireOtpInputs(root, submit) {
       group.dataset.invalid = "false";
       clearFormError(root);
       if (input.value && i < inputs.length - 1) inputs[i + 1].focus();
-      if (code().length === 6) submit();
+      if (autoSubmit && code().length === 6) submit();
     });
     input.addEventListener("keydown", (e) => {
       if (e.key === "Backspace" && !input.value && i > 0) inputs[i - 1].focus();
@@ -597,27 +597,46 @@ export function wireOtpInputs(root, submit) {
       e.preventDefault();
       text.split("").slice(0, 6).forEach((ch, idx) => (inputs[idx].value = ch));
       inputs[Math.min(text.length, 5)].focus();
-      if (code().length === 6) submit();
+      if (autoSubmit && code().length === 6) submit();
     });
   });
 
   return code;
 }
 
-/** Countdown used under the one-time-code inputs. */
-export function startResendCountdown(el, seconds) {
+/**
+ * Countdown used under the one-time-code inputs. With `resendSeconds`, the
+ * "Resend code" link that appears at zero restarts the countdown from that
+ * many seconds; without it the link does nothing.
+ */
+export function startResendCountdown(el, seconds, { resendSeconds = 0 } = {}) {
   let left = seconds;
+  let id = null;
+  const link = resendSeconds
+    ? `<button class="link" data-resend-code>Resend code</button>`
+    : `<button class="link" data-noop>Resend code</button>`;
   const paint = () => {
     el.innerHTML =
       left > 0
         ? `Didn't receive the code? Resend code in ${left} seconds...`
-        : `Didn't receive the code? <button class="link" data-noop>Resend code</button>`;
+        : `Didn't receive the code? ${link}`;
   };
-  paint();
-  const id = setInterval(() => {
-    left -= 1;
+  const run = (from) => {
+    left = from;
     paint();
-    if (left <= 0) clearInterval(id);
-  }, 1000);
+    clearInterval(id);
+    id = setInterval(() => {
+      left -= 1;
+      paint();
+      if (left <= 0) clearInterval(id);
+    }, 1000);
+  };
+
+  if (resendSeconds) {
+    el.addEventListener("click", (e) => {
+      if (e.target.closest("[data-resend-code]")) run(resendSeconds);
+    });
+  }
+  run(seconds);
   return () => clearInterval(id);
 }

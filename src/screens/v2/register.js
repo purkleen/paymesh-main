@@ -16,7 +16,6 @@ import {
   page,
   header,
   button,
-  cancelLink,
   backLink,
   input,
   phoneInput,
@@ -47,7 +46,7 @@ import {
 } from "../../ui.js";
 import { getState } from "../../store.js";
 import { v2, googleRequested, backToMerchant } from "../../flow.js";
-import { RESEND_SECONDS, ACCOUNT_MS, IDENTITY_MS } from "../../config.js";
+import { RESEND_SECONDS, RESEND_AGAIN_SECONDS, ACCOUNT_MS, IDENTITY_MS } from "../../config.js";
 
 /** Primary button with its error status underneath. */
 const action = (label, name) => `
@@ -56,7 +55,6 @@ const action = (label, name) => `
     ${formAlert()}
   </div>`;
 
-const underCancel = () => cancelLink("ds-link--block");
 
 const hasFullName = (v) => Boolean(v) && v.trim().split(/\s+/).length >= 2;
 
@@ -84,9 +82,9 @@ export const signup = {
       <div class="ds-stack ds-stack--32">
         <div class="ds-stack ds-stack--16">
           <h1 class="ds-h1">Sign up</h1>
-          <p class="ds-small">
+          <p class="ds-body">
             Already have an account?
-            <button class="ds-link ds-link--s" data-action="login">Log back in &rarr;</button>
+            <button class="ds-link" data-action="login">Log back in &rarr;</button>
           </p>
         </div>
         <div class="ds-stack ds-stack--24">
@@ -104,8 +102,8 @@ export const signup = {
             ${button("Sign up with Google", { action: "google", variant: "secondary", iconName: "google" })}
             ${button("Sign up with Apple", { action: "apple", variant: "secondary", iconName: "apple" })}
           </div>
-          <p class="ds-small ds-center">
-            Need help? <a class="ds-link ds-link--s" href="#" data-noop>Contact us</a>
+          <p class="ds-body ds-center">
+            Need help? <a class="ds-link" href="#" data-noop>Contact us</a>
           </p>
         </div>
       </div>`,
@@ -169,7 +167,6 @@ export const account = {
           </div>
           ${action("Continue to email verification", "create")}
         </div>
-        ${underCancel()}
       </div>`,
     });
   },
@@ -228,7 +225,6 @@ export const verify = {
           </div>
           ${action("Verify your email", "verify")}
         </div>
-        ${underCancel()}
       </div>`,
     });
   },
@@ -237,8 +233,11 @@ export const verify = {
     wirePage(root, backToMerchant);
     const group = root.querySelector("[data-otp-group]");
     const inputs = [...root.querySelectorAll("[data-otp]")];
-    const stopCountdown = startResendCountdown(root.querySelector("[data-resend]"), RESEND_SECONDS);
-    const code = wireOtpInputs(root, submit);
+    const stopCountdown = startResendCountdown(root.querySelector("[data-resend]"), RESEND_SECONDS, {
+      resendSeconds: RESEND_AGAIN_SECONDS,
+    });
+    // Six digits don't move the page on — the buyer presses "Verify your email".
+    const code = wireOtpInputs(root, submit, { autoSubmit: false });
 
     // Any six digits are accepted — this is a prototype, not a real check.
     function submit() {

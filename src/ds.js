@@ -11,7 +11,6 @@
 import { logo, flag } from "./icons.js";
 import { esc, merchantName } from "./ui.js";
 import { COUNTRIES, countryByName } from "./config.js";
-import { getState } from "./store.js";
 
 /** Path to a design-system asset. */
 export const asset = (name) => `assets/ds/${name}`;
@@ -81,20 +80,9 @@ export const button = (label, { action, variant = "primary", iconName = "" } = {
     ${iconName ? icon(iconName, 24) : ""}${label}
   </button>`;
 
-/**
- * "Cancel and go back to [avatar] [merchant]" — returns the buyer to the
- * merchant (wired by `wirePage`). The merchant's 24px avatar sits before its name.
- */
-export function cancelLink(extraClass = "") {
-  const merchant = getState().order?.merchant;
-  const who = merchant
-    ? `${merchantLogo(merchant, "ds-link__avatar")}<span>${esc(merchant.name)}</span>`
-    : `<span>${esc(merchantName())}</span>`;
-  return `
-  <button class="ds-link ds-link--merchant ${extraClass}" data-ds-cancel>
-    <span>Cancel and go back to</span>${who}
-  </button>`;
-}
+/** "Cancel and go back to [merchant]" — returns the buyer to the merchant (wired by `wirePage`). */
+export const cancelLink = (extraClass = "") =>
+  `<button class="ds-link ${extraClass}" data-ds-cancel>Cancel and go back to ${esc(merchantName())}</button>`;
 
 /** "← Back to …" under a form. */
 export const backLink = (label, route) =>

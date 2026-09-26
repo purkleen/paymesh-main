@@ -60,6 +60,9 @@ export const SAVED_CARDS = [
 /** Seconds shown on the "resend code" countdown. */
 export const RESEND_SECONDS = 26;
 
+/** Seconds the countdown restarts from after "Resend code" is pressed. */
+export const RESEND_AGAIN_SECONDS = 30;
+
 /** How long the simulated authorization takes, in ms. */
 export const AUTHORIZE_MS = 1600;
 
