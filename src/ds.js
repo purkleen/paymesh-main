@@ -11,6 +11,7 @@
 import { logo, flag } from "./icons.js";
 import { esc, merchantName } from "./ui.js";
 import { COUNTRIES, countryByName } from "./config.js";
+import { getState } from "./store.js";
 
 /** Path to a design-system asset. */
 export const asset = (name) => `assets/ds/${name}`;
@@ -33,8 +34,8 @@ export const footerInfo = () => `
     <div class="ds-footer__text">
       <p class="ds-footer__line">
         By creating an account you agree to our
-        <a href="#" data-noop>Terms of Service</a>${icon("external", 16)}
-        and <a href="#" data-noop>Privacy Policy</a>${icon("external", 16)}.
+        <a href="#" data-noop>Terms of Service</a>
+        and <a href="#" data-noop>Privacy Policy</a>.
       </p>
       <p class="ds-footer__line">
         Paymesh LTDA | Av. Presidente Juscelino Kubitschek | n° 1.545, 6° Floor |
@@ -53,7 +54,7 @@ export function page({ content, cancel = true, widget = false, center = false })
   <div class="ds-page">
     <header class="ds-nav">
       <span class="logo">${logo()}</span>
-      ${cancel ? cancelLink(`Cancel and go back to ${esc(merchantName())}`) : ""}
+      ${cancel ? cancelLink() : ""}
     </header>
     <main class="ds-main">
       <div class="ds-container ${widget ? "ds-container--widget" : ""} ${center ? "ds-container--center" : ""}">
@@ -80,9 +81,20 @@ export const button = (label, { action, variant = "primary", iconName = "" } = {
     ${iconName ? icon(iconName, 24) : ""}${label}
   </button>`;
 
-/** Any link that returns the buyer to the merchant (wired by `wirePage`). */
-export const cancelLink = (label, extraClass = "") =>
-  `<button class="ds-link ${extraClass}" data-ds-cancel>${label}</button>`;
+/**
+ * "Cancel and go back to [avatar] [merchant]" — returns the buyer to the
+ * merchant (wired by `wirePage`). The merchant's 24px avatar sits before its name.
+ */
+export function cancelLink(extraClass = "") {
+  const merchant = getState().order?.merchant;
+  const who = merchant
+    ? `${merchantLogo(merchant, "ds-link__avatar")}<span>${esc(merchant.name)}</span>`
+    : `<span>${esc(merchantName())}</span>`;
+  return `
+  <button class="ds-link ds-link--merchant ${extraClass}" data-ds-cancel>
+    <span>Cancel and go back to</span>${who}
+  </button>`;
+}
 
 /** "← Back to …" under a form. */
 export const backLink = (label, route) =>

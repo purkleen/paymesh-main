@@ -19,8 +19,6 @@ import {
   checkbox,
   asset,
   icon,
-  busy,
-  isBusy,
   merchantLogo,
   merchantPayment,
   paymentValue,
@@ -76,8 +74,9 @@ export const welcome = {
         <img class="ds-art" src="${asset("success-check.png")}" alt="" />
         <div class="ds-stack ds-stack--24" style="align-self:stretch">
           <h1 class="ds-h1">Welcome, ${esc(session.firstName || "there")}!<br />Let's finish the payment</h1>
-          ${order ? merchantPayment(order.merchant, money(order.amount), tokens(order.amount)) : ""}
-          ${button("Continue with payment", { action: "continue" })}
+          ${button(order ? `Continue with ${esc(order.merchant.name)} payment` : "Continue with payment", {
+            action: "continue",
+          })}
         </div>
       </div>`,
     });
@@ -486,7 +485,10 @@ export const authorize = {
               </span>
             </div>
             ${paymentValue(money(order.amount), tokens(order.amount))}
-            ${button("To payment", { action: "authorize" })}
+            <button class="ds-btn ds-btn--primary ds-auth" data-action="authorize">
+              <span class="ds-auth__label">To payment</span>
+            </button>
+            <span class="sr-only" aria-live="polite" data-auth-status></span>
           </div>
         </section>
         ${backLink("Back to Payment Method", "#/v2/payment")}
@@ -497,17 +499,126 @@ export const authorize = {
   mount(root) {
     wirePage(root, backToMerchant);
     const btn = root.querySelector('[data-action="authorize"]');
+    const status = root.querySelector("[data-auth-status]");
     let timer = null;
+    let state = "idle"; // idle → authorizing → ready
 
-    btn?.addEventListener("click", () => {
-      if (isBusy(btn)) return;
-      busy(btn, "Authorizing");
-      timer = setTimeout(v2.transferAuthorized, AUTHORIZE_MS);
+    revealTransfer(root.querySelector(".ds-transfer"));
+
+    btn?.addEventListener("click", async () => {
+      if (state === "ready") return v2.transferAuthorized();
+      if (state !== "idle") return;
+      state = "authorizing";
+      status.textContent = "Authorizing the transfer…";
+      await authorizeSequence(btn, () => new Promise((done) => (timer = setTimeout(done, AUTHORIZE_MS))));
+      state = "ready";
+      status.textContent = "Transfer authorized. Continue to finish your order.";
     });
 
     return { destroy: () => clearTimeout(timer) };
   },
 };
+
+/* The "To payment" → "Authorizing" → "Continue" button choreography.
+   Every piece sits in the same grid cell at the button's centre, so each step
+   only has to move things sideways from there. */
+
+const reducedMotion = () => matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+const play = (el, frames, ms, easing = "cubic-bezier(.2, .7, .2, 1)") =>
+  el.animate(frames, { duration: reducedMotion() ? 1 : ms, easing, fill: "forwards" }).finished;
+
+/**
+ * Paymesh wallet → merchant: both ends start together at the centre of the
+ * row and slide out to their places; the arrow appears once they've landed.
+ */
+async function revealTransfer(row) {
+  if (!row) return;
+  const [from, to] = row.querySelectorAll(".ds-transfer__end");
+  const arrow = row.querySelector(":scope > img");
+  const centre = row.getBoundingClientRect().left + row.offsetWidth / 2;
+  const offset = (el) => {
+    const r = el.getBoundingClientRect();
+    return centre - (r.left + r.width / 2);
+  };
+  const fromX = offset(from);
+  const toX = offset(to);
+  arrow.style.opacity = "0";
+
+  await Promise.all([
+    play(from, [{ transform: `translateX(${fromX}px)`, opacity: 0 }, { transform: "translateX(0)", opacity: 1 }], 520),
+    play(to, [{ transform: `translateX(${toX}px)`, opacity: 0 }, { transform: "translateX(0)", opacity: 1 }], 520),
+  ]);
+  await play(arrow, [{ transform: "translateX(-8px)", opacity: 0 }, { transform: "translateX(0)", opacity: 1 }], 260);
+}
+
+const collapse = { clipPath: "inset(0 50% 0 50%)", opacity: 0 };
+const open = { clipPath: "inset(0 0 0 0)", opacity: 1 };
+
+/**
+ * 1. the label collapses into the centre
+ * 2. the spinner slides up from the bottom of the button and spins once
+ * 3. "Authorizing" rolls out from under the spinner to the right while the
+ *    spinner moves left and keeps spinning until `authorize()` resolves
+ * 4. label and spinner collapse back into the centre and "Continue" opens
+ */
+async function authorizeSequence(btn, authorize) {
+  const label = btn.querySelector(".ds-auth__label");
+  const spinner = document.createElement("span");
+  spinner.className = "ds-auth__spinner";
+  spinner.innerHTML = `<img src="${asset("spinner.png")}" alt="" />`;
+  const working = document.createElement("span");
+  working.className = "ds-auth__label";
+  working.textContent = "Authorizing";
+  spinner.style.opacity = working.style.opacity = "0";
+  btn.append(working, spinner);
+  const wheel = spinner.firstElementChild;
+
+  await play(label, [open, collapse], 220);
+  label.remove();
+
+  await play(spinner, [{ transform: "translateY(40px)", opacity: 0 }, { transform: "translateY(0)", opacity: 1 }], 280);
+  await play(wheel, [{ transform: "rotate(0deg)" }, { transform: "rotate(360deg)" }], 560, "ease-in-out");
+
+  // Final layout: [spinner] 8px [Authorizing], centred as a pair.
+  const gap = 8;
+  const width = working.offsetWidth;
+  const spinnerX = -(width + gap) / 2;
+  const labelX = (24 + gap) / 2;
+  const spinning = wheel.animate([{ transform: "rotate(0deg)" }, { transform: "rotate(360deg)" }], {
+    duration: 800,
+    iterations: Infinity,
+  });
+  await Promise.all([
+    play(spinner, [{ transform: "translateX(0)" }, { transform: `translateX(${spinnerX}px)` }], 420),
+    // Starts tucked behind the spinner (right edge at the centre, clipped away)
+    // and is revealed from its right edge as it rolls out.
+    play(
+      working,
+      [
+        { transform: `translateX(${-width / 2}px)`, clipPath: "inset(0 0 0 100%)", opacity: 0 },
+        { transform: `translateX(${labelX}px)`, clipPath: "inset(0 0 0 0)", opacity: 1 },
+      ],
+      420
+    ),
+  ]);
+
+  await authorize();
+
+  await Promise.all([
+    play(spinner, [{ transform: `translateX(${spinnerX}px) scale(1)`, opacity: 1 }, { transform: "translateX(0) scale(0)", opacity: 0 }], 260),
+    play(working, [{ transform: `translateX(${labelX}px)`, ...open }, { transform: "translateX(0)", ...collapse }], 260),
+  ]);
+  spinning.cancel();
+  spinner.remove();
+  working.remove();
+
+  const next = document.createElement("span");
+  next.className = "ds-auth__label";
+  next.textContent = "Continue";
+  btn.append(next);
+  await play(next, [collapse, open], 240);
+}
 
 /* -------------------------------------------------------------------------
    Order complete — the receipt

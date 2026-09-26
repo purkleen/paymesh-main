@@ -44,7 +44,6 @@ import {
   postcodeTerm,
   startResendCountdown,
   wireOtpInputs,
-  merchantName,
 } from "../../ui.js";
 import { getState } from "../../store.js";
 import { v2, googleRequested, backToMerchant } from "../../flow.js";
@@ -57,7 +56,7 @@ const action = (label, name) => `
     ${formAlert()}
   </div>`;
 
-const underCancel = () => cancelLink(`Cancel and go back to ${esc(merchantName())}`, "ds-link--block");
+const underCancel = () => cancelLink("ds-link--block");
 
 const hasFullName = (v) => Boolean(v) && v.trim().split(/\s+/).length >= 2;
 
@@ -101,7 +100,7 @@ export const signup = {
           })}
           ${action("Create account", "create")}
           <div class="ds-or">or</div>
-          <div class="ds-stack ds-stack--24">
+          <div class="ds-stack ds-stack--16 ds-social">
             ${button("Sign up with Google", { action: "google", variant: "secondary", iconName: "google" })}
             ${button("Sign up with Apple", { action: "apple", variant: "secondary", iconName: "apple" })}
           </div>

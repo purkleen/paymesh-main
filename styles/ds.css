@@ -148,7 +148,6 @@
 .ds-footer__text { display: flex; flex-direction: column; gap: 6px; }
 .ds-footer__line { margin: 0; font: var(--text-xs); color: var(--text-primary); }
 .ds-footer__line a { color: inherit; }
-.ds-footer__line img { display: inline-block; vertical-align: -3px; margin-left: 2px; }
 
 /* Payment method icon — 34×24 card-scheme badge */
 .ds-method {
@@ -191,6 +190,13 @@ img.ds-method { border: 0; background: none; }
 .ds-link:hover { opacity: .7; }
 .ds-link--strong { font: var(--link-m-semibold); }
 .ds-link--s { font: var(--text-s); }
+
+/* Cancel link with the merchant's avatar: the words are underlined, the image isn't */
+.ds-link--merchant { display: inline-flex; align-items: center; gap: var(--spacing-8); text-decoration: none; }
+.ds-link--merchant > span { text-decoration: underline; text-underline-offset: 3px; }
+.ds-link--merchant.ds-link--block { display: flex; width: fit-content; }
+.ds-link__avatar { width: 24px; height: 24px; flex: 0 0 auto; border-radius: var(--radius-full); object-fit: cover; }
+span.ds-link__avatar { font-size: 11px; }
 .ds-link--block { display: block; margin: 0 auto; text-align: center; }
 
 /* ==========================================================================
@@ -241,6 +247,19 @@ img.ds-method { border: 0; background: none; }
 /* Spinner/White — the 24px ring from the design system, turning */
 .ds-spinner { width: 24px; height: 24px; animation: ds-spin .8s linear infinite; }
 @keyframes ds-spin { to { transform: rotate(360deg); } }
+
+/* Authorize button — label, spinner and "Continue" stacked in one centred cell
+   and animated by checkout.js#authorizeSequence */
+.ds-btn.ds-auth { display: grid; place-items: center; overflow: hidden; }
+.ds-auth > * { grid-area: 1 / 1; }
+.ds-auth__label { white-space: nowrap; }
+.ds-auth__spinner { position: relative; z-index: 1; width: 24px; height: 24px; }
+.ds-auth__spinner img { display: block; width: 24px; height: 24px; }
+
+/* Social sign-up buttons: label centred, provider logo pinned 16px from the left */
+.ds-social .ds-btn { position: relative; }
+/* left is measured inside the 1px border, so subtract it to land 16px from the outer edge */
+.ds-social .ds-btn img { position: absolute; left: calc(var(--spacing-16) - 1px); top: 50%; transform: translateY(-50%); }
 
 /* Or Divider */
 .ds-or {
@@ -312,6 +331,7 @@ img.ds-method { border: 0; background: none; }
 }
 .ds-input__btn:hover { background: var(--surface-secondary); }
 .ds-input__btn img { width: 24px; height: 24px; }
+.ds-input__btn[data-clear] img { width: 20px; height: 20px; }
 
 .ds-hint { margin: 0; font: var(--text-s); color: var(--text-primary); }
 
