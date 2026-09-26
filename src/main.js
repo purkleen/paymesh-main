@@ -3,7 +3,7 @@
 import { register, start, render } from "./router.js";
 import { wireCommon } from "./ui.js";
 import { subscribe, setScenario, getState } from "./store.js";
-import { SCENARIOS } from "./config.js";
+import { ACTIVE_SCENARIOS } from "./config.js";
 import { mountDevPanel } from "./devpanel.js";
 
 import merchant from "./screens/merchant.js";
@@ -63,7 +63,7 @@ register("#/404", {
 // journeys, so a review link can open exactly the flow being discussed.
 const requested = new URLSearchParams(location.search).get("journey");
 if (requested) {
-  const scenario = SCENARIOS.find(
+  const scenario = ACTIVE_SCENARIOS.find(
     (s) => s.id === requested || String(s.number) === requested
   );
   // A refresh mid-journey keeps its state; only a new journey or a bare link re-seeds.

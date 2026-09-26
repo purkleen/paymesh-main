@@ -6,7 +6,7 @@
  */
 
 import {
-  SCENARIOS,
+  ACTIVE_SCENARIOS,
   DEFAULT_SCENARIO,
   RETURNING_USER,
   ORDER,
@@ -19,7 +19,9 @@ const KEY = "paymesh.prototype.v1";
 const listeners = new Set();
 
 function blankState(scenarioId) {
-  const scenario = SCENARIOS.find((s) => s.id === scenarioId) || SCENARIOS[0];
+  const scenario =
+    ACTIVE_SCENARIOS.find((s) => s.id === scenarioId) ||
+    ACTIVE_SCENARIOS.find((s) => s.id === DEFAULT_SCENARIO);
   const seed = scenario.seed;
 
   return {
@@ -71,7 +73,9 @@ let state = load() || blankState(DEFAULT_SCENARIO);
 function load() {
   try {
     const raw = sessionStorage.getItem(KEY);
-    return raw ? JSON.parse(raw) : null;
+    const saved = raw ? JSON.parse(raw) : null;
+    // A session left in a journey that has since been switched off starts over.
+    return saved && ACTIVE_SCENARIOS.some((s) => s.id === saved.scenarioId) ? saved : null;
   } catch {
     return null;
   }
@@ -116,7 +120,7 @@ export function resetScenario() {
 }
 
 export function currentScenario() {
-  return SCENARIOS.find((s) => s.id === state.scenarioId) || SCENARIOS[0];
+  return ACTIVE_SCENARIOS.find((s) => s.id === state.scenarioId) || ACTIVE_SCENARIOS[0];
 }
 
 /** True when the wallet balance alone can settle the order. */

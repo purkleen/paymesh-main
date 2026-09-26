@@ -4,7 +4,7 @@
  * Mirrors the structure of the checkout used as a backdrop in the Figma file.
  */
 
-import { MERCHANT, ORDER, SCENARIOS } from "../config.js";
+import { MERCHANT, ORDER, ACTIVE_SCENARIOS } from "../config.js";
 import { getState, setScenario } from "../store.js";
 import { money, esc, merchantMark } from "../ui.js";
 import { mark, icons, appleLogo, schemes } from "../icons.js";
@@ -90,14 +90,14 @@ export default {
             <p class="small muted" style="margin:0 0 8px">Prototype journey</p>
             <div class="select-wrap">
               <select class="input" id="scenario-select" aria-label="Choose a prototype journey">
-                ${SCENARIOS.map(
+                ${ACTIVE_SCENARIOS.map(
                   (s) =>
                     `<option value="${s.id}" ${s.id === scenarioId ? "selected" : ""}>${s.number}. ${esc(s.title)}</option>`
                 ).join("")}
               </select>
             </div>
             <p class="small muted" style="margin-top:8px">
-              ${esc(SCENARIOS.find((s) => s.id === scenarioId)?.blurb || "")}
+              ${esc(ACTIVE_SCENARIOS.find((s) => s.id === scenarioId)?.blurb || "")}
             </p>
           </div>
         </aside>

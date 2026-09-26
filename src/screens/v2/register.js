@@ -46,8 +46,7 @@ import {
   wireOtpInputs,
   merchantName,
 } from "../../ui.js";
-import { getState, setScenario } from "../../store.js";
-import { go } from "../../router.js";
+import { getState } from "../../store.js";
 import { v2, googleRequested, backToMerchant } from "../../flow.js";
 import { RESEND_SECONDS, ACCOUNT_MS, IDENTITY_MS } from "../../config.js";
 
@@ -136,11 +135,10 @@ export const signup = {
       showFormError(root, "Sign up with Apple isn't part of this prototype — use your email or Google.")
     );
 
-    // An existing customer belongs in the log-in journey.
-    root.querySelector('[data-action="login"]').addEventListener("click", () => {
-      setScenario("logged-out");
-      go("#/login");
-    });
+    // The log-in journeys are switched off for now (see DISABLED_SCENARIOS in config.js).
+    root.querySelector('[data-action="login"]').addEventListener("click", () =>
+      showFormError(root, "Logging back in isn't part of this prototype yet — sign up to continue.")
+    );
   },
 };
 

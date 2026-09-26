@@ -3,7 +3,7 @@
  * back through the merchant page. Hidden entirely with ?dev=0.
  */
 
-import { SCENARIOS } from "./config.js";
+import { ACTIVE_SCENARIOS } from "./config.js";
 import { getState, setScenario, resetScenario, currentScenario } from "./store.js";
 import { go } from "./router.js";
 import { esc } from "./ui.js";
@@ -24,7 +24,7 @@ export function mountDevPanel(host) {
     host.innerHTML = `
       <div class="dev__panel" ${open ? "" : "hidden"}>
         <p class="dev__title">Journeys</p>
-        ${SCENARIOS.map(
+        ${ACTIVE_SCENARIOS.map(
           (s) => `
           <button class="dev__item" data-scenario="${s.id}" aria-current="${s.id === scenarioId}">
             <span class="dev__num">${s.number}.</span>${esc(s.title)}
@@ -37,14 +37,14 @@ export function mountDevPanel(host) {
       </div>
       <button class="dev__toggle" data-act="toggle" aria-expanded="${open}">
         <span class="dev__dot"></span>
-        Journey ${currentScenario().number} of ${SCENARIOS.length}
+        Journey ${currentScenario().number}
       </button>`;
   };
 
   host.addEventListener("click", (e) => {
     const scenarioBtn = e.target.closest("[data-scenario]");
     if (scenarioBtn) {
-      const scenario = SCENARIOS.find((s) => s.id === scenarioBtn.dataset.scenario);
+      const scenario = ACTIVE_SCENARIOS.find((s) => s.id === scenarioBtn.dataset.scenario);
       setScenario(scenario.id);
       go(scenario.fromMerchant ? "#/" : scenario.entry);
       paint();

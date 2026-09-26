@@ -242,4 +242,23 @@ export const ACCOUNT_MS = 900;
 /** How long the simulated Persona identity check takes, in ms. */
 export const IDENTITY_MS = 1600;
 
-export const DEFAULT_SCENARIO = "logged-in";
+/**
+ * Journeys switched off for now. Their screens and code stay in place; they
+ * are only hidden from the journey pickers and ignored in ?journey= links.
+ * Remove an id here to bring that journey back.
+ */
+const DISABLED_SCENARIOS = new Set([
+  "direct-login",
+  "logged-in",
+  "logged-out",
+  "google-login",
+  "register",
+  "register-google",
+  "auth-error",
+  "top-up",
+]);
+
+/** The journeys offered in the prototype. */
+export const ACTIVE_SCENARIOS = SCENARIOS.filter((s) => !DISABLED_SCENARIOS.has(s.id));
+
+export const DEFAULT_SCENARIO = "register-v2";

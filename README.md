@@ -23,11 +23,15 @@ No build step, no dependencies — plain HTML, CSS and ES modules.
 | 8 | Logged in, balance falls short | payment → pick a saved card (or add one) to top up → authorize → complete |
 | 9 | Registration — new version | sign up → create account → verify email → your details → search for address → confirm address → verify identity → welcome → add card → payment → complete order → order complete |
 
-Switch journeys from the dropdown on the merchant page, from the **Journey n of 9**
+> **Journeys 1–8 are switched off for now.** Their screens and code are kept,
+> but only journey 9 is offered. To bring one back, remove its id from
+> `DISABLED_SCENARIOS` in `src/config.js`.
+
+Switch journeys from the dropdown on the merchant page, from the **Journey n**
 pill in the bottom-left corner, or with a query string:
 
 ```
-/?journey=5
+/?journey=9
 ```
 
 Add `?dev=0` to hide the prototype pill for a clean walkthrough or screen recording.
