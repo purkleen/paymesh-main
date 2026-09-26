@@ -36,6 +36,21 @@ pill in the bottom-left corner, or with a query string:
 
 Add `?dev=0` to hide the prototype pill for a clean walkthrough or screen recording.
 
+## Password
+
+A password screen sits in front of the prototype (`src/screens/gate.js`).
+Each browser is asked once; after that the unlock is remembered in
+localStorage. The password is checked in the browser against a SHA-256 hash
+(`ACCESS_PASSWORD_SHA256` in `src/config.js`), so it isn't readable in the
+source — but it's a soft gate for sharing, not real security. To change it:
+
+```bash
+printf '%s' 'new-password' | shasum -a 256
+```
+
+and paste the result into `ACCESS_PASSWORD_SHA256`. For real protection, turn
+on Vercel's Deployment Protection for the project.
+
 ## Running it locally
 
 Any static server will do — ES modules will not load over `file://`. The

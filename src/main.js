@@ -17,6 +17,7 @@ import addCard from "./screens/addcard.js";
 import authorize from "./screens/authorize.js";
 import success from "./screens/success.js";
 import appHome from "./screens/app.js";
+import { requirePassword } from "./screens/gate.js";
 import * as reg2 from "./screens/v2/register.js";
 import * as pay2 from "./screens/v2/checkout.js";
 
@@ -75,6 +76,9 @@ if (requested) {
 
 const root = document.getElementById("root");
 wireCommon(root);
+
+// The password screen comes first; nothing else renders until it's passed.
+await requirePassword(root);
 
 const repaintDevPanel = mountDevPanel(document.getElementById("devbar"));
 if (repaintDevPanel) subscribe(repaintDevPanel);

@@ -57,6 +57,13 @@ export const SAVED_CARDS = [
   { id: "visa-8842", scheme: "visa", label: "Visa ending in 8842", expiry: "Expiry 11/2029" },
 ];
 
+/**
+ * SHA-256 of the password on the screen in front of the prototype
+ * (src/screens/gate.js). To change the password:
+ *   printf '%s' 'new-password' | shasum -a 256
+ */
+export const ACCESS_PASSWORD_SHA256 = "342481c753c76cd84267e985d853700b58c5cfaeda110774979fb590c21f11d6";
+
 /** Seconds shown on the "resend code" countdown. */
 export const RESEND_SECONDS = 26;
 
