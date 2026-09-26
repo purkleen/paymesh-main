@@ -411,8 +411,6 @@ export function wireCountryFields(root) {
     if (countrySelect) countrySelect.value = c.name;
     if (dialSelect) dialSelect.value = c.name;
     if (dial) dial.innerHTML = `${flag(c.iso)} ${c.dial}`;
-    // Fields that show an example number keep it in the selected country's format.
-    if (phone && "example" in phone.dataset) phone.placeholder = c.phone.example;
     if (postcodeLabel) {
       postcodeLabel.innerHTML = `Enter ${esc(c.postcode)} to find address<span class="field__req">*</span>`;
     }

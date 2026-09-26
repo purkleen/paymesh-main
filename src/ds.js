@@ -209,7 +209,7 @@ export function phoneInput({ value = "", country } = {}) {
       </span>
       <div class="ds-input">
         <input id="f-phone" name="phone" type="tel" inputmode="tel" autocomplete="tel-national"
-               value="${esc(value)}" placeholder="${esc(c.phone.example)}" data-example />
+               value="${esc(value)}" />
       </div>
     </div>
     <p class="field__error" hidden></p>
