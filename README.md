@@ -38,13 +38,16 @@ Add `?dev=0` to hide the prototype pill for a clean walkthrough or screen record
 
 ## Running it locally
 
-Any static server will do — ES modules will not load over `file://`.
+Any static server will do — ES modules will not load over `file://`. The
+included one turns off browser caching, so edits show up on a normal refresh:
 
 ```bash
-python3 -m http.server 4321
+python3 serve.py
 ```
 
-Then open http://localhost:4321.
+Then open http://localhost:4321 (`python3 serve.py 4322` for another port).
+Plain `python3 -m http.server` works too, but the browser may keep serving old
+JavaScript after a change until you hard-refresh (Cmd+Shift+R).
 
 ## Deploying to Vercel
 
