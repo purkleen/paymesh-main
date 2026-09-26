@@ -8,6 +8,7 @@
 import {
   shell,
   startResendCountdown,
+  wireOtpInputs,
   esc,
   cancelLink,
   merchantName,
@@ -63,30 +64,7 @@ export default {
     const group = root.querySelector("[data-otp-group]");
     const inputs = [...root.querySelectorAll("[data-otp]")];
     const stopCountdown = startResendCountdown(root.querySelector("[data-resend]"), RESEND_SECONDS);
-
-    const code = () => inputs.map((i) => i.value).join("");
-
-    inputs.forEach((input, i) => {
-      input.addEventListener("input", () => {
-        input.value = input.value.replace(/\D/g, "").slice(0, 1);
-        group.dataset.invalid = "false";
-        clearFormError(root);
-        if (input.value && i < inputs.length - 1) inputs[i + 1].focus();
-        if (code().length === 6) verify();
-      });
-      input.addEventListener("keydown", (e) => {
-        if (e.key === "Backspace" && !input.value && i > 0) inputs[i - 1].focus();
-        if (e.key === "Enter") verify();
-      });
-      input.addEventListener("paste", (e) => {
-        const text = (e.clipboardData || window.clipboardData).getData("text").replace(/\D/g, "");
-        if (!text) return;
-        e.preventDefault();
-        text.split("").slice(0, 6).forEach((ch, idx) => (inputs[idx].value = ch));
-        inputs[Math.min(text.length, 5)].focus();
-        if (code().length === 6) verify();
-      });
-    });
+    const code = wireOtpInputs(root, verify);
 
     // Any six digits are accepted — this is a prototype, not a real check.
     function verify() {

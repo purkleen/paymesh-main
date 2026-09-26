@@ -2,7 +2,8 @@
 
 A clickable prototype of the Paymesh login, registration and payment flows,
 built from the Figma source file. It covers the seven journeys drawn on the
-canvas plus a top-up flow, end to end, with real form behaviour: validation,
+canvas, a top-up flow and the redesigned registration, end to end, with real
+form behaviour: validation,
 one-time codes,
 password strength, card formatting, loading states and error recovery.
 
@@ -20,8 +21,9 @@ No build step, no dependencies — plain HTML, CSS and ES modules.
 | 6 | Registration via Google, then add a card | sign up → Google → verify → details → account ready → payment → add card → … |
 | 7 | Error while authorizing | payment → *Pay* fails with a mismatch error → retry succeeds |
 | 8 | Logged in, balance falls short | payment → pick a saved card (or add one) to top up → authorize → complete |
+| 9 | Registration — new version | sign up → create account → verify email → your details → search for address → confirm address → verify identity → welcome → add card → payment → complete order → order complete |
 
-Switch journeys from the dropdown on the merchant page, from the **Journey n of 8**
+Switch journeys from the dropdown on the merchant page, from the **Journey n of 9**
 pill in the bottom-left corner, or with a query string:
 
 ```
@@ -61,19 +63,53 @@ which is expected and harmless.
 
 ```
 index.html            page shell, fonts, entry point
-styles/app.css        design tokens + every component style
+styles/app.css        design tokens + every component style (journeys 1–8)
+styles/ds.css         Paymesh Design System tokens and components (journey 9)
 src/
   main.js             route table and boot
   router.js           hash router
   store.js            prototype state (mirrored into sessionStorage)
-  flow.js             journey transitions — the seven flows live here
+  flow.js             journey transitions — every flow lives here
   config.js           demo data: merchant, order, users, cards, scenarios
   ui.js               page chrome, form controls, formatting helpers
+  ds.js               design-system component builders (journey 9)
   icons.js            Paymesh logo (exported from Figma) and UI glyphs
   devpanel.js         the journey switcher
   screens/            one module per screen
+  screens/v2/         the redesigned registration (register.js, checkout.js)
 assets/               logo, 3D check illustration, split-login artwork
+assets/ds/            icons and illustrations exported from the design system
 ```
+
+## The design system (journey 9)
+
+Journey 9 is built from the Figma page **Registration new version** in the
+*Paymesh Design System* file, and uses the file's variables and components
+rather than one-off styles:
+
+- **Tokens** — `styles/ds.css` declares the Figma variables as CSS custom
+  properties with matching names: `text/primary` → `--text-primary`,
+  `action/primary/default` → `--action-primary-default`, `spacing/16` →
+  `--spacing-16`, `radius/xl` → `--radius-xl`, and the type styles
+  (`Heading/3XL/Bold` → `--heading-3xl`, `Button/L` → `--button-l`, …).
+  Component styles only reference these tokens.
+- **Components** — `src/ds.js` has one builder per Figma component: `page`
+  (navigation + Main Content + footer-info), `button`, `input`, `select`,
+  `phoneInput` (Phone number), `otp` (OTP-input), `checkbox`, `merchantLogo`,
+  `paymentValue`, `merchantPayment`. The payment widget, radio group item,
+  payment list item, info box and confirmation list item are styled in
+  `ds.css` under the same names.
+- **Assets** — icons and illustrations are the design system's own exports
+  (`assets/ds/`), not redrawn.
+
+Validation reuses `ui.js` (`showError`, `formAlert`, …), so the
+never-disabled-button pattern below applies here too.
+
+Where the Figma frames are placeholders or inconsistent, the prototype makes
+a call: the address form adds the postcode field the design left out (its
+"County" field showed a postcode), "Remaining balance" shows the real amount
+due, the receipt's button returns to the merchant, and the checkbox's checked
+state uses the brand colour rather than the component's leftover purple.
 
 ### Where to change things
 

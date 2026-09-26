@@ -2,7 +2,7 @@
 
 import { register, start, render } from "./router.js";
 import { wireCommon } from "./ui.js";
-import { subscribe, setScenario } from "./store.js";
+import { subscribe, setScenario, getState } from "./store.js";
 import { SCENARIOS } from "./config.js";
 import { mountDevPanel } from "./devpanel.js";
 
@@ -17,6 +17,8 @@ import addCard from "./screens/addcard.js";
 import authorize from "./screens/authorize.js";
 import success from "./screens/success.js";
 import appHome from "./screens/app.js";
+import * as reg2 from "./screens/v2/register.js";
+import * as pay2 from "./screens/v2/checkout.js";
 
 register("#/", merchant);
 register("#/login", login);
@@ -32,6 +34,20 @@ register("#/add-card", addCard);
 register("#/authorize", authorize);
 register("#/success", success);
 register("#/app", appHome);
+
+// Registration — new version (journey 9), built on the design system
+register("#/v2/signup", reg2.signup);
+register("#/v2/account", reg2.account);
+register("#/v2/verify", reg2.verify);
+register("#/v2/contact", reg2.contact);
+register("#/v2/address", reg2.addressSearch);
+register("#/v2/address/confirm", reg2.addressConfirm);
+register("#/v2/identity", reg2.identity);
+register("#/v2/welcome", pay2.welcome);
+register("#/v2/add-card", pay2.addCardScreen);
+register("#/v2/payment", pay2.payment);
+register("#/v2/authorize", pay2.authorize);
+register("#/v2/success", pay2.success);
 register("#/404", {
   render: () => `
     <div class="page page--center">
@@ -50,7 +66,8 @@ if (requested) {
   const scenario = SCENARIOS.find(
     (s) => s.id === requested || String(s.number) === requested
   );
-  if (scenario) {
+  // A refresh mid-journey keeps its state; only a new journey or a bare link re-seeds.
+  if (scenario && (scenario.id !== getState().scenarioId || !location.hash)) {
     setScenario(scenario.id);
     if (!location.hash) location.hash = scenario.fromMerchant ? "#/" : scenario.entry;
   }

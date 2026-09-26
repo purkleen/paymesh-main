@@ -103,8 +103,9 @@ export const schemes = {
    Flags — 3:2, drawn simply at the 22×16px they render at
    -------------------------------------------------------------------------- */
 
+// `slice` lets the same artwork fill the round 24px flag of the design system.
 const flagSvg = (body) =>
-  `<svg class="flag" viewBox="0 0 60 40" aria-hidden="true">${body}</svg>`;
+  `<svg class="flag" viewBox="0 0 60 40" preserveAspectRatio="xMidYMid slice" aria-hidden="true">${body}</svg>`;
 
 const vertical = (a, b, c) =>
   flagSvg(

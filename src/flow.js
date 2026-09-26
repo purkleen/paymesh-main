@@ -32,8 +32,13 @@ export function googleAccountChosen() {
 }
 
 export function googleConfirmed(account) {
-  update("session", { email: account.email, name: account.name, viaGoogle: true });
-  go("#/otp");
+  update("session", {
+    email: account.email,
+    name: account.name,
+    firstName: account.name.split(" ")[0],
+    viaGoogle: true,
+  });
+  go(currentScenario().id === "register-v2" ? "#/v2/verify" : "#/otp");
 }
 
 /** Sign-up screen: the buyer submitted an email we don't recognise. */
@@ -94,3 +99,77 @@ export function transferAuthorized() {
 export function backToMerchant() {
   go("#/");
 }
+
+/* --------------------------------------------------------------------------
+   Registration — new version (journey 9, Figma page "Registration new version")
+   sign up → create account → verify email → contact details → address
+   → verify identity → welcome → add card → payment → complete order → done
+   -------------------------------------------------------------------------- */
+
+export const v2 = {
+  emailSubmitted(email) {
+    update("session", { email });
+    update("flow", { registering: true });
+    go("#/v2/account");
+  },
+
+  accountCreated({ name }) {
+    update("session", { name, firstName: name.split(" ")[0] || name });
+    go("#/v2/verify");
+  },
+
+  codeVerified() {
+    update("session", { verified: true, loggedIn: true });
+    go("#/v2/contact");
+  },
+
+  contactSubmitted({ name, phone, country }) {
+    update("session", { name, firstName: name.split(" ")[0] || name, phone, country });
+    go("#/v2/address");
+  },
+
+  /** A lookup result was picked — confirm it on the address form. */
+  addressFound(address) {
+    update("flow", { draft: { ...getState().flow.draft, address } });
+    go("#/v2/address/confirm");
+  },
+
+  addressManual() {
+    update("flow", { draft: { ...getState().flow.draft, address: null } });
+    go("#/v2/address/confirm");
+  },
+
+  addressConfirmed(address) {
+    update("wallet", { address });
+    go("#/v2/identity");
+  },
+
+  identityVerified() {
+    update("wallet", { registered: true });
+    update("flow", { registering: false });
+    go("#/v2/welcome");
+  },
+
+  /** A brand-new wallet has no card yet, so it is added before the payment sheet. */
+  continueToPayment() {
+    go(getState().wallet.cards.length ? "#/v2/payment" : "#/v2/add-card");
+  },
+
+  addCardRequested() {
+    go("#/v2/add-card");
+  },
+
+  cardAdded() {
+    go("#/v2/payment");
+  },
+
+  paymentConfirmed() {
+    go("#/v2/authorize");
+  },
+
+  transferAuthorized() {
+    const id = Array.from({ length: 24 }, () => Math.floor(Math.random() * 10)).join("");
+    update("flow", { receipt: { id, at: Date.now() } });
+    go("#/v2/success");
+  },
+};

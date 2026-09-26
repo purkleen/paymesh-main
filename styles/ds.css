@@ -1,0 +1,573 @@
+/* ==========================================================================
+   Paymesh Design System — tokens and components
+   Token names mirror the Figma variables (text/primary → --text-primary,
+   spacing/16 → --spacing-16, Heading/3XL/Bold → --heading-3xl, …).
+   Components carry the Figma component name in a comment and use a ds- prefix
+   so they can sit alongside the original prototype styles in app.css.
+   ========================================================================== */
+
+:root {
+  /* Colour — text */
+  --text-primary: #1b1b1e;
+  --text-secondary: #4f4f58;
+  --text-tertiary: #72727a;
+  --text-default: #0c0e10;
+  --text-inverse: #fafafb;
+  --text-brand: #503ff1;
+  --text-muted: #6e6e6e;
+
+  /* Colour — action, icon, border, surface */
+  --action-primary-default: #503ff1;
+  --action-primary-hover: #4331d4;
+  --icon-primary: #26262a;
+  --border-default: #bdbdc1;
+  --border-subtle: #e5e5e7;
+  --border-focus: #818dfe;
+  --border-danger: #fc0606;
+  --surface-primary: #fafafb;
+  --surface-secondary: #f4f4f6;
+  --base-white: #ffffff;
+  --neutral-300: #d4d4d4;
+  --neutral-700: #404040;
+  --brand-100: #f4ebff;
+
+  /* Spacing */
+  --spacing-0: 0;
+  --spacing-2: 2px;
+  --spacing-4: 4px;
+  --spacing-8: 8px;
+  --spacing-12: 12px;
+  --spacing-16: 16px;
+  --spacing-24: 24px;
+  --spacing-32: 32px;
+  --spacing-48: 48px;
+  --spacing-72: 72px;
+  --spacing-96: 96px;
+
+  /* Radius */
+  --radius-s: 4px;
+  --radius-m: 8px;
+  --radius-xl: 16px;
+  --radius-full: 999px;
+
+  /* Effects */
+  --shadow-xs: 0 1px 2px rgba(0, 0, 0, .05);
+  --shadow-xs-focused: 0 1px 2px rgba(0, 0, 0, .05), 0 0 0 4px var(--brand-100);
+  --shadow-card-outer: 0 2px 4px rgba(0, 0, 0, .04);
+  --shadow-card-inner: 0 6px 16px rgba(0, 0, 0, .04), 0 2px 4px rgba(0, 0, 0, .04), 0 0 1px rgba(0, 0, 0, .4);
+
+  /* Type — families */
+  --font-family-rebond: "Rebond Grotesque", "Space Grotesk", "Inter", system-ui, sans-serif;
+  --font-family-inter: "Inter", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --tracking-text: -0.16px;
+
+  /* Type — styles (weight size/line-height family) */
+  --heading-3xl: 700 40px/40px var(--font-family-rebond);
+  --heading-2xl: 700 32px/32px var(--font-family-rebond);
+  --heading-m-bold: 700 20px/28px var(--font-family-rebond);
+  --heading-m: 600 20px/28px var(--font-family-rebond);
+  --heading-s: 600 18px/26px var(--font-family-rebond);
+  --heading-xs: 600 16px/24px var(--font-family-rebond);
+  --heading-l: 600 24px/32px var(--font-family-rebond);
+  --text-m: 400 16px/24px var(--font-family-inter);
+  --text-m-medium: 500 16px/24px var(--font-family-inter);
+  --text-m-semibold: 600 16px/24px var(--font-family-inter);
+  --text-s: 400 14px/20px var(--font-family-inter);
+  --text-xs: 400 12px/16px var(--font-family-inter);
+  --label-m: 600 14px/20px var(--font-family-inter);
+  --button-l: 600 18px/26px var(--font-family-inter);
+  --link-m: 400 16px/24px var(--font-family-inter);
+  --link-m-semibold: 600 16px/24px var(--font-family-inter);
+  --link-l-semibold: 600 18px/26px var(--font-family-inter);
+
+  /* Metrics */
+  --ds-col: 458px;
+  --ds-widget: 423px;
+  --ds-control-h: 52px;
+}
+
+/* ==========================================================================
+   Layout — registration-* frames
+   ========================================================================== */
+
+.ds-page {
+  min-height: 100vh;
+  min-height: 100dvh;
+  display: flex;
+  flex-direction: column;
+  padding: var(--spacing-32) var(--spacing-16);
+  background: var(--base-white);
+  color: var(--text-primary);
+  font: var(--text-m);
+  letter-spacing: var(--tracking-text);
+}
+
+/* navigation */
+.ds-nav {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--spacing-16);
+  min-height: 32px;
+}
+.ds-nav .logo svg { height: 32px; width: auto; }
+
+/* Main Content */
+.ds-main {
+  flex: 1 1 auto;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: var(--spacing-72) 10px var(--spacing-96);
+}
+
+.ds-container { width: var(--ds-col); max-width: 100%; }
+.ds-container--widget { width: var(--ds-widget); }
+.ds-container--center { text-align: center; }
+
+/* Vertical rhythm — the auto-layout gaps used across the frames */
+.ds-stack { display: flex; flex-direction: column; align-items: stretch; }
+.ds-stack--4 { gap: var(--spacing-4); }
+.ds-stack--8 { gap: var(--spacing-8); }
+.ds-stack--16 { gap: var(--spacing-16); }
+.ds-stack--24 { gap: var(--spacing-24); }
+.ds-stack--32 { gap: var(--spacing-32); }
+.ds-stack--48 { gap: var(--spacing-48); }
+.ds-stack--center { align-items: center; }
+
+/* footer-info */
+.ds-footer {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--spacing-16);
+  text-align: center;
+}
+.ds-footer__methods { display: flex; gap: var(--spacing-8); }
+.ds-footer__text { display: flex; flex-direction: column; gap: 6px; }
+.ds-footer__line { margin: 0; font: var(--text-xs); color: var(--text-primary); }
+.ds-footer__line a { color: inherit; }
+.ds-footer__line img { display: inline-block; vertical-align: -3px; margin-left: 2px; }
+
+/* Payment method icon — 34×24 card-scheme badge */
+.ds-method {
+  width: 34px; height: 24px;
+  display: inline-grid; place-items: center;
+  flex: 0 0 auto;
+  background: var(--base-white);
+  border: 1px solid #e5e5e5;
+  border-radius: var(--radius-s);
+}
+.ds-method img { width: 22px; height: auto; }
+img.ds-method { border: 0; background: none; }
+.ds-method--lg { width: 45px; height: 32px; }
+.ds-method--lg img { width: 28px; height: auto; }
+
+/* ==========================================================================
+   Typography
+   ========================================================================== */
+
+.ds-h1 { margin: 0; font: var(--heading-3xl); letter-spacing: 0; color: var(--text-primary); }
+.ds-h2 { margin: 0; font: var(--heading-s); letter-spacing: 0; color: var(--text-primary); }
+.ds-body { margin: 0; font: var(--text-m); color: var(--text-default); }
+.ds-body strong { font-weight: 600; }
+.ds-small { margin: 0; font: var(--text-s); color: var(--text-default); }
+.ds-center { text-align: center; }
+
+/* Link — Link/M/Regular, underlined */
+.ds-link {
+  display: inline;
+  padding: 0;
+  background: none;
+  border: 0;
+  font: var(--link-m);
+  letter-spacing: var(--tracking-text);
+  color: var(--text-primary);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  cursor: pointer;
+}
+.ds-link:hover { opacity: .7; }
+.ds-link--strong { font: var(--link-m-semibold); }
+.ds-link--s { font: var(--text-s); }
+.ds-link--block { display: block; margin: 0 auto; text-align: center; }
+
+/* ==========================================================================
+   Button — primary / secondary / link, L size
+   ========================================================================== */
+
+.ds-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--spacing-8);
+  width: 100%;
+  height: var(--ds-control-h);
+  padding: var(--spacing-12) var(--spacing-16) var(--spacing-12) 14px;
+  border: 1px solid transparent;
+  border-radius: var(--radius-xl);
+  font: var(--button-l);
+  letter-spacing: 0;
+  cursor: pointer;
+  transition: background-color .15s ease, border-color .15s ease;
+}
+.ds-btn img { width: 24px; height: 24px; flex: 0 0 auto; }
+
+.ds-btn--primary { background: var(--action-primary-default); color: var(--text-inverse); }
+.ds-btn--primary:hover { background: var(--action-primary-hover); }
+
+.ds-btn--secondary { background: var(--base-white); color: var(--text-primary); border-color: var(--border-default); }
+.ds-btn--secondary:hover { background: var(--surface-primary); }
+
+/* Link-style button ("Find address manually", "Add card") */
+.ds-btn--link {
+  width: auto;
+  align-self: flex-start;
+  background: var(--base-white);
+  color: var(--text-primary);
+  font: var(--link-m-semibold);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  height: auto;
+  padding: 10px var(--spacing-16) 10px 14px;
+}
+.ds-btn--link:hover { background: var(--surface-primary); }
+.ds-btn--link-l { font: var(--link-l-semibold); height: var(--ds-control-h); }
+
+/* Buttons are never disabled; a busy button ignores repeat presses. */
+.ds-btn--busy { cursor: progress; }
+
+/* Spinner/White — the 24px ring from the design system, turning */
+.ds-spinner { width: 24px; height: 24px; animation: ds-spin .8s linear infinite; }
+@keyframes ds-spin { to { transform: rotate(360deg); } }
+
+/* Or Divider */
+.ds-or {
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  align-items: center;
+  gap: var(--spacing-24);
+  font: var(--label-m);
+  letter-spacing: 0;
+  text-transform: uppercase;
+  color: #000;
+}
+.ds-or::before, .ds-or::after { content: ""; height: 1px; background: var(--border-subtle); }
+
+/* ==========================================================================
+   input — label, control, helper text
+   ========================================================================== */
+
+.ds-field { display: flex; flex-direction: column; gap: var(--spacing-8); }
+
+.ds-label { font: var(--label-m); letter-spacing: 0; color: var(--text-primary); }
+.ds-label__req { color: var(--border-danger); }
+.ds-label__optional { color: var(--text-secondary); font-weight: 600; }
+
+.ds-input {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-8);
+  height: var(--ds-control-h);
+  padding: 0 var(--spacing-12) 0 var(--spacing-16);
+  background: var(--base-white);
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-xl);
+  box-shadow: var(--shadow-xs);
+  transition: border-color .15s ease, box-shadow .15s ease;
+}
+.ds-input:focus-within { border-color: var(--action-primary-default); box-shadow: var(--shadow-xs-focused); }
+.ds-input:has([aria-invalid="true"]) { border-color: var(--border-danger); }
+
+.ds-input input,
+.ds-input select {
+  flex: 1 1 auto;
+  min-width: 0;
+  height: 100%;
+  padding: 0;
+  border: 0;
+  outline: none;
+  background: transparent;
+  font: var(--text-m);
+  letter-spacing: var(--tracking-text);
+  color: var(--text-primary);
+}
+.ds-input input::placeholder { color: var(--text-secondary); }
+.ds-input > img { width: 24px; height: 24px; flex: 0 0 auto; }
+
+/* Select — native select with the design-system chevron */
+.ds-input--select { position: relative; padding-right: var(--spacing-16); }
+.ds-input--select select { appearance: none; cursor: pointer; padding-right: 32px; }
+.ds-input--select > img { position: absolute; right: var(--spacing-16); pointer-events: none; }
+
+/* Trailing icon button (eye, close) */
+.ds-input__btn {
+  flex: 0 0 auto;
+  width: 32px; height: 32px;
+  display: grid; place-items: center;
+  padding: 0; border: 0; border-radius: var(--radius-m);
+  background: none;
+  cursor: pointer;
+}
+.ds-input__btn:hover { background: var(--surface-secondary); }
+.ds-input__btn img { width: 24px; height: 24px; }
+
+.ds-hint { margin: 0; font: var(--text-s); color: var(--text-primary); }
+
+/* Reuses ui.js showError/clearError, which target .field__error */
+.ds-field .field__error { margin: 0; font: var(--text-s); color: var(--border-danger); }
+
+/* Card number — scheme badges inside the field */
+.ds-input__schemes { display: flex; gap: var(--spacing-4); flex: 0 0 auto; }
+
+/* Phone number — dial-code prefix + number */
+.ds-phone { display: grid; grid-template-columns: 122px 1fr; }
+.ds-phone__code {
+  position: relative;
+  display: flex; align-items: center; gap: var(--spacing-8);
+  height: var(--ds-control-h);
+  padding: 0 var(--spacing-12) 0 var(--spacing-16);
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-xl) 0 0 var(--radius-xl);
+  box-shadow: var(--shadow-xs);
+  background: var(--base-white);
+  font: var(--text-m);
+  color: var(--text-default);
+}
+.ds-phone__code [data-dial] { display: flex; align-items: center; gap: var(--spacing-8); white-space: nowrap; }
+.ds-phone__code > img { width: 24px; height: 24px; margin-left: -6px; }
+.ds-phone__code .flag { width: 24px; height: 24px; border-radius: 50%; box-shadow: 0 0 0 1px var(--border-subtle); }
+.ds-phone__code:focus-within { border-color: var(--action-primary-default); box-shadow: var(--shadow-xs-focused); z-index: 1; }
+.ds-phone .ds-input { border-left: 0; border-radius: 0 var(--radius-xl) var(--radius-xl) 0; }
+
+/* Search — leading icon and a results list */
+.ds-combo { position: relative; }
+.ds-combo__list {
+  position: absolute; z-index: 20;
+  top: calc(100% + 6px); left: 0; right: 0;
+  margin: 0; padding: 6px;
+  list-style: none;
+  background: var(--base-white);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-xl);
+  box-shadow: var(--shadow-card-inner);
+  max-height: 300px; overflow-y: auto;
+}
+/* options are painted by ui.js#wireAddressLookup */
+.ds-combo__list .combo__opt { padding: 10px 12px; border-radius: var(--radius-m); font: var(--text-m); }
+.ds-combo__list .combo__opt small { font: var(--text-s); color: var(--text-secondary); }
+.ds-combo__list .combo__opt:hover,
+.ds-combo__list .combo__opt[aria-selected="true"] { background: var(--surface-secondary); }
+
+/* ==========================================================================
+   OTP-input
+   ========================================================================== */
+
+.ds-otp { display: flex; justify-content: space-between; gap: var(--spacing-8); padding-bottom: var(--spacing-16); }
+.ds-otp__box {
+  width: 56px; height: 56px;
+  padding: 0;
+  text-align: center;
+  font: var(--heading-l);
+  color: #000;
+  background: var(--base-white);
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-m);
+  box-shadow: var(--shadow-xs);
+}
+.ds-otp__box:focus { outline: none; border-color: var(--action-primary-default); box-shadow: var(--shadow-xs-focused); }
+.ds-otp[data-invalid="true"] .ds-otp__box { border-color: var(--border-danger); }
+
+/* ==========================================================================
+   Checkbox (sm)
+   ========================================================================== */
+
+.ds-check { display: inline-flex; align-items: flex-start; gap: var(--spacing-8); cursor: pointer; font: var(--text-s); color: var(--text-primary); }
+.ds-check input {
+  appearance: none;
+  flex: 0 0 auto;
+  width: 16px; height: 16px;
+  margin: 2px 0 0;
+  border: 1px solid var(--neutral-300);
+  border-radius: var(--radius-s);
+  background: var(--base-white) center/11px no-repeat;
+  cursor: pointer;
+}
+.ds-check input:checked {
+  background-color: var(--action-primary-default);
+  border-color: var(--action-primary-default);
+  background-image: url("../assets/ds/radio-check.svg");
+}
+.ds-check input:focus-visible { outline: none; box-shadow: var(--shadow-xs-focused); }
+.ds-check[data-invalid="true"] input { border-color: var(--border-danger); }
+.ds-check a { color: inherit; }
+.ds-check--muted { color: var(--neutral-700); }
+
+/* ==========================================================================
+   Error status under a primary action (buttons are never disabled)
+   ========================================================================== */
+
+[data-form-error] .alert { margin-top: 0; font: var(--text-s); color: var(--border-danger); }
+
+/* ==========================================================================
+   Merchant Logo, PaymentValue, image/success
+   ========================================================================== */
+
+.ds-art { display: block; width: 120px; height: 120px; object-fit: contain; margin: 0 auto; }
+
+.ds-merchant { display: flex; flex-direction: column; align-items: center; gap: var(--spacing-8); padding-bottom: var(--spacing-16); }
+.ds-merchant__logo { width: 48px; height: 48px; border-radius: var(--radius-full); object-fit: cover; }
+.ds-merchant__name { font: var(--heading-m); letter-spacing: 0; color: #000; }
+
+.ds-value { display: flex; flex-direction: column; gap: var(--spacing-4); text-align: center; }
+.ds-value__usd { font: var(--heading-2xl); letter-spacing: 0; color: #000; }
+.ds-value__token { font: var(--heading-s); letter-spacing: 0; color: var(--text-muted); }
+
+.ds-pay-head { display: flex; flex-direction: column; align-items: center; padding: var(--spacing-16) 0; }
+
+/* ==========================================================================
+   Payment-widget — outer grey card with an inner white card
+   ========================================================================== */
+
+.ds-card {
+  display: flex; flex-direction: column; gap: var(--spacing-8);
+  padding: var(--spacing-16) 1px 1px;
+  background: var(--surface-secondary);
+  border-radius: var(--radius-xl);
+  box-shadow: var(--shadow-card-outer);
+}
+.ds-card__title { margin: 0; padding: 0 var(--spacing-16); font: var(--heading-m-bold); letter-spacing: 0; color: var(--text-primary); }
+.ds-card__body {
+  display: flex; flex-direction: column; align-items: stretch; gap: var(--spacing-16);
+  padding: var(--spacing-24) var(--spacing-16) var(--spacing-16);
+  background: var(--base-white);
+  border-radius: var(--radius-xl);
+  box-shadow: var(--shadow-card-inner);
+}
+.ds-card__body--32 { gap: var(--spacing-32); }
+
+/* PaymeshBalance / Radio group item */
+.ds-option {
+  display: flex; align-items: flex-start; gap: var(--spacing-12);
+  width: 100%;
+  padding: var(--spacing-16);
+  background: var(--base-white);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-m);
+  text-align: left;
+  font: inherit; color: inherit;
+}
+button.ds-option { cursor: pointer; }
+.ds-option__radio {
+  flex: 0 0 auto;
+  width: 16px; height: 16px; margin-top: 4px;
+  border: 1px solid var(--border-default);
+  border-radius: 10px;
+  background: var(--base-white) center/11px no-repeat;
+}
+.ds-option__main { flex: 1 1 auto; min-width: 0; display: flex; flex-direction: column; }
+.ds-option__title { font: var(--text-m-medium); }
+.ds-option__sub { font: var(--text-s); }
+.ds-option__side { flex: 0 0 auto; display: flex; flex-direction: column; align-items: flex-end; text-align: right; }
+.ds-option__side > img { width: 45px; height: 32px; }
+
+.ds-option[aria-checked="true"] {
+  background: var(--surface-primary);
+  border-color: var(--border-focus);
+  color: var(--text-brand);
+}
+.ds-option[aria-checked="true"] .ds-option__radio {
+  background-color: var(--action-primary-default);
+  border-color: var(--action-primary-default);
+  background-image: url("../assets/ds/radio-check.svg");
+}
+.ds-option--disabled { cursor: default; }
+
+.ds-amount { font: var(--text-m-semibold); color: var(--text-primary); }
+.ds-amount-sub { font: var(--text-m); color: var(--text-secondary); }
+
+/* Payment-list-item */
+.ds-list-item { display: flex; flex-direction: column; gap: var(--spacing-12); padding: var(--spacing-24) 0; }
+.ds-list-item__row { display: flex; align-items: flex-start; justify-content: space-between; gap: var(--spacing-8); }
+.ds-list-item__label { display: flex; align-items: center; gap: var(--spacing-8); font: var(--text-m-medium); letter-spacing: -0.32px; }
+.ds-list-item__label img { width: 24px; height: 24px; }
+
+.ds-address { display: flex; flex-direction: column; border-bottom: 1px solid var(--border-subtle); padding-bottom: var(--spacing-16); }
+.ds-address__name { display: flex; align-items: center; gap: var(--spacing-8); padding: 0 var(--spacing-16); font: var(--text-m-medium); letter-spacing: -0.32px; }
+.ds-address__name img { width: 24px; height: 24px; }
+.ds-address__lines { padding: 0 var(--spacing-16) 0 var(--spacing-48); font: var(--text-m); color: var(--text-secondary); }
+.ds-address__lines p { margin: var(--spacing-2) 0 0; }
+
+/* Billing address when it matches shipping */
+.ds-address-summary {
+  padding: var(--spacing-16);
+  background: var(--surface-primary);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-m);
+  font: var(--text-m);
+  color: var(--text-secondary);
+}
+.ds-address-summary p { margin: 0; }
+.ds-address-summary p:first-child { color: var(--text-primary); }
+
+.ds-divider { height: 1px; background: var(--border-subtle); border: 0; margin: 0; }
+
+/* Info */
+.ds-info {
+  display: flex; gap: var(--spacing-12);
+  padding: var(--spacing-16);
+  background: var(--surface-primary);
+  border: 1px solid var(--border-focus);
+  border-radius: var(--radius-m);
+  font: var(--text-s);
+  color: var(--text-brand);
+}
+.ds-info img { width: 20px; height: 20px; flex: 0 0 auto; }
+.ds-info strong { font-weight: 600; }
+
+.ds-secure { display: flex; align-items: center; justify-content: center; gap: var(--spacing-8); font: var(--text-s); }
+.ds-secure img { width: 20px; height: 20px; }
+
+/* Transfer — Paymesh wallet → merchant */
+.ds-transfer { display: flex; align-items: center; justify-content: center; gap: var(--spacing-24); padding: 0 var(--spacing-16); }
+.ds-transfer__end { width: 120px; display: flex; flex-direction: column; align-items: center; gap: var(--spacing-8); font: var(--heading-xs); letter-spacing: 0; text-align: center; }
+.ds-transfer__logo { width: 64px; height: 64px; border-radius: var(--radius-full); object-fit: cover; }
+.ds-transfer__logo--paymesh { display: grid; place-items: center; background: var(--action-primary-default); }
+.ds-transfer__logo--paymesh img { width: 38px; height: 24px; }
+.ds-transfer > img { width: 32px; height: 32px; }
+
+/* Confirmation-list-item */
+.ds-confirm { display: flex; flex-direction: column; gap: var(--spacing-16); padding: var(--spacing-32) 0; text-align: left; }
+.ds-confirm__row { display: flex; align-items: center; justify-content: space-between; gap: var(--spacing-16); }
+.ds-confirm__label { font: var(--text-m); color: var(--text-muted); }
+.ds-confirm__value { display: flex; align-items: center; gap: var(--spacing-8); font: var(--text-m-semibold); color: #000; text-align: right; }
+.ds-confirm__value img { width: 24px; height: 24px; border-radius: var(--radius-full); }
+.ds-confirm__sub { font: var(--text-s); color: var(--text-tertiary); text-align: right; margin-top: calc(-1 * var(--spacing-12)); }
+.ds-chip {
+  padding: 2px 4px;
+  background: #fbfbfb;
+  border: 1px solid #dbdbdb;
+  border-radius: var(--radius-s);
+  font: 600 10px/normal var(--font-family-inter);
+  letter-spacing: -0.2px;
+  color: #717171;
+}
+.ds-copy { display: inline-grid; place-items: center; padding: 0; border: 0; background: none; cursor: pointer; }
+.ds-copy img { border-radius: 0; }
+
+/* ==========================================================================
+   Narrow screens
+   ========================================================================== */
+
+@media (max-width: 560px) {
+  .ds-page { padding: var(--spacing-24) var(--spacing-16); }
+  .ds-nav { flex-wrap: wrap; }
+  .ds-nav .ds-link { font-size: 14px; }
+  .ds-main { padding: var(--spacing-48) 0 var(--spacing-48); }
+  .ds-h1 { font-size: 32px; line-height: 36px; }
+  .ds-otp__box { width: 100%; min-width: 0; height: 52px; }
+  .ds-transfer { gap: var(--spacing-8); padding: 0; }
+  .ds-footer { padding-bottom: 44px; } /* clear the prototype pill */
+  .ds-footer__line { font-size: 11px; }
+}

@@ -242,9 +242,21 @@ export function addressLookupField(value = "", country) {
 /**
  * Wires the lookup. `onSelect(address)` receives the chosen address so the
  * screen can fill in the rest of the form.
+ *
+ * By default it drives the postcode field; the free-text address search passes
+ * its own input, where to read the country from, and `postcodeOnly: false`
+ * so street and city names keep their accents.
  */
-export function wireAddressLookup(root, onSelect) {
-  const input = root.querySelector("#f-postcode");
+export function wireAddressLookup(
+  root,
+  onSelect,
+  {
+    input: inputSelector = "#f-postcode",
+    country = () => root.querySelector("#f-country")?.value,
+    postcodeOnly = true,
+  } = {}
+) {
+  const input = root.querySelector(inputSelector);
   const list = root.querySelector("#address-results");
   if (!input || !list) return;
 
@@ -287,11 +299,10 @@ export function wireAddressLookup(root, onSelect) {
 
   input.addEventListener("input", () => {
     // Letters, digits and spaces only — postcodes carry no punctuation.
-    const cleaned = input.value.replace(/[^A-Za-z0-9 ]/g, "");
+    const cleaned = postcodeOnly ? input.value.replace(/[^A-Za-z0-9 ]/g, "") : input.value;
     if (cleaned !== input.value) input.value = cleaned;
 
-    const country = root.querySelector("#f-country")?.value;
-    matches = suggestAddresses(cleaned, country);
+    matches = suggestAddresses(cleaned, country());
     active = -1;
     paint();
   });
@@ -400,6 +411,8 @@ export function wireCountryFields(root) {
     if (countrySelect) countrySelect.value = c.name;
     if (dialSelect) dialSelect.value = c.name;
     if (dial) dial.innerHTML = `${flag(c.iso)} ${c.dial}`;
+    // Fields that show an example number keep it in the selected country's format.
+    if (phone && "example" in phone.dataset) phone.placeholder = c.phone.example;
     if (postcodeLabel) {
       postcodeLabel.innerHTML = `Enter ${esc(c.postcode)} to find address<span class="field__req">*</span>`;
     }
@@ -554,6 +567,42 @@ export function busy(button, label) {
 
 /** True while a button is mid-action, so repeat presses can be ignored. */
 export const isBusy = (button) => button.dataset.busy === "1";
+
+/**
+ * Six single-digit inputs (`[data-otp]` inside `[data-otp-group]`) that behave
+ * as one code field: auto-advance, backspace to the previous box, paste the
+ * whole code. `submit` runs when the sixth digit lands or Enter is pressed.
+ * Returns a getter for the code typed so far.
+ */
+export function wireOtpInputs(root, submit) {
+  const group = root.querySelector("[data-otp-group]");
+  const inputs = [...root.querySelectorAll("[data-otp]")];
+  const code = () => inputs.map((i) => i.value).join("");
+
+  inputs.forEach((input, i) => {
+    input.addEventListener("input", () => {
+      input.value = input.value.replace(/\D/g, "").slice(0, 1);
+      group.dataset.invalid = "false";
+      clearFormError(root);
+      if (input.value && i < inputs.length - 1) inputs[i + 1].focus();
+      if (code().length === 6) submit();
+    });
+    input.addEventListener("keydown", (e) => {
+      if (e.key === "Backspace" && !input.value && i > 0) inputs[i - 1].focus();
+      if (e.key === "Enter") submit();
+    });
+    input.addEventListener("paste", (e) => {
+      const text = (e.clipboardData || window.clipboardData).getData("text").replace(/\D/g, "");
+      if (!text) return;
+      e.preventDefault();
+      text.split("").slice(0, 6).forEach((ch, idx) => (inputs[idx].value = ch));
+      inputs[Math.min(text.length, 5)].focus();
+      if (code().length === 6) submit();
+    });
+  });
+
+  return code;
+}
 
 /** Countdown used under the one-time-code inputs. */
 export function startResendCountdown(el, seconds) {

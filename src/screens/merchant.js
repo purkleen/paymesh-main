@@ -49,6 +49,15 @@ export default {
         <div>
           <h1 class="h2">Pay with</h1>
           <div class="pay-list" role="radiogroup" aria-label="Payment method">
+            <button class="pay-option" role="radio" aria-checked="true" data-method="paymesh">
+              <span class="pay-option__radio"></span>
+              <span class="pay-option__logo">${mark("var(--brand)", 26)}</span>
+              <span class="pay-option__main">
+                <span class="pay-option__title">Paymesh</span>
+                <span class="pay-option__sub">Pay from any linked account in one tap.</span>
+              </span>
+            </button>
+
             ${OTHER_METHODS.map(
               (m) => `
               <button class="pay-option" role="radio" aria-checked="false" data-method="${m.id}">
@@ -60,15 +69,6 @@ export default {
                 </span>
               </button>`
             ).join("")}
-
-            <button class="pay-option" role="radio" aria-checked="true" data-method="paymesh">
-              <span class="pay-option__radio"></span>
-              <span class="pay-option__logo">${mark("var(--ink-logo)", 26)}</span>
-              <span class="pay-option__main">
-                <span class="pay-option__title">Paymesh</span>
-                <span class="pay-option__sub">Pay from any linked account in one tap.</span>
-              </span>
-            </button>
           </div>
         </div>
 

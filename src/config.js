@@ -148,8 +148,8 @@ export const countryByName = (name) =>
   COUNTRIES.find((c) => c.name === name) || COUNTRIES[0];
 
 /**
- * The journeys the prototype covers: the seven drawn in the Figma file
- * plus a top-up flow.
+ * The journeys the prototype covers: the seven drawn in the Figma file,
+ * a top-up flow, and the redesigned registration ("Registration new version").
  * `entry` is the route the merchant hand-off (or the direct visit) lands on.
  */
 export const SCENARIOS = [
@@ -225,6 +225,21 @@ export const SCENARIOS = [
     fromMerchant: true,
     seed: { loggedIn: true, registered: true, balance: 1250, savedCards: true, useGoogle: false, failFirstAuth: false },
   },
+  {
+    id: "register-v2",
+    number: 9,
+    title: "Registration — new version",
+    blurb: "The redesigned sign-up built on the design system: account, contact details, address, ID check, add a card, pay.",
+    entry: "#/v2/signup",
+    fromMerchant: true,
+    seed: { loggedIn: false, registered: false, balance: 0, savedCards: false, useGoogle: false, failFirstAuth: false },
+  },
 ];
+
+/** Simulated wait on the "Continue to email verification" button, in ms. */
+export const ACCOUNT_MS = 900;
+
+/** How long the simulated Persona identity check takes, in ms. */
+export const IDENTITY_MS = 1600;
 
 export const DEFAULT_SCENARIO = "logged-in";
