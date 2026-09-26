@@ -282,7 +282,6 @@ export const contact = {
           </div>
           ${action("Continue to address", "continue")}
         </div>
-        ${backLink("Back to email verification", "#/v2/verify")}
       </div>`,
     });
   },
