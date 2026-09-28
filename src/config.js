@@ -64,6 +64,14 @@ export const SAVED_CARDS = [
  */
 export const ACCESS_PASSWORD_SHA256 = "342481c753c76cd84267e985d853700b58c5cfaeda110774979fb590c21f11d6";
 
+/**
+ * The menu after the password screen (src/screens/menu.js) lists `main` and
+ * every other branch of this GitHub repo, linking each to its Vercel deployment.
+ */
+export const GITHUB_REPO = "purkleen/paymesh-main";
+export const MAIN_BRANCH = "main";
+export const PRODUCTION_URL = "https://paymesh-main.vercel.app";
+
 /** Seconds shown on the "resend code" countdown. */
 export const RESEND_SECONDS = 26;
 

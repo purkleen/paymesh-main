@@ -18,9 +18,11 @@ import authorize from "./screens/authorize.js";
 import success from "./screens/success.js";
 import appHome from "./screens/app.js";
 import { requirePassword } from "./screens/gate.js";
+import menu from "./screens/menu.js";
 import * as reg2 from "./screens/v2/register.js";
 import * as pay2 from "./screens/v2/checkout.js";
 
+register("#/menu", menu);
 register("#/", merchant);
 register("#/login", login);
 register("#/otp", otp);
@@ -83,7 +85,8 @@ await requirePassword(root);
 const repaintDevPanel = mountDevPanel(document.getElementById("devbar"));
 if (repaintDevPanel) subscribe(repaintDevPanel);
 
-start(root, "#/");
+// A bare visit (no screen in the URL) opens the menu of prototypes.
+start(root, "#/menu");
 
 // Keyboard shortcut: R restarts the current journey from its first screen.
 addEventListener("keydown", (e) => {

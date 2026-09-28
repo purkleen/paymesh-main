@@ -21,6 +21,7 @@ export function mountDevPanel(host) {
   const paint = () => {
     const { scenarioId } = getState();
     host.className = "dev";
+    host.hidden = location.hash === "#/menu"; // the menu stays text-only
     host.innerHTML = `
       <div class="dev__panel" ${open ? "" : "hidden"}>
         <p class="dev__title">Journeys</p>
@@ -33,6 +34,7 @@ export function mountDevPanel(host) {
         <div class="dev__foot">
           <button data-act="restart">Restart journey</button>
           <button data-act="merchant">Merchant page</button>
+          <button data-act="menu">Menu</button>
         </div>
       </div>
       <button class="dev__toggle" data-act="toggle" aria-expanded="${open}">
@@ -63,9 +65,12 @@ export function mountDevPanel(host) {
       paint();
     } else if (act === "merchant") {
       go("#/");
+    } else if (act === "menu") {
+      go("#/menu");
     }
   });
 
+  addEventListener("hashchange", paint);
   paint();
   return paint;
 }

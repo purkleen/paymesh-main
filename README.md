@@ -51,6 +51,22 @@ printf '%s' 'new-password' | shasum -a 256
 and paste the result into `ACCESS_PASSWORD_SHA256`. For real protection, turn
 on Vercel's Deployment Protection for the project.
 
+## Menu of prototypes
+
+After the password, opening the site's plain address shows a text-only menu
+(`#/menu`, `src/screens/menu.js`). It links to the registration journey and
+the payment widget (`/widget`) on:
+
+- **main** — the production site, https://paymesh-main.vercel.app
+- **every other branch** — read live from the GitHub API, so a branch appears
+  as soon as it's pushed, linked to the Vercel deployment of its latest commit
+  ("Building…" or "Not deployed yet" until there is one)
+
+Deep links such as `/?journey=9` skip the menu; the dev panel's **Menu**
+button goes back to it. Branch previews live on their own `vercel.app`
+addresses, so the password is asked again there, and Vercel may ask for a
+Vercel login first, depending on the project's Deployment Protection setting.
+
 ## Running it locally
 
 Any static server will do — ES modules will not load over `file://`. The

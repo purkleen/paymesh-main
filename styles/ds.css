@@ -710,3 +710,24 @@ button.ds-option { cursor: pointer; }
 }
 .sw-billing p { margin: 0; }
 
+/* ==========================================================================
+   Menu of prototypes after the password screen (#/menu) — deliberately plain
+   ========================================================================== */
+
+.menu {
+  max-width: 560px;
+  margin: 0 auto;
+  padding: var(--spacing-48) var(--spacing-16);
+  font: var(--text-m);
+  letter-spacing: var(--tracking-text);
+  color: var(--text-primary);
+}
+.menu h1 { margin: 0 0 var(--spacing-32); font: var(--heading-2xl); }
+.menu h2 { margin: var(--spacing-32) 0 var(--spacing-8); font: var(--heading-s); }
+.menu h3 { margin: 0 0 var(--spacing-4); font: var(--text-m-semibold); font-family: ui-monospace, SFMono-Regular, Menlo, monospace; }
+.menu ul { margin: 0; padding: 0; list-style: none; }
+.menu__links li + li { margin-top: var(--spacing-4); }
+.menu__links a { color: var(--text-primary); text-decoration: underline; text-underline-offset: 3px; }
+.menu__links a:hover { opacity: .7; }
+.menu__entry + .menu__entry { margin-top: var(--spacing-16); }
+.menu__note { margin: 0; color: var(--text-secondary); }
