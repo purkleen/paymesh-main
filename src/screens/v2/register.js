@@ -19,6 +19,8 @@ import {
   backLink,
   input,
   phoneInput,
+  nameInputs,
+  checkNames,
   otp,
   asset,
   icon,
@@ -56,7 +58,6 @@ const action = (label, name) => `
   </div>`;
 
 
-const hasFullName = (v) => Boolean(v) && v.trim().split(/\s+/).length >= 2;
 
 /**
  * Enter in any text field presses the screen's primary button. Bound to this
@@ -156,7 +157,7 @@ export const account = {
               `After creating an account we will send you a verification code to
                <strong>${esc(session.email || "your email")}</strong> to confirm your email address.`
             )}
-            ${input({ label: "Full name", name: "name", value: session.name, autocomplete: "name", autofocus: true })}
+            ${nameInputs(session, { required: false, autofocus: true })}
             ${input({
               label: "Password",
               name: "password",
@@ -180,13 +181,10 @@ export const account = {
       if (isBusy(btn)) return;
       const v = values(root);
       let ok = true;
-      ["name", "password"].forEach((n) => clearError(root, n));
+      clearError(root, "password");
       clearFormError(root);
 
-      if (!hasFullName(v.name)) {
-        showError(root, "name", "Enter your first and last name.");
-        ok = false;
-      }
+      if (!checkNames(root, v)) ok = false;
       if (v.password.length < 8) {
         showError(root, "password", "Use at least 8 characters.");
         ok = false;
@@ -194,7 +192,7 @@ export const account = {
       if (!ok) return showFormError(root, MISSING_FIELDS);
 
       busy(btn, "Continue to email verification");
-      timer = setTimeout(() => v2.accountCreated({ name: v.name.trim() }), ACCOUNT_MS);
+      timer = setTimeout(() => v2.accountCreated({ firstName: v.firstName, lastName: v.lastName }), ACCOUNT_MS);
     };
 
     btn.addEventListener("click", submit);
@@ -270,14 +268,7 @@ export const contact = {
         <div class="ds-stack ds-stack--24">
           <div class="ds-stack ds-stack--16">
             ${header("Your details")}
-            ${input({
-              label: "Full name",
-              name: "name",
-              value: session.name,
-              required: true,
-              autocomplete: "name",
-              autofocus: !session.name,
-            })}
+            ${nameInputs(session, { autofocus: !session.name })}
             ${phoneInput({ value: session.phone || "", country: session.country })}
           </div>
           ${action("Continue to address", "continue")}
@@ -294,19 +285,16 @@ export const contact = {
     const submit = () => {
       const v = values(root);
       let ok = true;
-      ["name", "phone"].forEach((n) => clearError(root, n));
+      clearError(root, "phone");
       clearFormError(root);
 
-      if (!hasFullName(v.name)) {
-        showError(root, "name", "Enter your first and last name.");
-        ok = false;
-      }
+      if (!checkNames(root, v)) ok = false;
       if (!isValidPhone(v.phone, v.dial)) {
         showError(root, "phone", phoneHint(v.dial));
         ok = false;
       }
       if (!ok) return showFormError(root, MISSING_FIELDS);
-      v2.contactSubmitted({ name: v.name.trim(), phone: v.phone, country: v.dial });
+      v2.contactSubmitted({ firstName: v.firstName, lastName: v.lastName, phone: v.phone, country: v.dial });
     };
 
     root.querySelector('[data-action="continue"]').addEventListener("click", submit);

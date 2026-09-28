@@ -36,6 +36,7 @@ export function googleConfirmed(account) {
     email: account.email,
     name: account.name,
     firstName: account.name.split(" ")[0],
+    lastName: account.name.split(" ").slice(1).join(" "),
     viaGoogle: true,
   });
   go(currentScenario().id === "register-v2" ? "#/v2/verify" : "#/otp");
@@ -106,6 +107,9 @@ export function backToMerchant() {
    → verify identity → welcome → add card → payment → complete order → done
    -------------------------------------------------------------------------- */
 
+/** Session fields for a first and last name, plus the combined `name` other screens show. */
+const names = (firstName, lastName) => ({ firstName, lastName, name: `${firstName} ${lastName}` });
+
 export const v2 = {
   emailSubmitted(email) {
     update("session", { email });
@@ -113,8 +117,8 @@ export const v2 = {
     go("#/v2/account");
   },
 
-  accountCreated({ name }) {
-    update("session", { name, firstName: name.split(" ")[0] || name });
+  accountCreated({ firstName, lastName }) {
+    update("session", names(firstName, lastName));
     go("#/v2/verify");
   },
 
@@ -123,8 +127,8 @@ export const v2 = {
     go("#/v2/contact");
   },
 
-  contactSubmitted({ name, phone, country }) {
-    update("session", { name, firstName: name.split(" ")[0] || name, phone, country });
+  contactSubmitted({ firstName, lastName, phone, country }) {
+    update("session", { ...names(firstName, lastName), phone, country });
     go("#/v2/address");
   },
 

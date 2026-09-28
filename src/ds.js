@@ -9,7 +9,7 @@
  */
 
 import { logo, flag } from "./icons.js";
-import { esc, merchantName } from "./ui.js";
+import { esc, merchantName, showError, clearError } from "./ui.js";
 import { COUNTRIES, countryByName } from "./config.js";
 
 /** Path to a design-system asset. */
@@ -162,6 +162,46 @@ export function input({
     ${hint ? `<p class="ds-hint">${esc(hint)}</p>` : ""}
     <p class="field__error" hidden></p>
   </div>`;
+}
+
+/**
+ * First name + Last name, prefilled from the session. Older sessions that only
+ * hold a full `name` are split on the first space.
+ */
+export function nameInputs(session, { required = true, autofocus = false } = {}) {
+  const [first = "", ...rest] = (session.name || "").trim().split(/\s+/);
+  return `
+    ${input({
+      label: "First name",
+      name: "firstName",
+      value: session.firstName || first,
+      required,
+      autocomplete: "given-name",
+      autofocus,
+    })}
+    ${input({
+      label: "Last name",
+      name: "lastName",
+      value: session.lastName ?? rest.join(" "),
+      required,
+      autocomplete: "family-name",
+    })}`;
+}
+
+/** Validates the two name fields from `nameInputs`; true when both are filled. */
+export function checkNames(root, v) {
+  let ok = true;
+  [
+    ["firstName", "Enter your first name."],
+    ["lastName", "Enter your last name."],
+  ].forEach(([name, message]) => {
+    clearError(root, name);
+    if (!v[name]) {
+      showError(root, name, message);
+      ok = false;
+    }
+  });
+  return ok;
 }
 
 /** Select — a native select dressed as an input, with the chevron-down icon. */

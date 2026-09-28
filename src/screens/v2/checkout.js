@@ -16,6 +16,8 @@ import {
   input,
   countrySelect,
   phoneInput,
+  nameInputs,
+  checkNames,
   checkbox,
   asset,
   icon,
@@ -156,7 +158,7 @@ export const addCardScreen = {
               "Customer information",
               `
               ${phoneInput({ value: session.phone || "", country })}
-              ${input({ label: "Full name", name: "name", value: session.name, required: true, autocomplete: "name" })}
+              ${nameInputs(session)}
               ${input({ label: "Email address", name: "email", type: "email", value: session.email, required: true, autocomplete: "email" })}
               ${countrySelect({ value: country })}`
             )}
@@ -261,13 +263,14 @@ export const addCardScreen = {
 
     root.querySelector('[data-action="add"]').addEventListener("click", () => {
       const v = values(root);
-      const required = ["cardName", "cardNumber", "expiry", "cvc", "name", "email"];
+      const required = ["cardName", "cardNumber", "expiry", "cvc", "email"];
       if (billingOpen()) required.push("street", "city", "postcode");
       let ok = true;
 
       [...required, "phone", "street", "city", "postcode"].forEach((n) => clearError(root, n));
       clearFormError(root);
 
+      if (!checkNames(root, v)) ok = false;
       required.forEach((n) => {
         if (!v[n]) {
           showError(root, n, "This field is required.");
@@ -305,7 +308,14 @@ export const addCardScreen = {
         return showFormError(root, "Accept the terms and conditions to add your card.");
       }
 
-      update("session", { name: v.name, phone: v.phone, country: v.country, email: v.email });
+      update("session", {
+        firstName: v.firstName,
+        lastName: v.lastName,
+        name: `${v.firstName} ${v.lastName}`,
+        phone: v.phone,
+        country: v.country,
+        email: v.email,
+      });
 
       // Build the card from what was typed so it reads back convincingly.
       const digits = v.cardNumber.replace(/\s/g, "");
