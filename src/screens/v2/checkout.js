@@ -372,7 +372,8 @@ export const payment = {
   render() {
     const { order } = getState();
     if (!order) return page({ content: `<p class="ds-body ds-center">No pending payment.</p>` });
-    return page({ widget: true, content: journeyWidget.render() });
+    // Same 458px column as the other registration screens.
+    return page({ content: journeyWidget.render() });
   },
 
   mount(root) {

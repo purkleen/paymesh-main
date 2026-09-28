@@ -1,7 +1,7 @@
 /**
  * Payment widget with split payment — layout from the Flows file,
- * "payment-widget-C1" (node 46:7259); behaviour first built against the design
- * system's "Desktop - 2" (1300:27859).
+ * "registration-10" (node 37:4483), 458px wide like the other registration
+ * screens; behaviour first built against the design system's "Desktop - 2".
  *
  * Used in two places, each passing its own config (see `paymentWidget`):
  *   • widget.html — standalone on white, demo data from the URL, with the
@@ -153,8 +153,6 @@ function cardMarkup() {
           ${merchantLogo(CFG.merchant, "sw-head__logo")}
         </div>
         <div class="ds-card__body sw-body">
-          <div class="sw-main" data-main></div>
-          <hr class="sw-divider" />
           <div class="sw-pad sw-total">
             <span class="sw-total__label">Amount to pay</span>
             <span class="sw-total__value">
@@ -162,6 +160,8 @@ function cardMarkup() {
               <span class="sw-total__token">&asymp; ${tokens(TOTAL)}</span>
             </span>
           </div>
+          <hr class="sw-divider" />
+          <div class="sw-main" data-main></div>
           <div class="sw-pad" data-statement hidden>
             <div class="ds-info">
               ${icon("receipt", 20)}

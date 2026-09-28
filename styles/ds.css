@@ -607,11 +607,12 @@ button.ds-option { cursor: pointer; }
 }
 
 /* ==========================================================================
-   Split-payment widget — Figma Flows "payment-widget-C1" (widget.html)
+   Split-payment widget — Figma Flows "registration-10" (widget.html, #/v2/payment)
    ========================================================================== */
 
 :root {
-  --primary-blue-600: #2563eb; /* Switch, as in the Figma component */
+  --primary-blue-600: #2563eb; /* Switch on, as in the Figma component */
+  --primary-gray-300: #d2d5da; /* Switch off */
   --brand-50: #f9f5ff;
 }
 
@@ -627,7 +628,7 @@ button.ds-option { cursor: pointer; }
   letter-spacing: var(--tracking-text);
   color: var(--text-primary);
 }
-.sw { width: var(--ds-widget); max-width: 100%; }
+.sw { width: var(--ds-col); max-width: 100%; }
 
 .sw-main { display: flex; flex-direction: column; gap: var(--spacing-24); }
 .sw-section { display: flex; flex-direction: column; gap: var(--spacing-8); }
@@ -645,7 +646,7 @@ button.ds-option { cursor: pointer; }
   position: relative;
   width: 36px; height: 20px;
   border-radius: 100px;
-  background: var(--border-subtle);
+  background: var(--primary-gray-300);
   transition: background-color .2s ease;
 }
 .sw-switch__track::after {
@@ -701,7 +702,7 @@ button.ds-option { cursor: pointer; }
 .sw-chip {
   display: inline-flex; align-items: center; justify-content: center;
   height: 32px;
-  padding: 0 14px; /* Figma has 16px; 14px keeps "Remaining $x,xxx.xx" + three percentages on one line */
+  padding: 0 var(--spacing-16);
   border: 0;
   border-radius: var(--radius-full);
   background: var(--surface-secondary);
@@ -763,7 +764,7 @@ button.ds-option { cursor: pointer; }
 .menu__note { margin: 0; color: var(--text-secondary); }
 
 /* Amount scenarios beside the widget (below 760px they sit above it) */
-.sw-wrap { position: relative; width: var(--ds-widget); max-width: 100%; display: flex; flex-direction: column; }
+.sw-wrap { position: relative; width: var(--ds-col); max-width: 100%; display: flex; flex-direction: column; }
 .sw-wrap .sw { width: 100%; }
 .sw-random {
   position: absolute; top: 0; left: calc(100% + var(--spacing-16));
