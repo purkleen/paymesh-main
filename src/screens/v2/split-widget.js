@@ -1,6 +1,7 @@
 /**
- * Payment widget with split payment — layout from Figma "Desktop - 5"
- * (node 1320:31550); behaviour first built against "Desktop - 2" (1300:27859).
+ * Payment widget with split payment — layout from the Flows file,
+ * "payment-widget-C1" (node 46:7259); behaviour first built against the design
+ * system's "Desktop - 2" (1300:27859).
  *
  * Standalone: rendered on its own white page by src/widget.js, outside the
  * journeys. Three states from the design:
@@ -137,6 +138,8 @@ const widget = {
           ${merchantLogo(MERCHANT, "sw-head__logo")}
         </div>
         <div class="ds-card__body sw-body">
+          <div class="sw-main" data-main></div>
+          <hr class="sw-divider" />
           <div class="sw-pad sw-total">
             <span class="sw-total__label">Amount to pay</span>
             <span class="sw-total__value">
@@ -144,8 +147,6 @@ const widget = {
               <span class="sw-total__token">&asymp; ${tokens(TOTAL)}</span>
             </span>
           </div>
-          <hr class="sw-divider" />
-          <div class="sw-main" data-main></div>
           <div class="sw-pad" data-statement hidden>
             <div class="ds-info">
               ${icon("receipt", 20)}
@@ -191,22 +192,7 @@ const widget = {
     /* Structure changes (switch, card choice) redraw the sections; typing only syncs numbers. */
     const draw = () => {
       main.innerHTML = `
-        <section class="sw-section sw-pad">
-          <div class="sw-section__head">
-            <span class="sw-title">
-              <span class="sw-title__mark" aria-hidden="true"><img src="${asset("paymesh-mark-dark.svg")}" alt="" /></span>
-              <h3 class="ds-h2">Paymesh Balance</h3>
-            </span>
-            ${
-              MUST_SPLIT
-                ? ""
-                : `<label class="sw-switch">
-                     <input type="checkbox" data-split ${state.split ? "checked" : ""} />
-                     <span class="sw-switch__track" aria-hidden="true"></span>
-                     <span class="sw-switch__label">Split payment</span>
-                   </label>`
-            }
-          </div>
+        <section class="sw-section sw-section--balance sw-pad" aria-label="Paymesh balance">
           <div class="sw-item" aria-checked="true">
             <div class="sw-item__row">
               <span class="sw-square" aria-hidden="true"></span>
@@ -222,6 +208,17 @@ const widget = {
                 : ""
             }
           </div>
+          ${
+            MUST_SPLIT
+              ? ""
+              : `<div class="sw-switch-row">
+                   <label class="sw-switch">
+                     <input type="checkbox" data-split ${state.split ? "checked" : ""} />
+                     <span class="sw-switch__track" aria-hidden="true"></span>
+                     <span class="sw-switch__label">Split payment</span>
+                   </label>
+                 </div>`
+          }
         </section>
 
         <hr class="sw-divider" />
@@ -230,7 +227,7 @@ const widget = {
           state.split
             ? `<section class="sw-section sw-pad">
                  <div class="sw-section__head sw-section__head--top">
-                   <span class="sw-title">${icon("wallet")}<h3 class="ds-h2">Remaining balance</h3></span>
+                   <h3 class="ds-h2">Remaining balance</h3>
                    <span data-remaining>${amounts(remaining())}</span>
                  </div>
                  <div class="sw-cards" data-cards>
@@ -246,7 +243,7 @@ const widget = {
 
         <section class="sw-section sw-pad">
           <div class="sw-section__head">
-            <span class="sw-title">${icon("location")}<h3 class="ds-h2">Billing address</h3></span>
+            <h3 class="ds-h2">Billing address</h3>
             <a class="ds-link" href="#" data-noop>Edit</a>
           </div>
           <div class="sw-billing">${BILLING.map((l) => `<p>${esc(l)}</p>`).join("")}</div>
