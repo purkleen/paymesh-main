@@ -276,18 +276,14 @@ const widget = {
         cardFill.hidden = remaining() <= 0 || duplicatesPercent(remaining(), cardPercentChips(TOTAL));
       }
 
-      // The balance's "Remaining" chip only shows while the amounts don't add up
-      // and pressing it would change the balance (it can't go past what's available).
+      // The balance's "Remaining" chip shows while a card is chosen and there's more
+      // than $0 to fill; once pressed it stays, lit, like the percentage chips.
       const balanceChip = main.querySelector('[data-chip="balance"][data-fill]');
       if (balanceChip) {
         balanceChip.dataset.value = balanceFill();
         balanceChip.textContent = remainingLabel(balanceFill());
         balanceChip.hidden =
-          !cardInUse() ||
-          balanceFill() <= 0 ||
-          same(paid(), TOTAL) ||
-          same(balanceFill(), state.fromBalance) ||
-          duplicatesPercent(balanceFill(), percentChips(maxFromBalance()));
+          !cardInUse() || balanceFill() <= 0 || duplicatesPercent(balanceFill(), percentChips(maxFromBalance()));
       }
 
       [
@@ -309,6 +305,11 @@ const widget = {
     const setBalance = (value) => {
       state.fromBalance = cents(Math.min(Math.max(value, 0), maxFromBalance()));
       sync();
+    };
+    /** Set the card amount and let the balance cover the rest, up to what's available. */
+    const setCardAndBalance = (value) => {
+      setCard(value);
+      setBalance(balanceFill());
     };
     const setCard = (value, edited = true) => {
       state.fromCard = cents(Math.min(Math.max(value, 0), TOTAL));
@@ -342,7 +343,10 @@ const widget = {
         const value = Number(chip.dataset.value);
         if (chip.dataset.chip === "balance") setBalance(value);
         // The card's "Remaining" puts it back on following what the balance leaves.
-        else setCard(value, !("fill" in chip.dataset));
+        else if ("fill" in chip.dataset) setCard(value, false);
+        // A card percentage sets the card, and the balance makes up the rest
+        // (the card's 100% takes the balance to $0.00).
+        else setCardAndBalance(value);
         clearFormError(root);
       }
     });
@@ -353,7 +357,7 @@ const widget = {
       if (!field) return;
       field.value = field.value.replace(/[^0-9.$,]/g, "");
       if (field.dataset.amount === "balance") setBalance(parseAmount(field.value));
-      else setCard(parseAmount(field.value));
+      else setCardAndBalance(parseAmount(field.value));
       clearFormError(root);
     });
     main.addEventListener("focusout", (e) => {
