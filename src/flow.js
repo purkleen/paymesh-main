@@ -127,8 +127,8 @@ export const v2 = {
     go("#/v2/contact");
   },
 
-  contactSubmitted({ firstName, lastName, phone, country }) {
-    update("session", { ...names(firstName, lastName), phone, country });
+  contactSubmitted({ phone, country }) {
+    update("session", { phone, country });
     go("#/v2/address");
   },
 

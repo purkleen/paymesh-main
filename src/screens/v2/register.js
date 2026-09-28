@@ -256,7 +256,7 @@ export const verify = {
 };
 
 /* -------------------------------------------------------------------------
-   Your details — name and phone number
+   Your phone number
    ------------------------------------------------------------------------- */
 
 export const contact = {
@@ -267,8 +267,7 @@ export const contact = {
       <div class="ds-stack ds-stack--24">
         <div class="ds-stack ds-stack--24">
           <div class="ds-stack ds-stack--16">
-            ${header("Your details")}
-            ${nameInputs(session, { autofocus: !session.name })}
+            ${header("Your phone number")}
             ${phoneInput({ value: session.phone || "", country: session.country })}
           </div>
           ${action("Continue to address", "continue")}
@@ -280,21 +279,18 @@ export const contact = {
   mount(root) {
     wirePage(root, backToMerchant);
     wireCountryFields(root);
-    if (getState().session.name) root.querySelector("#f-phone").focus();
+    root.querySelector("#f-phone").focus();
 
     const submit = () => {
       const v = values(root);
-      let ok = true;
       clearError(root, "phone");
       clearFormError(root);
 
-      if (!checkNames(root, v)) ok = false;
       if (!isValidPhone(v.phone, v.dial)) {
         showError(root, "phone", phoneHint(v.dial));
-        ok = false;
+        return showFormError(root, MISSING_FIELDS);
       }
-      if (!ok) return showFormError(root, MISSING_FIELDS);
-      v2.contactSubmitted({ firstName: v.firstName, lastName: v.lastName, phone: v.phone, country: v.dial });
+      v2.contactSubmitted({ phone: v.phone, country: v.dial });
     };
 
     root.querySelector('[data-action="continue"]').addEventListener("click", submit);
@@ -329,7 +325,7 @@ export const addressSearch = {
           </div>
         </div>
         <button class="ds-btn ds-btn--link" data-action="manual">Find address manually</button>
-        ${backLink("Back to contact details", "#/v2/contact")}
+        ${backLink("Back to phone number", "#/v2/contact")}
       </div>`,
     });
   },
@@ -385,7 +381,7 @@ export const addressConfirm = {
           </div>
           ${action("Continue to ID verification", "continue")}
         </div>
-        ${backLink("Back to contact details", "#/v2/contact")}
+        ${backLink("Back to phone number", "#/v2/contact")}
       </div>`,
     });
   },
