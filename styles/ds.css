@@ -602,7 +602,7 @@ button.ds-option { cursor: pointer; }
 }
 
 /* ==========================================================================
-   Split-payment widget — Figma "Desktop - 2" (widget.html)
+   Split-payment widget — Figma "Desktop - 5" (widget.html)
    ========================================================================== */
 
 :root {
@@ -655,7 +655,7 @@ button.ds-option { cursor: pointer; }
 .sw-switch input:checked + .sw-switch__track { background: var(--primary-blue-600); }
 .sw-switch input:checked + .sw-switch__track::after { transform: translateX(16px); }
 .sw-switch input:focus-visible + .sw-switch__track { box-shadow: var(--shadow-xs-focused); }
-.sw-switch__label { font: var(--label-m); letter-spacing: var(--tracking-text); color: #000; }
+.sw-switch__label { font: var(--text-s); letter-spacing: var(--tracking-text); color: #000; }
 
 /* Radio group item — the new 16px-radius version that can hold an amount editor */
 .sw-item {
@@ -665,13 +665,16 @@ button.ds-option { cursor: pointer; }
   border-radius: var(--radius-xl);
   background: var(--base-white);
 }
-.sw-item[aria-checked="true"] { border-color: var(--border-focus); }
+.sw-item[aria-checked="true"] {
+  border-color: var(--action-primary-default);
+  box-shadow: inset 0 0 0 1px var(--action-primary-default);
+}
 .sw-item__row { display: flex; align-items: flex-start; gap: var(--spacing-12); width: 100%; }
 .sw-item__pick { padding: 0; border: 0; background: none; font: inherit; color: inherit; text-align: left; cursor: pointer; }
 .sw-item .ds-option__side > img { width: 45px; height: 32px; }
 .sw-item[aria-checked="true"] .ds-option__radio {
-  background: var(--action-primary-default) url("../assets/ds/radio-check.svg") center/11px no-repeat;
-  border-color: var(--action-primary-default);
+  border: 0;
+  background: url("../assets/ds/radio-selected.svg") center/16px no-repeat;
 }
 
 /* Paymesh balance checkbox (square) */
@@ -679,12 +682,12 @@ button.ds-option { cursor: pointer; }
   flex: 0 0 auto;
   width: 16px; height: 16px; margin-top: 4px;
   border: 1px solid var(--action-primary-default);
-  border-radius: 6px;
+  border-radius: var(--radius-s);
   background: var(--brand-50) url("../assets/ds/check-brand.svg") center/11px no-repeat;
 }
 
 /* Amount field + chips */
-.sw-editor { display: flex; flex-direction: column; align-items: flex-end; gap: var(--spacing-8); }
+.sw-editor { display: flex; flex-direction: column; align-items: flex-end; gap: var(--spacing-8); padding-left: 28px; }
 .sw-editor__input { align-self: stretch; }
 .sw-editor__input input { text-align: right; }
 .sw-chips { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: var(--spacing-8); }
@@ -694,6 +697,7 @@ button.ds-option { cursor: pointer; }
   border-radius: var(--radius-full);
   background: var(--surface-secondary);
   font: var(--text-xs);
+  font-weight: 500;
   letter-spacing: var(--tracking-text);
   color: var(--text-primary);
   cursor: pointer;
@@ -701,14 +705,35 @@ button.ds-option { cursor: pointer; }
 .sw-chip:hover { background: var(--border-subtle); }
 .sw-chip[aria-pressed="true"] { background: var(--action-primary-default); color: var(--text-inverse); }
 
-/* Billing info */
-.sw-billing {
-  padding: var(--spacing-16);
-  border: 1px solid var(--border-default);
-  border-radius: var(--radius-m);
-  font: var(--text-m);
-}
+/* Billing info — plain text under its header */
+.sw-billing { font: var(--text-m); color: var(--text-primary); }
 .sw-billing p { margin: 0; }
+
+/* Header: title with the merchant's 24px logo on the right */
+.sw-head { display: flex; align-items: center; justify-content: space-between; gap: var(--spacing-12); padding: 0 var(--spacing-16); }
+.sw-head .ds-card__title { padding: 0; }
+.sw-head__logo { width: 24px; height: 24px; border-radius: var(--radius-full); object-fit: cover; flex: 0 0 auto; }
+
+/* Body: full-width dividers, so the horizontal padding moves onto each block */
+.sw .sw-body { padding: var(--spacing-24) 0 var(--spacing-16); gap: var(--spacing-24); }
+.sw-pad { padding: 0 var(--spacing-16); }
+.sw-divider { width: 100%; height: 0; margin: 0; border: 0; border-top: 1px solid var(--border-subtle); }
+
+/* Amount to pay */
+.sw-total { display: flex; align-items: flex-start; justify-content: space-between; gap: var(--spacing-4); }
+.sw-total__label,
+.sw-total__usd { font: var(--heading-m-bold); letter-spacing: 0; color: #000; }
+.sw-total__value { display: flex; flex-direction: column; align-items: flex-end; gap: var(--spacing-2); text-align: right; }
+.sw-total__token { font: var(--text-s); color: var(--text-muted); }
+
+/* Section titles with a 24px icon */
+.sw-title { display: flex; align-items: center; gap: var(--spacing-8); }
+.sw-title > img { width: 24px; height: 24px; flex: 0 0 auto; }
+.sw-title__mark { width: 24px; height: 24px; display: grid; place-items: center; flex: 0 0 auto; }
+.sw-title__mark img { width: 20.3px; height: 13px; }
+
+/* Info box uses the brand border in this layout */
+.sw .ds-info { border-color: var(--action-primary-default); }
 
 /* ==========================================================================
    Menu of prototypes after the password screen (#/menu) — deliberately plain

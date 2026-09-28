@@ -1,5 +1,6 @@
 /**
- * Payment widget with split payment — Figma "Desktop - 2" (node 1300:27859).
+ * Payment widget with split payment — layout from Figma "Desktop - 5"
+ * (node 1320:31550); behaviour first built against "Desktop - 2" (1300:27859).
  *
  * Standalone: rendered on its own white page by src/widget.js, outside the
  * journeys. Three states from the design:
@@ -23,7 +24,7 @@
  * order, so both cases come up).
  */
 
-import { button, checkbox, icon, asset, merchantPayment, busy, isBusy } from "../../ds.js";
+import { button, checkbox, icon, asset, merchantLogo, busy, isBusy } from "../../ds.js";
 import { esc, money, tokens, formAlert, showFormError, clearFormError } from "../../ui.js";
 import { MERCHANT, ORDER } from "../../config.js";
 
@@ -131,21 +132,35 @@ const widget = {
         <button type="button" class="sw-random__btn" data-randomize="covers">Paymesh balance covers 100%</button>
       </div>
       <section class="ds-card sw" aria-label="Payment">
-        <h2 class="ds-card__title">Payment</h2>
-        <div class="ds-card__body">
-          ${merchantPayment(MERCHANT, money(TOTAL), tokens(TOTAL))}
-          <div class="sw-main" data-main></div>
-          <div class="ds-info" data-statement hidden>
-            ${icon("receipt", 20)}
-            <span>This payment will appear on your bank statement as <strong>Paymesh-xyz-1234</strong>.</span>
+        <div class="sw-head">
+          <h2 class="ds-card__title">Payment</h2>
+          ${merchantLogo(MERCHANT, "sw-head__logo")}
+        </div>
+        <div class="ds-card__body sw-body">
+          <div class="sw-pad sw-total">
+            <span class="sw-total__label">Amount to pay</span>
+            <span class="sw-total__value">
+              <span class="sw-total__usd">${money(TOTAL)}</span>
+              <span class="sw-total__token">&asymp; ${tokens(TOTAL)}</span>
+            </span>
           </div>
-          ${checkbox({
-            name: "terms",
-            label: `I accept the terms and conditions of purchase for both
-                    <a href="#" data-noop>Paymesh</a> and <a href="#" data-noop>Payhound</a>.`,
-          })}
-          <div class="ds-stack ds-stack--8">
-            ${button("To payment", { action: "pay" })}
+          <hr class="sw-divider" />
+          <div class="sw-main" data-main></div>
+          <div class="sw-pad" data-statement hidden>
+            <div class="ds-info">
+              ${icon("receipt", 20)}
+              <span>This payment will appear on your bank statement as <strong>Paymesh-xyz-1234</strong>.</span>
+            </div>
+          </div>
+          <div class="sw-pad">
+            ${checkbox({
+              name: "terms",
+              label: `I accept the terms and conditions of purchase for both
+                      <a href="#" data-noop>Paymesh</a> and <a href="#" data-noop>Payhound</a>.`,
+            })}
+          </div>
+          <div class="sw-pad ds-stack ds-stack--8">
+            ${button("Continue to payment", { action: "pay" })}
             ${formAlert()}
           </div>
           <p class="ds-secure">${icon("safety", 20)}This payment is secure thanks to xyz.</p>
@@ -176,9 +191,12 @@ const widget = {
     /* Structure changes (switch, card choice) redraw the sections; typing only syncs numbers. */
     const draw = () => {
       main.innerHTML = `
-        <section class="sw-section">
+        <section class="sw-section sw-pad">
           <div class="sw-section__head">
-            <h3 class="ds-h2">Paymesh Balance</h3>
+            <span class="sw-title">
+              <span class="sw-title__mark" aria-hidden="true"><img src="${asset("paymesh-mark-dark.svg")}" alt="" /></span>
+              <h3 class="ds-h2">Paymesh Balance</h3>
+            </span>
             ${
               MUST_SPLIT
                 ? ""
@@ -206,26 +224,29 @@ const widget = {
           </div>
         </section>
 
+        <hr class="sw-divider" />
+
         ${
           state.split
-            ? `<section class="sw-section">
+            ? `<section class="sw-section sw-pad">
                  <div class="sw-section__head sw-section__head--top">
-                   <h3 class="ds-h2">Remaining balance</h3>
+                   <span class="sw-title">${icon("wallet")}<h3 class="ds-h2">Remaining balance</h3></span>
                    <span data-remaining>${amounts(remaining())}</span>
                  </div>
                  <div class="sw-cards" data-cards>
                    <div class="ds-stack ds-stack--16" role="radiogroup" aria-label="Card for the remaining balance">
                      ${CARDS.map((card) => cardItem(card)).join("")}
                    </div>
-                   <button class="ds-btn ds-btn--link ds-btn--link-l" data-noop>${icon("add")}Add card</button>
+                   <button class="ds-btn ds-btn--link" data-noop>${icon("add")}Add card</button>
                  </div>
-               </section>`
+               </section>
+               <hr class="sw-divider" />`
             : ""
         }
 
-        <section class="sw-section">
-          <div class="sw-section__head sw-section__head--baseline">
-            <h3 class="ds-h2">Billing address</h3>
+        <section class="sw-section sw-pad">
+          <div class="sw-section__head">
+            <span class="sw-title">${icon("location")}<h3 class="ds-h2">Billing address</h3></span>
             <a class="ds-link" href="#" data-noop>Edit</a>
           </div>
           <div class="sw-billing">${BILLING.map((l) => `<p>${esc(l)}</p>`).join("")}</div>
