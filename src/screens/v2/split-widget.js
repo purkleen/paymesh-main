@@ -103,7 +103,17 @@ const amountEditor = (name, value, chips) => `
     </div>
   </div>`;
 
-const percentChips = (of) => [25, 50, 100].map((p) => ({ label: `${p}%`, value: cents((of * p) / 100) }));
+const PERCENTS = [25, 50, 100];
+const percentChips = (of) => PERCENTS.map((p) => ({ label: `${p}%`, value: cents((of * p) / 100) }));
+
+/**
+ * The card's percentages of the order, rounded to complement the balance's:
+ * the card's p% is the order minus (100 − p)% of it. On an odd-cent order
+ * ($144.93) a 50% / 50% split is then $72.47 + $72.46, adding up exactly
+ * instead of both rounding up to $72.47.
+ */
+const cardPercentChips = (total) =>
+  PERCENTS.map((p) => ({ label: `${p}%`, value: cents(total - cents((total * (100 - p)) / 100)) }));
 
 /* --------------------------------------------------------------------------
    Widget
@@ -157,7 +167,7 @@ const widget = {
     const remaining = () => cents(Math.max(0, TOTAL - state.fromBalance));
     const cardInUse = () => Boolean(state.split && state.cardId);
     /** A "Remaining" chip is redundant when a percentage chip already offers that amount. */
-    const duplicatesPercent = (value, of) => percentChips(of).some((c) => same(c.value, value));
+    const duplicatesPercent = (value, chips) => chips.some((c) => same(c.value, value));
     const paid = () => cents(state.fromBalance + (cardInUse() ? state.fromCard : 0));
     /** What the balance would need to be for the two amounts to add up to the total. */
     const balanceFill = () => cents(Math.min(Math.max(TOTAL - state.fromCard, 0), maxFromBalance()));
@@ -240,7 +250,7 @@ const widget = {
           selected
             ? amountEditor("card", state.fromCard, [
                 { label: remainingLabel(remaining()), value: remaining(), fill: true },
-                ...percentChips(TOTAL),
+                ...cardPercentChips(TOTAL),
               ])
             : ""
         }
@@ -263,7 +273,7 @@ const widget = {
       if (cardFill) {
         cardFill.dataset.value = remaining();
         cardFill.textContent = remainingLabel(remaining());
-        cardFill.hidden = remaining() <= 0 || duplicatesPercent(remaining(), TOTAL);
+        cardFill.hidden = remaining() <= 0 || duplicatesPercent(remaining(), cardPercentChips(TOTAL));
       }
 
       // The balance's "Remaining" chip only shows while the amounts don't add up
@@ -277,7 +287,7 @@ const widget = {
           balanceFill() <= 0 ||
           same(paid(), TOTAL) ||
           same(balanceFill(), state.fromBalance) ||
-          duplicatesPercent(balanceFill(), maxFromBalance());
+          duplicatesPercent(balanceFill(), percentChips(maxFromBalance()));
       }
 
       [
