@@ -732,11 +732,14 @@ button.ds-option { cursor: pointer; }
 .menu__entry + .menu__entry { margin-top: var(--spacing-16); }
 .menu__note { margin: 0; color: var(--text-secondary); }
 
-/* Randomize button beside the widget (below 760px it sits above it) */
+/* Amount scenarios beside the widget (below 760px they sit above it) */
 .sw-wrap { position: relative; width: var(--ds-widget); max-width: 100%; display: flex; flex-direction: column; }
 .sw-wrap .sw { width: 100%; }
 .sw-random {
   position: absolute; top: 0; left: calc(100% + var(--spacing-16));
+  display: flex; flex-direction: column; align-items: flex-start; gap: var(--spacing-8);
+}
+.sw-random__btn {
   padding: 6px 12px;
   border: 1px solid var(--border-default);
   border-radius: var(--radius-full);
@@ -747,7 +750,9 @@ button.ds-option { cursor: pointer; }
   white-space: nowrap;
   cursor: pointer;
 }
-.sw-random:hover { background: var(--surface-secondary); }
+.sw-random__btn:hover { background: var(--surface-secondary); }
 @media (max-width: 760px) {
-  .sw-random { position: static; align-self: center; margin-bottom: var(--spacing-12); }
+  .sw-random { position: static; flex-direction: row; flex-wrap: wrap; justify-content: center; margin-bottom: var(--spacing-12); }
 }
+
+.sw-cards { display: flex; flex-direction: column; gap: var(--spacing-8); }

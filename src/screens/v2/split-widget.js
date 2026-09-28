@@ -53,11 +53,16 @@ function readAmounts() {
   MUST_SPLIT = BALANCE < TOTAL;
 }
 
-/** A new order total ($50–$5,000) and a balance that covers it about half the time. */
-function randomAmounts() {
+/**
+ * A new order total ($50–$5,000) and balance. `scenario` picks the case:
+ * "short" — the balance can't cover the order; "covers" — it covers all of it;
+ * anything else — either, about half the time each.
+ */
+function randomAmounts(scenario) {
   const between = (min, max) => cents(min + Math.random() * (max - min));
   const total = between(50, 5000);
-  const balance = Math.random() < 0.5 ? between(total, total * 1.6) : between(0, total * 0.9);
+  const covers = scenario === "covers" || (scenario !== "short" && Math.random() < 0.5);
+  const balance = covers ? between(total, total * 1.6) : between(0, total * 0.9);
   return { total, balance };
 }
 
@@ -110,8 +115,11 @@ const widget = {
     return `
     <main class="sw-stage">
       <div class="sw-wrap">
-      <button type="button" class="sw-random" data-randomize
-              title="New order total and Paymesh balance">Randomize amounts</button>
+      <div class="sw-random" role="group" aria-label="Try other amounts">
+        <button type="button" class="sw-random__btn" data-randomize="any">Randomize amounts</button>
+        <button type="button" class="sw-random__btn" data-randomize="short">Insufficient Paymesh balance</button>
+        <button type="button" class="sw-random__btn" data-randomize="covers">Paymesh balance covers 100%</button>
+      </div>
       <section class="ds-card sw" aria-label="Payment">
         <h2 class="ds-card__title">Payment</h2>
         <div class="ds-card__body">
@@ -147,7 +155,9 @@ const widget = {
       cardEdited: false, // once the buyer types a card amount, stop following the remainder
     };
     const remaining = () => cents(Math.max(0, TOTAL - state.fromBalance));
-    const paid = () => cents(state.fromBalance + (state.cardId ? state.fromCard : 0));
+    /** A chosen card only counts while the balance leaves something for it. */
+    const cardInUse = () => Boolean(state.split && state.cardId && remaining() > 0);
+    const paid = () => cents(state.fromBalance + (cardInUse() ? state.fromCard : 0));
     /** What the balance would need to be for the two amounts to add up to the total. */
     const balanceFill = () => cents(Math.min(Math.max(TOTAL - state.fromCard, 0), maxFromBalance()));
     const remainingLabel = (n) => `Remaining ${money(n)}`;
@@ -192,10 +202,12 @@ const widget = {
                    <h3 class="ds-h2">Remaining balance</h3>
                    <span data-remaining>${amounts(remaining())}</span>
                  </div>
-                 <div class="ds-stack ds-stack--16" role="radiogroup" aria-label="Card for the remaining balance">
-                   ${CARDS.map((card) => cardItem(card)).join("")}
+                 <div class="sw-cards" data-cards>
+                   <div class="ds-stack ds-stack--16" role="radiogroup" aria-label="Card for the remaining balance">
+                     ${CARDS.map((card) => cardItem(card)).join("")}
+                   </div>
+                   <button class="ds-btn ds-btn--link ds-btn--link-l" data-noop>${icon("add")}Add card</button>
                  </div>
-                 <button class="ds-btn ds-btn--link ds-btn--link-l" data-noop>${icon("add")}Add card</button>
                </section>`
             : ""
         }
@@ -239,15 +251,21 @@ const widget = {
       if (state.cardId && !state.cardEdited) state.fromCard = remaining();
 
       // A card is being charged, so say how it will show on the statement.
-      root.querySelector("[data-statement]").hidden = !(state.split && state.cardId);
+      root.querySelector("[data-statement]").hidden = !cardInUse();
 
       const rem = main.querySelector("[data-remaining]");
       if (rem) rem.innerHTML = amounts(remaining());
 
+      // Nothing left once the balance covers the whole order, so no card to choose.
+      const cards = main.querySelector("[data-cards]");
+      if (cards) cards.hidden = remaining() <= 0;
+
+      // "Remaining" chips only show when there is more than $0 to fill.
       const cardFill = main.querySelector('[data-chip="card"][data-fill]');
       if (cardFill) {
         cardFill.dataset.value = remaining();
         cardFill.textContent = remainingLabel(remaining());
+        cardFill.hidden = remaining() <= 0;
       }
 
       // The balance's "Remaining" chip only shows while the amounts don't add up
@@ -256,7 +274,8 @@ const widget = {
       if (balanceChip) {
         balanceChip.dataset.value = balanceFill();
         balanceChip.textContent = remainingLabel(balanceFill());
-        balanceChip.hidden = !state.cardId || same(paid(), TOTAL) || same(balanceFill(), state.fromBalance);
+        balanceChip.hidden =
+          !cardInUse() || balanceFill() <= 0 || same(paid(), TOTAL) || same(balanceFill(), state.fromBalance);
       }
 
       [
@@ -367,8 +386,10 @@ const widget = {
       }, PAY_MS);
     });
 
-    root.querySelector("[data-randomize]").addEventListener("click", () => {
-      const { total, balance } = randomAmounts();
+    root.querySelector(".sw-random").addEventListener("click", (e) => {
+      const btn = e.target.closest("[data-randomize]");
+      if (!btn) return;
+      const { total, balance } = randomAmounts(btn.dataset.randomize);
       history.replaceState(null, "", `?total=${total}&balance=${balance}`);
       root.innerHTML = widget.render();
       widget.mount(root);
