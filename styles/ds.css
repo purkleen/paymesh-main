@@ -600,3 +600,113 @@ button.ds-option { cursor: pointer; }
   .ds-footer { padding-bottom: 44px; } /* clear the prototype pill */
   .ds-footer__line { font-size: 11px; }
 }
+
+/* ==========================================================================
+   Split-payment widget — Figma "Desktop - 2" (widget.html)
+   ========================================================================== */
+
+:root {
+  --primary-blue-600: #2563eb; /* Switch, as in the Figma component */
+  --brand-50: #f9f5ff;
+}
+
+.sw-stage {
+  min-height: 100vh;
+  min-height: 100dvh;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr); /* let the widget shrink below 423px on phones */
+  place-items: center;
+  padding: var(--spacing-48) var(--spacing-16);
+  background: var(--base-white);
+  font: var(--text-m);
+  letter-spacing: var(--tracking-text);
+  color: var(--text-primary);
+}
+.sw { width: var(--ds-widget); max-width: 100%; }
+
+.sw-main { display: flex; flex-direction: column; gap: var(--spacing-24); }
+.sw-section { display: flex; flex-direction: column; gap: var(--spacing-8); }
+.sw-section__head { display: flex; align-items: center; justify-content: space-between; gap: var(--spacing-12); }
+.sw-section__head--top { align-items: flex-start; }
+.sw-section__head--baseline { align-items: baseline; }
+
+.sw-amounts { display: flex; flex-direction: column; align-items: flex-end; text-align: right; flex: 0 0 auto; }
+.sw-sub { font: var(--text-s); color: var(--text-tertiary); }
+
+/* Switch */
+.sw-switch { display: inline-flex; align-items: center; gap: var(--spacing-12); cursor: pointer; }
+.sw-switch input { position: absolute; opacity: 0; width: 1px; height: 1px; }
+.sw-switch__track {
+  position: relative;
+  width: 36px; height: 20px;
+  border-radius: 100px;
+  background: var(--border-subtle);
+  transition: background-color .2s ease;
+}
+.sw-switch__track::after {
+  content: "";
+  position: absolute; top: 2px; left: 2px;
+  width: 16px; height: 16px;
+  border-radius: 100px;
+  background: var(--base-white);
+  box-shadow: 0 2px 4px rgba(39, 39, 39, .1);
+  transition: transform .2s ease;
+}
+.sw-switch input:checked + .sw-switch__track { background: var(--primary-blue-600); }
+.sw-switch input:checked + .sw-switch__track::after { transform: translateX(16px); }
+.sw-switch input:focus-visible + .sw-switch__track { box-shadow: var(--shadow-xs-focused); }
+.sw-switch__label { font: var(--label-m); letter-spacing: var(--tracking-text); color: #000; }
+
+/* Radio group item — the new 16px-radius version that can hold an amount editor */
+.sw-item {
+  display: flex; flex-direction: column; gap: var(--spacing-16);
+  padding: var(--spacing-16);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-xl);
+  background: var(--base-white);
+}
+.sw-item[aria-checked="true"] { border-color: var(--border-focus); }
+.sw-item__row { display: flex; align-items: flex-start; gap: var(--spacing-12); width: 100%; }
+.sw-item__pick { padding: 0; border: 0; background: none; font: inherit; color: inherit; text-align: left; cursor: pointer; }
+.sw-item .ds-option__side > img { width: 45px; height: 32px; }
+.sw-item[aria-checked="true"] .ds-option__radio {
+  background: var(--action-primary-default) url("../assets/ds/radio-check.svg") center/11px no-repeat;
+  border-color: var(--action-primary-default);
+}
+
+/* Paymesh balance checkbox (square) */
+.sw-square {
+  flex: 0 0 auto;
+  width: 16px; height: 16px; margin-top: 4px;
+  border: 1px solid var(--action-primary-default);
+  border-radius: 6px;
+  background: var(--brand-50) url("../assets/ds/check-brand.svg") center/11px no-repeat;
+}
+
+/* Amount field + chips */
+.sw-editor { display: flex; flex-direction: column; align-items: flex-end; gap: var(--spacing-8); }
+.sw-editor__input { align-self: stretch; }
+.sw-editor__input input { text-align: right; }
+.sw-chips { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: var(--spacing-8); }
+.sw-chip {
+  padding: 3px 10px;
+  border: 0;
+  border-radius: var(--radius-full);
+  background: var(--surface-secondary);
+  font: var(--text-xs);
+  letter-spacing: var(--tracking-text);
+  color: var(--text-primary);
+  cursor: pointer;
+}
+.sw-chip:hover { background: var(--border-subtle); }
+.sw-chip[aria-pressed="true"] { background: var(--action-primary-default); color: var(--text-inverse); }
+
+/* Billing info */
+.sw-billing {
+  padding: var(--spacing-16);
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-m);
+  font: var(--text-m);
+}
+.sw-billing p { margin: 0; }
+
