@@ -269,8 +269,11 @@ function mountCard(root) {
 
   const cardItem = (card) => {
     const selected = card.id === state.cardId;
+    // With no balance the chosen card pays the whole order, so there's no amount
+    // to pick: it shows as a plain selected option (Work-in-progress "registration-10").
+    const coversAll = selected && BALANCE <= 0;
     return `
-    <div class="sw-item" aria-checked="${selected}">
+    <div class="sw-item ${coversAll ? "sw-item--covers" : ""}" aria-checked="${selected}">
       <button type="button" class="sw-item__row sw-item__pick" role="radio" aria-checked="${selected}"
               data-card="${card.id}">
         <span class="ds-option__radio" aria-hidden="true"></span>
@@ -281,7 +284,7 @@ function mountCard(root) {
         <span class="ds-option__side">${schemeBadge(card.scheme)}</span>
       </button>
       ${
-        selected
+        selected && !coversAll
           ? amountEditor("card", state.fromCard, [
               { label: remainingLabel(remaining()), value: remaining(), fill: true },
               ...cardPercentChips(TOTAL),

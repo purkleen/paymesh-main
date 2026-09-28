@@ -685,6 +685,17 @@ button.ds-option { cursor: pointer; }
   background: url("../assets/ds/radio-selected.svg") center/16px no-repeat;
 }
 
+/* A card that pays the whole order (no balance): selected option, no amount editor */
+.sw-item--covers[aria-checked="true"] {
+  /* 2px border: 1px border plus the 1px inset ring from .sw-item[aria-checked=true] */
+  border-color: var(--action-primary-default);
+  background: var(--surface-primary);
+  color: var(--text-brand);
+}
+.sw-item--covers[aria-checked="true"] .ds-option__radio {
+  background: var(--action-primary-default) url("../assets/ds/radio-check.svg") center/11px no-repeat;
+}
+
 /* Paymesh balance checkbox (square) */
 .sw-square {
   flex: 0 0 auto;
