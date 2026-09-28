@@ -731,3 +731,23 @@ button.ds-option { cursor: pointer; }
 .menu__links a:hover { opacity: .7; }
 .menu__entry + .menu__entry { margin-top: var(--spacing-16); }
 .menu__note { margin: 0; color: var(--text-secondary); }
+
+/* Randomize button beside the widget (below 760px it sits above it) */
+.sw-wrap { position: relative; width: var(--ds-widget); max-width: 100%; display: flex; flex-direction: column; }
+.sw-wrap .sw { width: 100%; }
+.sw-random {
+  position: absolute; top: 0; left: calc(100% + var(--spacing-16));
+  padding: 6px 12px;
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-full);
+  background: var(--base-white);
+  font: var(--text-s);
+  letter-spacing: var(--tracking-text);
+  color: var(--text-primary);
+  white-space: nowrap;
+  cursor: pointer;
+}
+.sw-random:hover { background: var(--surface-secondary); }
+@media (max-width: 760px) {
+  .sw-random { position: static; align-self: center; margin-bottom: var(--spacing-12); }
+}
