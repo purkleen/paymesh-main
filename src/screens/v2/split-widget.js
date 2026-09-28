@@ -307,11 +307,11 @@ const widget = {
     main.addEventListener("change", (e) => {
       if (!e.target.matches("[data-split]")) return;
       state.split = e.target.checked;
-      if (!state.split) {
-        state.fromBalance = maxFromBalance();
-        state.cardId = null;
-        state.cardEdited = false;
-      }
+      // Turning the split on starts the balance at 25% (as in the design), so
+      // there's something left for a card; turning it off pays it all from the balance.
+      state.fromBalance = state.split ? percentChips(maxFromBalance())[0].value : maxFromBalance();
+      state.cardId = null;
+      state.cardEdited = false;
       clearFormError(root);
       draw();
     });
