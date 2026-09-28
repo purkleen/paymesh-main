@@ -126,7 +126,7 @@ export const addCardScreen = {
       <div class="ds-stack ds-stack--24">
         <div class="ds-stack ds-stack--16">
           ${header("Add card")}
-          <div class="ds-stack ds-stack--24">
+          <div class="ds-stack ds-stack--48">
             ${section(
               "Add card",
               `
@@ -143,15 +143,17 @@ export const addCardScreen = {
                           <img class="ds-method" data-scheme="visa" src="${asset("visa.svg")}" alt="Visa" />
                         </span>`,
               })}
-              ${input({ label: "Expiry date (MM/YY)", name: "expiry", placeholder: "MM/YY", required: true, inputmode: "numeric", autocomplete: "cc-exp" })}
-              ${input({
-                label: "CVC",
-                name: "cvc",
-                required: true,
-                inputmode: "numeric",
-                autocomplete: "cc-csc",
-                hint: "3-digit number at the back of your card",
-              })}`
+              <div class="ds-row-2">
+                ${input({ label: "Expiry date (MM/YY)", name: "expiry", placeholder: "MM/YY", required: true, inputmode: "numeric", autocomplete: "cc-exp" })}
+                ${input({
+                  label: "Security code",
+                  name: "cvc",
+                  required: true,
+                  inputmode: "numeric",
+                  autocomplete: "cc-csc",
+                  after: icon("card"),
+                })}
+              </div>`
             )}
 
             ${section(
@@ -166,12 +168,14 @@ export const addCardScreen = {
             ${section(
               "Billing address",
               `
-              ${checkbox({
-                name: "differentAddress",
-                label: "Billing address for the card is different than shipping.",
-                muted: true,
-              })}
-              ${a.line1 ? `<div class="ds-address-summary" data-billing-summary>${addressLines(a)}</div>` : ""}
+              ${
+                a.line1
+                  ? `<div class="ds-address-summary" data-billing-summary>
+                       <div class="ds-address-summary__lines">${addressLines(a)}</div>
+                       <button type="button" class="ds-link ds-link--s-strong" data-edit-billing>Edit</button>
+                     </div>`
+                  : ""
+              }
               <div class="ds-stack ds-stack--16" data-billing-fields ${a.line1 ? "hidden" : ""}>
                 ${countrySelect({ name: "billingCountry", value: a.country || country })}
                 ${input({ label: "Street address", name: "street", value: a.line1 || "", required: true, autocomplete: "billing address-line1" })}
@@ -191,7 +195,12 @@ export const addCardScreen = {
                   autocomplete: "billing postal-code",
                 })}
                 ${input({ label: "County", name: "county", value: a.state || "", optional: true, autocomplete: "billing address-level1" })}
-              </div>`
+              </div>
+              ${checkbox({
+                name: "differentAddress",
+                label: "Billing address for the card is different than shipping.",
+                muted: true,
+              })}`
             )}
           </div>
         </div>
@@ -253,6 +262,14 @@ export const addCardScreen = {
     different.addEventListener("change", () => {
       fields.hidden = !billingOpen();
       if (summary) summary.hidden = billingOpen();
+    });
+
+    // "Edit" in the summary does the same as ticking "different", then puts
+    // the cursor in the first address field.
+    root.querySelector("[data-edit-billing]")?.addEventListener("click", () => {
+      different.checked = true;
+      different.dispatchEvent(new Event("change"));
+      root.querySelector("#f-street").focus();
     });
 
     const terms = root.querySelector('input[name="terms"]');

@@ -528,17 +528,22 @@ button.ds-option { cursor: pointer; }
 .ds-address__lines { padding: 0 var(--spacing-16) 0 var(--spacing-48); font: var(--text-m); color: var(--text-secondary); }
 .ds-address__lines p { margin: var(--spacing-2) 0 0; }
 
-/* Billing address when it matches shipping */
+/* Billing address when it matches shipping — with an Edit link inside the box */
 .ds-address-summary {
+  display: flex; align-items: flex-start; justify-content: space-between; gap: var(--spacing-8);
   padding: var(--spacing-16);
   background: var(--surface-primary);
-  border: 1px solid var(--border-subtle);
+  border: 1px solid var(--border-default);
   border-radius: var(--radius-m);
   font: var(--text-m);
-  color: var(--text-secondary);
+  color: var(--text-primary);
 }
 .ds-address-summary p { margin: 0; }
-.ds-address-summary p:first-child { color: var(--text-primary); }
+.ds-address-summary p:first-child { font-weight: 600; }
+.ds-link--s-strong { font: 600 14px/20px var(--font-family-inter); letter-spacing: var(--tracking-text); }
+
+/* Two fields side by side (expiry + security code) */
+.ds-row-2 { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: var(--spacing-16); }
 
 .ds-divider { height: 1px; background: var(--border-subtle); border: 0; margin: 0; }
 
