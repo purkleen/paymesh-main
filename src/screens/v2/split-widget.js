@@ -462,29 +462,35 @@ export function paymentWidget(getConfig) {
   };
 }
 
+/* The three amount scenarios shown beside the card (standalone page and journey). */
+const SCENARIOS = `
+  <div class="sw-random" role="group" aria-label="Try other amounts">
+    <button type="button" class="sw-random__btn" data-randomize="any">Randomize amounts</button>
+    <button type="button" class="sw-random__btn" data-randomize="short">Insufficient Paymesh balance</button>
+    <button type="button" class="sw-random__btn" data-randomize="covers">Paymesh balance covers 100%</button>
+  </div>`;
+
+/** `card` markup with the scenario buttons beside it. */
+export const withScenarios = (card) => `<div class="sw-wrap">${SCENARIOS}${card}</div>`;
+
+/** Calls onPick({ total, balance }) with new random amounts when a scenario is pressed. */
+export function wireScenarios(root, onPick) {
+  root.querySelector(".sw-random")?.addEventListener("click", (e) => {
+    const btn = e.target.closest("[data-randomize]");
+    if (btn) onPick(randomAmounts(btn.dataset.randomize));
+  });
+}
+
 /* The standalone page (widget.html): the card on white with the amount scenarios beside it. */
 const widget = {
   render() {
     configure(standaloneConfig());
-    return `
-    <main class="sw-stage">
-      <div class="sw-wrap">
-        <div class="sw-random" role="group" aria-label="Try other amounts">
-          <button type="button" class="sw-random__btn" data-randomize="any">Randomize amounts</button>
-          <button type="button" class="sw-random__btn" data-randomize="short">Insufficient Paymesh balance</button>
-          <button type="button" class="sw-random__btn" data-randomize="covers">Paymesh balance covers 100%</button>
-        </div>
-        ${cardMarkup()}
-      </div>
-    </main>`;
+    return `<main class="sw-stage">${withScenarios(cardMarkup())}</main>`;
   },
 
   mount(root) {
     mountCard(root);
-    root.querySelector(".sw-random").addEventListener("click", (e) => {
-      const btn = e.target.closest("[data-randomize]");
-      if (!btn) return;
-      const { total, balance } = randomAmounts(btn.dataset.randomize);
+    wireScenarios(root, ({ total, balance }) => {
       history.replaceState(null, "", `?total=${total}&balance=${balance}`);
       root.innerHTML = widget.render();
       widget.mount(root);

@@ -43,7 +43,8 @@ import {
   postcodeTerm,
 } from "../../ui.js";
 import { getState, update, addCard, selectCard } from "../../store.js";
-import { paymentWidget } from "./split-widget.js";
+import { render as rerender } from "../../router.js";
+import { paymentWidget, withScenarios, wireScenarios } from "./split-widget.js";
 import { v2, backToMerchant } from "../../flow.js";
 import { AUTHORIZE_MS, COUNTRIES } from "../../config.js";
 
@@ -373,12 +374,19 @@ export const payment = {
     const { order } = getState();
     if (!order) return page({ content: `<p class="ds-body ds-center">No pending payment.</p>` });
     // Same 458px column as the other registration screens.
-    return page({ content: journeyWidget.render() });
+    return page({ content: withScenarios(journeyWidget.render()) });
   },
 
   mount(root) {
     wirePage(root, backToMerchant);
-    if (getState().order) journeyWidget.mount(root);
+    if (!getState().order) return;
+    journeyWidget.mount(root);
+    // Same amount scenarios as widget.html, applied to the journey's order and wallet.
+    wireScenarios(root, ({ total, balance }) => {
+      update("order", { amount: total });
+      update("wallet", { balance });
+      rerender();
+    });
   },
 };
 
