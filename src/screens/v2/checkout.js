@@ -3,7 +3,7 @@
  *
  *   #/v2/welcome    → Welcome, let's finish the payment   (registration-15)
  *   #/v2/add-card   → Add card                            (registration-04)
- *   #/v2/payment    → Payment                             (registration-10)
+ *   #/v2/payment    → Payment: the split-payment widget   (Flows payment-widget-C1)
  *   #/v2/authorize  → Complete order / Authorizing        (registration-08, -07)
  *   #/v2/success    → Order complete                      (registration-01)
  */
@@ -22,7 +22,6 @@ import {
   asset,
   icon,
   merchantLogo,
-  merchantPayment,
   paymentValue,
   wirePage,
 } from "../../ds.js";
@@ -43,7 +42,8 @@ import {
   phoneHint,
   postcodeTerm,
 } from "../../ui.js";
-import { getState, update, addCard, selectCard, selectedCard, shortfall } from "../../store.js";
+import { getState, update, addCard, selectCard } from "../../store.js";
+import { paymentWidget } from "./split-widget.js";
 import { v2, backToMerchant } from "../../flow.js";
 import { AUTHORIZE_MS, COUNTRIES } from "../../config.js";
 
@@ -52,12 +52,6 @@ const action = (label, name) => `
     ${button(label, { action: name })}
     ${formAlert()}
   </div>`;
-
-/** Card-scheme badge at the 45×32 size used in the Radio group item. */
-const schemeBadge = (scheme) =>
-  scheme === "visa"
-    ? `<img src="${asset("visa-lg.svg")}" width="45" height="32" alt="Visa" />`
-    : `<span class="ds-method ds-method--lg"><img src="${asset("mastercard.svg")}" alt="Mastercard" /></span>`;
 
 const capitalise = (s) => s.charAt(0).toUpperCase() + s.slice(1);
 
@@ -349,133 +343,41 @@ export const addCardScreen = {
 };
 
 /* -------------------------------------------------------------------------
-   Payment
+   Payment — the split-payment widget (src/screens/v2/split-widget.js) fed
+   from the journey: the order, the wallet balance, the cards added on "Add
+   card" (the new one pre-selected) and the registration address as billing.
    ------------------------------------------------------------------------- */
 
-function balanceOption(wallet) {
-  return `
-  <div class="ds-option ds-option--disabled" role="radio" aria-checked="false" aria-disabled="true">
-    <span class="ds-option__radio"></span>
-    <span class="ds-option__main"><span class="ds-option__title">Paymesh balance</span></span>
-    <span class="ds-option__side">
-      <span class="ds-amount">${money(wallet.balance)}</span>
-      <span class="ds-amount-sub">${tokens(wallet.balance)}</span>
-    </span>
-  </div>`;
-}
+const billingLines = (a) =>
+  a ? [[a.line1, a.line2].filter(Boolean).join(", "), `${a.postcode}, ${a.city}`, a.country || ""].filter(Boolean) : [];
 
-function cardOption(card, selectedId) {
-  return `
-  <button class="ds-option" role="radio" aria-checked="${card.id === selectedId}" data-card="${esc(card.id)}">
-    <span class="ds-option__radio"></span>
-    <span class="ds-option__main">
-      <span class="ds-option__title">${esc(card.label)}</span>
-      <span class="ds-option__sub">${esc(card.expiry)}</span>
-    </span>
-    <span class="ds-option__side">${schemeBadge(card.scheme)}</span>
-  </button>`;
-}
+const journeyWidget = paymentWidget(() => {
+  const { order, wallet } = getState();
+  return {
+    total: order.amount,
+    balance: wallet.balance,
+    merchant: order.merchant,
+    cards: wallet.cards,
+    billing: billingLines(wallet.address),
+    selectedCardId: wallet.selectedCardId,
+    onAddCard: v2.addCardRequested,
+    onPay: ({ cardId }) => {
+      if (cardId) selectCard(cardId);
+      v2.paymentConfirmed();
+    },
+  };
+});
 
 export const payment = {
   render() {
-    const { order, wallet, session } = getState();
+    const { order } = getState();
     if (!order) return page({ content: `<p class="ds-body ds-center">No pending payment.</p>` });
-    const remaining = shortfall();
-    const a = wallet.address;
-
-    return page({
-      widget: true,
-      content: `
-      <section class="ds-card">
-        <h2 class="ds-card__title">Payment</h2>
-        <div class="ds-card__body">
-          ${merchantPayment(order.merchant, money(order.amount), tokens(order.amount))}
-
-          <div class="ds-stack ds-stack--24">
-            ${balanceOption(wallet)}
-
-            <div class="ds-list-item">
-              <div class="ds-list-item__row">
-                <span class="ds-list-item__label">${icon("danger")}Remaining balance</span>
-                <span class="ds-option__side">
-                  <span class="ds-amount">${money(remaining)}</span>
-                  <span class="ds-amount-sub">${tokens(remaining)}</span>
-                </span>
-              </div>
-              <p class="ds-body" style="color:var(--text-primary)">
-                Remaining balance will be charged from the card selected below.
-              </p>
-              <div class="ds-stack ds-stack--16" role="radiogroup" aria-label="Card to pay with">
-                ${wallet.cards.map((c) => cardOption(c, wallet.selectedCardId)).join("")}
-                <button class="ds-btn ds-btn--link ds-btn--link-l" data-action="add-card">
-                  ${icon("add")}Add card
-                </button>
-              </div>
-            </div>
-
-            ${
-              a
-                ? `<div class="ds-address">
-                     <span class="ds-address__name">${icon("wallet")}${esc(session.name)}</span>
-                     <div class="ds-address__lines">
-                       <p>${esc([a.line1, a.line2].filter(Boolean).join(", "))}</p>
-                       <p>${esc(a.postcode)}, ${esc(a.city)}</p>
-                     </div>
-                   </div>`
-                : ""
-            }
-          </div>
-
-          <div class="ds-info">
-            ${icon("receipt", 20)}
-            <span>This payment will appear on your bank statement as <strong>Paymesh-xyz-1234</strong>.</span>
-          </div>
-
-          ${checkbox({
-            name: "terms",
-            label: `I accept the terms and conditions of purchase for both
-                    <a href="#" data-noop>Paymesh</a> and <a href="#" data-noop>Payhound</a>.`,
-          })}
-
-          ${action("To payment", "pay")}
-
-          <p class="ds-secure">${icon("safety", 20)}This payment is secure thanks to xyz.</p>
-        </div>
-      </section>`,
-    });
+    return page({ widget: true, content: journeyWidget.render() });
   },
 
   mount(root) {
     wirePage(root, backToMerchant);
-    root.querySelector('[data-action="add-card"]')?.addEventListener("click", v2.addCardRequested);
-
-    const choices = [...root.querySelectorAll("[data-card]")];
-    choices.forEach((choice) =>
-      choice.addEventListener("click", () => {
-        choices.forEach((c) => c.setAttribute("aria-checked", "false"));
-        choice.setAttribute("aria-checked", "true");
-        selectCard(choice.dataset.card);
-        clearFormError(root);
-      })
-    );
-
-    const terms = root.querySelector('input[name="terms"]');
-    terms?.addEventListener("change", () => {
-      terms.closest(".ds-check").dataset.invalid = "false";
-      clearFormError(root);
-    });
-
-    root.querySelector('[data-action="pay"]')?.addEventListener("click", () => {
-      clearFormError(root);
-      if (shortfall() > 0 && !selectedCard()) {
-        return showFormError(root, "Choose a card to pay the remaining balance, or add a new one.");
-      }
-      if (!terms.checked) {
-        terms.closest(".ds-check").dataset.invalid = "true";
-        return showFormError(root, "Accept the terms and conditions to continue.");
-      }
-      v2.paymentConfirmed();
-    });
+    if (getState().order) journeyWidget.mount(root);
   },
 };
 

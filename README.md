@@ -21,7 +21,7 @@ No build step, no dependencies — plain HTML, CSS and ES modules.
 | 6 | Registration via Google, then add a card | sign up → Google → verify → details → account ready → payment → add card → … |
 | 7 | Error while authorizing | payment → *Pay* fails with a mismatch error → retry succeeds |
 | 8 | Logged in, balance falls short | payment → pick a saved card (or add one) to top up → authorize → complete |
-| 9 | Registration — new version | sign up → create account → verify email → your details → search for address → confirm address → verify identity → welcome → add card → payment → complete order → order complete |
+| 9 | Registration — new version | sign up → create account → verify email → phone number → search for address → confirm address → verify identity → welcome → add card → payment (the split-payment widget, `/widget`) → complete order → order complete |
 
 > **Journeys 1–8 are switched off for now.** Their screens and code are kept,
 > but only journey 9 is offered. To bring one back, remove its id from
