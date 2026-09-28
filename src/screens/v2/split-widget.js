@@ -155,8 +155,9 @@ const widget = {
       cardEdited: false, // once the buyer types a card amount, stop following the remainder
     };
     const remaining = () => cents(Math.max(0, TOTAL - state.fromBalance));
-    /** A chosen card only counts while the balance leaves something for it. */
-    const cardInUse = () => Boolean(state.split && state.cardId && remaining() > 0);
+    const cardInUse = () => Boolean(state.split && state.cardId);
+    /** A "Remaining" chip is redundant when a percentage chip already offers that amount. */
+    const duplicatesPercent = (value, of) => percentChips(of).some((c) => same(c.value, value));
     const paid = () => cents(state.fromBalance + (cardInUse() ? state.fromCard : 0));
     /** What the balance would need to be for the two amounts to add up to the total. */
     const balanceFill = () => cents(Math.min(Math.max(TOTAL - state.fromCard, 0), maxFromBalance()));
@@ -251,21 +252,18 @@ const widget = {
       if (state.cardId && !state.cardEdited) state.fromCard = remaining();
 
       // A card is being charged, so say how it will show on the statement.
-      root.querySelector("[data-statement]").hidden = !cardInUse();
+      root.querySelector("[data-statement]").hidden = !(cardInUse() && state.fromCard > 0);
 
       const rem = main.querySelector("[data-remaining]");
       if (rem) rem.innerHTML = amounts(remaining());
 
-      // Nothing left once the balance covers the whole order, so no card to choose.
-      const cards = main.querySelector("[data-cards]");
-      if (cards) cards.hidden = remaining() <= 0;
-
-      // "Remaining" chips only show when there is more than $0 to fill.
+      // "Remaining" chips only show when there is more than $0 to fill and no
+      // percentage chip already offers the same amount (e.g. a 50% / 50% split).
       const cardFill = main.querySelector('[data-chip="card"][data-fill]');
       if (cardFill) {
         cardFill.dataset.value = remaining();
         cardFill.textContent = remainingLabel(remaining());
-        cardFill.hidden = remaining() <= 0;
+        cardFill.hidden = remaining() <= 0 || duplicatesPercent(remaining(), TOTAL);
       }
 
       // The balance's "Remaining" chip only shows while the amounts don't add up
@@ -275,7 +273,11 @@ const widget = {
         balanceChip.dataset.value = balanceFill();
         balanceChip.textContent = remainingLabel(balanceFill());
         balanceChip.hidden =
-          !cardInUse() || balanceFill() <= 0 || same(paid(), TOTAL) || same(balanceFill(), state.fromBalance);
+          !cardInUse() ||
+          balanceFill() <= 0 ||
+          same(paid(), TOTAL) ||
+          same(balanceFill(), state.fromBalance) ||
+          duplicatesPercent(balanceFill(), maxFromBalance());
       }
 
       [
