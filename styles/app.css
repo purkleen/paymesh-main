@@ -689,9 +689,10 @@ img.shop__mark { display: block; border-radius: 50%; object-fit: cover; }
 
 @media (max-width: 560px) {
   :root { --page-pad: 20px; --col: 100%; }
-  /* The prototype pill sits in the top bar, clear of the footer at the bottom */
-  .dev { top: 16px; bottom: auto; left: 50%; transform: translateX(-50%); }
-  .dev__panel { width: min(320px, calc(100vw - 32px)); margin: 44px 0 0; position: absolute; left: 50%; transform: translateX(-50%); }
+  /* The prototype pill stays at the bottom, lifted above the browser's bottom
+     bar (large minus small viewport is the room the bar takes). */
+  .dev { bottom: calc(100lvh - 100svh + 12px + env(safe-area-inset-bottom)); left: 12px; }
+  .dev__panel { width: min(320px, calc(100vw - 24px)); }
   .page__body { padding: 32px 0 24px; }
   .h1 { font-size: 26px; }
   .stepper { gap: 14px; }
