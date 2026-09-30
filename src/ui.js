@@ -616,8 +616,8 @@ export function startResendCountdown(el, seconds, { resendSeconds = 0 } = {}) {
   const paint = () => {
     el.innerHTML =
       left > 0
-        ? `Didn't receive the code? Resend code in ${left} seconds...`
-        : `Didn't receive the code? ${link}`;
+        ? `Didn’t receive the code? Resend code in ${left} seconds...`
+        : `Didn’t receive the code? ${link}`;
   };
   const run = (from) => {
     left = from;

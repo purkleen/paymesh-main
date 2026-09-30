@@ -82,7 +82,7 @@ export const button = (label, { action, variant = "primary", iconName = "" } = {
 
 /** "Cancel and go back to [merchant]" — returns the buyer to the merchant (wired by `wirePage`). */
 export const cancelLink = (extraClass = "") =>
-  `<button class="ds-link ${extraClass}" data-ds-cancel><span class="ds-nav__long">Cancel and go back</span><span class="ds-nav__short">Back</span> to ${esc(merchantName())}</button>`;
+  `<button class="ds-link ${extraClass}" data-ds-cancel>Back to ${esc(merchantName())}</button>`;
 
 /** "← Back to …" under a form. */
 export const backLink = (label, route) =>
@@ -232,11 +232,11 @@ export const countrySelect = ({ name = "country", value, label = "Country of res
  * Phone number — flag and dial-code dropdown joined to the number.
  * Keeps the ids ui.js#wireCountryFields drives (#f-dial, #f-phone, [data-dial]).
  */
-export function phoneInput({ value = "", country } = {}) {
+export function phoneInput({ value = "", country, showLabel = true } = {}) {
   const c = countryByName(country);
   return `
   <div class="ds-field" data-field="phone">
-    <label class="ds-label" for="f-phone">Phone number<span class="ds-label__req">*</span></label>
+    <label class="ds-label ${showLabel ? "" : "sr-only"}" for="f-phone">Phone number<span class="ds-label__req">*</span></label>
     <div class="ds-phone">
       <span class="ds-phone__code">
         <span data-dial>${flag(c.iso)} ${c.dial}</span>

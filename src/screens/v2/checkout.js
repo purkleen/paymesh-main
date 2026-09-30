@@ -56,7 +56,7 @@ const action = (label, name) => `
 const capitalise = (s) => s.charAt(0).toUpperCase() + s.slice(1);
 
 /* -------------------------------------------------------------------------
-   Welcome, <name>! Let's finish the payment
+   Welcome, <name>! Let’s finish the payment.
    ------------------------------------------------------------------------- */
 
 export const welcome = {
@@ -69,7 +69,7 @@ export const welcome = {
       <div class="ds-stack ds-stack--16 ds-stack--center">
         <img class="ds-art" src="${asset("success-check.png")}" alt="" />
         <div class="ds-stack ds-stack--24" style="align-self:stretch">
-          <h1 class="ds-h1">Welcome, ${esc(session.firstName || "there")}!<br />Let's finish the payment</h1>
+          <h1 class="ds-h1">Welcome, ${esc(session.firstName || "there")}!<br />Let’s finish the payment.</h1>
           ${button(order ? `Continue with ${esc(order.merchant.name)} payment` : "Continue with payment", {
             action: "continue",
           })}
@@ -174,7 +174,7 @@ export const addCardScreen = {
                 ${countrySelect({ name: "billingCountry", value: a.country || country })}
                 ${input({ label: "Street address", name: "street", value: a.line1 || "", required: true, autocomplete: "billing address-line1" })}
                 ${input({
-                  label: "Building, apartment, floor, suite, unit office, etc.",
+                  label: "Building, apartment, floor, suite, office, etc.",
                   name: "street2",
                   value: a.line2 || "",
                   optional: true,
@@ -604,7 +604,7 @@ export const success = {
                <span data-copy-label>${shortId(receipt.id)}</span>`
             )}
           </div>
-          ${order ? button(`Go back to ${esc(order.merchant.name)}`, { action: "back" }) : ""}
+          ${order ? button(`Back to ${esc(order.merchant.name)}`, { action: "back" }) : ""}
         </div>
       </div>`,
     });

@@ -81,13 +81,7 @@ export const signup = {
     return page({
       content: `
       <div class="ds-stack ds-stack--32">
-        <div class="ds-stack ds-stack--16">
-          <h1 class="ds-h1">Sign up</h1>
-          <p class="ds-body">
-            Already have an account?
-            <button class="ds-link" data-action="login">Log back in &rarr;</button>
-          </p>
-        </div>
+        <h1 class="ds-h1">Sign up to Paymesh</h1>
         <div class="ds-stack ds-stack--24">
           ${input({
             label: "Email address",
@@ -100,8 +94,8 @@ export const signup = {
           ${action("Create account", "create")}
           <div class="ds-or">or</div>
           <div class="ds-stack ds-stack--16 ds-social">
-            ${button("Sign up with Google", { action: "google", variant: "secondary", iconName: "google" })}
-            ${button("Sign up with Apple", { action: "apple", variant: "secondary", iconName: "apple" })}
+            ${button("Sign in with Google", { action: "google", variant: "secondary", iconName: "google" })}
+            ${button("Sign in with Apple", { action: "apple", variant: "secondary", iconName: "apple" })}
           </div>
           <p class="ds-body ds-center">
             Need help? <a class="ds-link" href="#" data-noop>Contact us</a>
@@ -130,12 +124,7 @@ export const signup = {
 
     root.querySelector('[data-action="google"]').addEventListener("click", googleRequested);
     root.querySelector('[data-action="apple"]').addEventListener("click", () =>
-      showFormError(root, "Sign up with Apple isn't part of this prototype — use your email or Google.")
-    );
-
-    // The log-in journeys are switched off for now (see DISABLED_SCENARIOS in config.js).
-    root.querySelector('[data-action="login"]').addEventListener("click", () =>
-      showFormError(root, "Logging back in isn't part of this prototype yet — sign up to continue.")
+      showFormError(root, "Sign in with Apple isn't part of this prototype — use your email or Google.")
     );
   },
 };
@@ -214,9 +203,8 @@ export const verify = {
         <div class="ds-stack ds-stack--24">
           <div class="ds-stack ds-stack--16">
             ${header(
-              "Enter the 6-digit code we sent you",
-              `We sent the code to <strong>${esc(session.email || "your email")}</strong>. This helps us
-               keep your account secure by verifying that it's really you.`
+              "Verify your email",
+              `Enter the 6-digit code we sent you to <strong>${esc(session.email || "your email")}</strong>.`
             )}
             <div style="padding-top:var(--spacing-16)">${otp()}</div>
             <p class="ds-small ds-center" data-resend></p>
@@ -268,7 +256,7 @@ export const contact = {
         <div class="ds-stack ds-stack--24">
           <div class="ds-stack ds-stack--16">
             ${header("Your phone number")}
-            ${phoneInput({ value: session.phone || "", country: session.country })}
+            ${phoneInput({ value: session.phone || "", country: session.country, showLabel: false })}
           </div>
           ${action("Continue to address", "continue")}
         </div>
@@ -308,7 +296,7 @@ export const addressSearch = {
       content: `
       <div class="ds-stack ds-stack--24">
         <div class="ds-stack ds-stack--16">
-          ${header("Search for address", "Start typing postcode, city, or street name to find your address.", { large: true })}
+          ${header("Find address", "Start typing postcode, city, or street name to find your address.", { large: true })}
           <div class="ds-field" data-field="search" style="padding-top:var(--spacing-16)">
             <div class="ds-combo">
               <div class="ds-input">
@@ -324,8 +312,8 @@ export const addressSearch = {
             <p class="field__error" hidden></p>
           </div>
         </div>
-        <button class="ds-btn ds-btn--link" data-action="manual">Find address manually</button>
-        ${backLink("Back to phone number", "#/v2/contact")}
+        <button class="ds-btn ds-btn--link" data-action="manual">${icon("add")}Add address manually</button>
+        ${backLink("Back to Phone Number", "#/v2/contact")}
       </div>`,
     });
   },
@@ -368,20 +356,20 @@ export const addressConfirm = {
             ${header("Your details", "", { large: true })}
             ${input({ label: "Street address", name: "street", value: a.line1 || "", required: true, trailing: "close", autocomplete: "address-line1", autofocus: !a.line1 })}
             ${input({
-              label: "Building, apartment, floor, suite, unit office, etc.",
+              label: "Building, apartment, floor, suite, office, etc.",
               name: "street2",
               value: a.line2 || "",
               optional: true,
               trailing: "close",
               autocomplete: "address-line2",
             })}
-            ${input({ label: "City", name: "city", value: a.city || "", required: true, trailing: "close", autocomplete: "address-level2" })}
             ${input({ label: capitalise(term), name: "postcode", value: a.postcode || "", required: true, trailing: "close", autocomplete: "postal-code" })}
+            ${input({ label: "City", name: "city", value: a.city || "", required: true, trailing: "close", autocomplete: "address-level2" })}
             ${input({ label: "County", name: "county", value: a.state || "", optional: true, trailing: "close", autocomplete: "address-level1" })}
           </div>
           ${action("Continue to ID verification", "continue")}
         </div>
-        ${backLink("Back to phone number", "#/v2/contact")}
+        ${backLink("Back to Phone Number", "#/v2/contact")}
       </div>`,
     });
   },
