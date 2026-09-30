@@ -45,7 +45,7 @@ import {
 import { getState, update, addCard, selectCard } from "../../store.js";
 import { paymentWidget } from "./split-widget.js";
 import { v2, backToMerchant } from "../../flow.js";
-import { AUTHORIZE_MS, COUNTRIES } from "../../config.js";
+import { AUTHORIZE_MS, COUNTRIES, countryByName } from "../../config.js";
 
 const action = (label, name) => `
   <div class="ds-stack ds-stack--8">
@@ -99,6 +99,16 @@ const addressLines = (a) => `
   <p>${esc([a.line1, a.line2].filter(Boolean).join(", "))}</p>
   <p>${esc(a.postcode)}, ${esc(a.city)}</p>
   <p>${esc(a.country || "")}</p>`;
+
+/** Customer information known from registration, shown as a summary like the billing address. */
+const customerKnown = (session, country) =>
+  Boolean(session.firstName && session.lastName && isEmail(session.email || "") && isValidPhone(session.phone || "", country));
+
+const customerLines = (session, country) => `
+  <p>${esc(`${session.firstName} ${session.lastName}`)}</p>
+  <p>${esc(session.email)}</p>
+  <p>${esc(country)}</p>
+  <p>${esc(`${countryByName(country).dial} ${session.phone}`)}</p>`;
 
 const section = (title, body, attrs = "") => `
   <section class="ds-stack ds-stack--8" ${attrs}>
@@ -156,10 +166,20 @@ export const addCardScreen = {
             ${section(
               "Customer information",
               `
-              ${phoneInput({ value: session.phone || "", country })}
-              ${nameInputs(session)}
-              ${input({ label: "Email address", name: "email", type: "email", value: session.email, required: true, autocomplete: "email" })}
-              ${countrySelect({ value: country })}`
+              ${
+                customerKnown(session, country)
+                  ? `<div class="ds-address-summary" data-customer-summary>
+                       <div class="ds-address-summary__lines">${customerLines(session, country)}</div>
+                       <button type="button" class="ds-link ds-link--s-strong" data-edit-customer>Edit</button>
+                     </div>`
+                  : ""
+              }
+              <div class="ds-stack ds-stack--16" data-customer-fields ${customerKnown(session, country) ? "hidden" : ""}>
+                ${phoneInput({ value: session.phone || "", country })}
+                ${nameInputs(session)}
+                ${input({ label: "Email address", name: "email", type: "email", value: session.email, required: true, autocomplete: "email" })}
+                ${countrySelect({ value: country })}
+              </div>`
             )}
 
             ${section(
@@ -269,6 +289,19 @@ export const addCardScreen = {
       root.querySelector("#f-street").focus();
     });
 
+    // Customer information from registration shows as a summary; "Edit" opens
+    // the fields (always in the form, prefilled) and focuses the first one.
+    const customerSummary = root.querySelector("[data-customer-summary]");
+    const customerFields = root.querySelector("[data-customer-fields]");
+    const openCustomer = () => {
+      customerFields.hidden = false;
+      if (customerSummary) customerSummary.hidden = true;
+    };
+    root.querySelector("[data-edit-customer]")?.addEventListener("click", () => {
+      openCustomer();
+      root.querySelector("#f-phone").focus();
+    });
+
     const terms = root.querySelector('input[name="terms"]');
     terms.addEventListener("change", () => {
       terms.closest(".ds-check").dataset.invalid = "false";
@@ -313,6 +346,8 @@ export const addCardScreen = {
         ok = false;
       }
       if (!ok) {
+        // A problem in a collapsed section opens it so the error can be seen.
+        if (customerFields.querySelector('[aria-invalid="true"]')) openCustomer();
         showFormError(root, MISSING_FIELDS);
         root.querySelector('[aria-invalid="true"]')?.scrollIntoView({ block: "center", behavior: "smooth" });
         return;

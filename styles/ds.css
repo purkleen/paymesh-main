@@ -584,6 +584,8 @@ button.ds-option { cursor: pointer; }
   color: var(--text-primary);
 }
 .ds-address-summary p { margin: 0; }
+.ds-address-summary__lines { flex: 1 1 auto; min-width: 0; overflow-wrap: anywhere; }
+.ds-address-summary > button { flex: 0 0 auto; }
 .ds-address-summary p:first-child { font-weight: 600; }
 .ds-link--s-strong { font: 600 14px/20px var(--font-family-inter); letter-spacing: var(--tracking-text); }
 
