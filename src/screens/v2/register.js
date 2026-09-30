@@ -416,6 +416,16 @@ export const identity = {
               "Verify identity",
               "We need a few details to verify your identity with our trusted verification partner, Persona."
             )}
+            <div class="ds-info ds-requirements">
+              <div>
+                <p class="ds-requirements__title">You’ll need:</p>
+                <ul class="ds-requirements__list">
+                  <li>${icon("check-brand", 20)}A photo ID (passport, driving licence or national ID card)</li>
+                  <li>${icon("check-brand", 20)}Your National Insurance number (NIN)</li>
+                  <li>${icon("check-brand", 20)}To complete a short investment questionnaire</li>
+                </ul>
+              </div>
+            </div>
             ${action("Start verification", "start")}
           </div>
           <img src="${asset("persona.svg")}" width="95" height="24" alt="Persona" />

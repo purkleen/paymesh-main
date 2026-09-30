@@ -605,6 +605,12 @@ button.ds-option { cursor: pointer; }
 .ds-info img { width: 20px; height: 20px; flex: 0 0 auto; }
 .ds-info strong { font-weight: 600; }
 
+/* What identity verification asks for (Verify identity) */
+.ds-requirements { text-align: left; }
+.ds-requirements__title { margin: 0 0 var(--spacing-8); font-weight: 600; }
+.ds-requirements__list { margin: 0; padding: 0; list-style: none; display: flex; flex-direction: column; gap: var(--spacing-8); }
+.ds-requirements__list li { display: flex; align-items: flex-start; gap: var(--spacing-8); }
+
 .ds-secure { display: flex; align-items: center; justify-content: center; gap: var(--spacing-8); font: var(--text-s); }
 .ds-secure img { width: 20px; height: 20px; }
 
