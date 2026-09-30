@@ -8,7 +8,7 @@
  * the `data-field` wrapper and `.field__error` slot those helpers expect.
  */
 
-import { logo, flag } from "./icons.js";
+import { logo, mark, flag } from "./icons.js";
 import { esc, merchantName, showError, clearError } from "./ui.js";
 import { COUNTRIES, countryByName } from "./config.js";
 
@@ -52,7 +52,7 @@ export function page({ content, cancel = true, widget = false, center = false })
   return `
   <div class="ds-page">
     <header class="ds-nav">
-      <span class="logo">${logo()}</span>
+      <span class="logo">${logo()}<span class="logo__mark">${mark("var(--ink-logo)", 50)}</span></span>
       ${cancel ? cancelLink() : ""}
     </header>
     <main class="ds-main">
@@ -65,9 +65,9 @@ export function page({ content, cancel = true, widget = false, center = false })
 }
 
 /** Title block: Heading/3XL/Bold plus optional body copy. */
-export const header = (title, body = "") => `
+export const header = (title, body = "", { large = false } = {}) => `
   <div class="ds-stack ds-stack--16">
-    <h1 class="ds-h1">${title}</h1>
+    <h1 class="ds-h1 ${large ? "ds-h1--large" : ""}">${title}</h1>
     ${body ? `<p class="ds-body">${body}</p>` : ""}
   </div>`;
 
@@ -82,7 +82,7 @@ export const button = (label, { action, variant = "primary", iconName = "" } = {
 
 /** "Cancel and go back to [merchant]" — returns the buyer to the merchant (wired by `wirePage`). */
 export const cancelLink = (extraClass = "") =>
-  `<button class="ds-link ${extraClass}" data-ds-cancel>Cancel and go back to ${esc(merchantName())}</button>`;
+  `<button class="ds-link ${extraClass}" data-ds-cancel><span class="ds-nav__long">Cancel and go back</span><span class="ds-nav__short">Back</span> to ${esc(merchantName())}</button>`;
 
 /** "← Back to …" under a form. */
 export const backLink = (label, route) =>

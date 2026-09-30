@@ -119,7 +119,7 @@ export const addCardScreen = {
       content: `
       <div class="ds-stack ds-stack--24">
         <div class="ds-stack ds-stack--16">
-          ${header("Add card")}
+          ${header("Add card", "", { large: true })}
           <div class="ds-stack ds-stack--48">
             ${section(
               "Add card",
@@ -591,7 +591,7 @@ export const success = {
       <div class="ds-stack ds-stack--16 ds-stack--center">
         <img class="ds-art" src="${asset("success-check.png")}" alt="" />
         <div class="ds-stack ds-stack--24" style="align-self:stretch">
-          <h1 class="ds-h1">Order complete</h1>
+          <h1 class="ds-h1 ds-h1--large">Order complete</h1>
           <div class="ds-confirm">
             ${confirmRow("Paid", money(amount))}
             <span class="ds-confirm__sub">${tokens(amount)}</span>

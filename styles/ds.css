@@ -115,6 +115,7 @@
   min-height: 32px;
 }
 .ds-nav .logo svg { height: 32px; width: auto; }
+.ds-nav .logo__mark, .ds-nav__short { display: none; }
 
 /* Main Content */
 .ds-main {
@@ -596,14 +597,17 @@ button.ds-option { cursor: pointer; }
 
 @media (max-width: 560px) {
   .ds-page { padding: var(--spacing-24) var(--spacing-16); }
-  .ds-nav { flex-wrap: wrap; }
-  .ds-nav .ds-link { font-size: 14px; }
-  .ds-main { padding: var(--spacing-48) 0 var(--spacing-48); }
-  .ds-h1 { font-size: 32px; line-height: 36px; }
+  /* Flows "mobile" frames: mark-only logo and "Back to [merchant]" */
+  .ds-nav .logo > svg, .ds-nav__long { display: none; }
+  .ds-nav .logo__mark { display: inline-flex; }
+  .ds-nav__short { display: inline; }
+  .ds-page { padding-top: var(--spacing-16); }
+  .ds-main { justify-content: flex-start; padding: var(--spacing-48) 0 var(--spacing-48); }
+  .ds-h1 { font-size: 32px; line-height: 32px; letter-spacing: -0.64px; }
+  .ds-h1--large { font: var(--heading-3xl); letter-spacing: 0; } /* the mobile frames keep 40px here */
   .ds-otp__box { width: 100%; min-width: 0; height: 52px; }
   .ds-transfer { gap: var(--spacing-8); padding: 0; }
   .ds-footer { padding-bottom: 44px; } /* clear the prototype pill */
-  .ds-footer__line { font-size: 11px; }
 }
 
 /* ==========================================================================

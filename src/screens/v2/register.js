@@ -308,7 +308,7 @@ export const addressSearch = {
       content: `
       <div class="ds-stack ds-stack--24">
         <div class="ds-stack ds-stack--16">
-          ${header("Search for address", "Start typing postcode, city, or street name to find your address.")}
+          ${header("Search for address", "Start typing postcode, city, or street name to find your address.", { large: true })}
           <div class="ds-field" data-field="search" style="padding-top:var(--spacing-16)">
             <div class="ds-combo">
               <div class="ds-input">
@@ -365,7 +365,7 @@ export const addressConfirm = {
       <div class="ds-stack ds-stack--24">
         <div class="ds-stack ds-stack--24">
           <div class="ds-stack ds-stack--16">
-            ${header("Your details")}
+            ${header("Your details", "", { large: true })}
             ${input({ label: "Street address", name: "street", value: a.line1 || "", required: true, trailing: "close", autocomplete: "address-line1", autofocus: !a.line1 })}
             ${input({
               label: "Building, apartment, floor, suite, unit office, etc.",
