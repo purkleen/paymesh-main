@@ -132,10 +132,10 @@
    ========================================================================== */
 
 .ds-page {
-  /* The footer stays at the bottom of the screen: the small viewport height
-     doesn't change when the browser bars or the on-screen keyboard move. */
+  /* The footer sits at the very bottom of the screen: the large viewport
+     height runs under the browser's bottom bar and doesn't jump with it. */
   min-height: 100vh;
-  min-height: 100svh;
+  min-height: 100lvh;
   display: flex;
   flex-direction: column;
   padding: var(--spacing-32) var(--spacing-16);
@@ -645,7 +645,7 @@ button.ds-option { cursor: pointer; }
   .ds-h1--large { font: var(--heading-3xl); letter-spacing: 0; } /* the mobile frames keep 40px here */
   .ds-otp__box { width: 100%; min-width: 0; height: 52px; }
   .ds-transfer { gap: var(--spacing-8); padding: 0; }
-  .ds-footer { padding-bottom: 44px; } /* clear the prototype pill */
+  .ds-page { padding-bottom: calc(var(--spacing-16) + env(safe-area-inset-bottom)); }
 }
 
 /* ==========================================================================

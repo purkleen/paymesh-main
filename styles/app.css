@@ -689,6 +689,9 @@ img.shop__mark { display: block; border-radius: 50%; object-fit: cover; }
 
 @media (max-width: 560px) {
   :root { --page-pad: 20px; --col: 100%; }
+  /* The prototype pill sits in the top bar, clear of the footer at the bottom */
+  .dev { top: 16px; bottom: auto; left: 50%; transform: translateX(-50%); }
+  .dev__panel { width: min(320px, calc(100vw - 32px)); margin: 44px 0 0; position: absolute; left: 50%; transform: translateX(-50%); }
   .page__body { padding: 32px 0 24px; }
   .h1 { font-size: 26px; }
   .stepper { gap: 14px; }
@@ -701,7 +704,6 @@ img.shop__mark { display: block; border-radius: 50%; object-fit: cover; }
   .shop__bar-in, .shop__grid { padding-left: 16px; padding-right: 16px; }
   .shop__promo { margin-left: 16px; margin-right: 16px; }
   .page__footer { padding-bottom: 44px; } /* clear the prototype pill */
-  .dev { left: 12px; bottom: 12px; }
   .dev__panel { width: min(320px, calc(100vw - 24px)); }
 }
 

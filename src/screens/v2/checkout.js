@@ -119,7 +119,12 @@ export const addCardScreen = {
       content: `
       <div class="ds-stack ds-stack--24">
         <div class="ds-stack ds-stack--16">
-          ${header("Add card", "", { large: true })}
+          ${header(
+            "Add card",
+            // First card: the payment can't go ahead without one.
+            wallet.cards.length ? "" : "You need to add a card first before you’ll be able to finalize the payment.",
+            { large: true }
+          )}
           <div class="ds-stack ds-stack--48">
             ${section(
               "Add card",
