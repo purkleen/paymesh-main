@@ -45,12 +45,37 @@ export const footerInfo = () => `
   </footer>`;
 
 /**
+ * Phones: while the on-screen keyboard is open, the page's pinned CTA (page({ cta }))
+ * floats just above it, as in the Flows "mobile" keyboard frames.
+ */
+function floatCtaAboveKeyboard(root) {
+  const cta = root.querySelector(".ds-cta");
+  const vv = window.visualViewport;
+  if (!cta || !vv) return;
+  const phone = matchMedia("(max-width: 560px)");
+  const place = () => {
+    if (!cta.isConnected) {
+      vv.removeEventListener("resize", place);
+      vv.removeEventListener("scroll", place);
+      return;
+    }
+    const keyboard = innerHeight - vv.height - vv.offsetTop;
+    const float = phone.matches && keyboard > 120;
+    cta.classList.toggle("ds-cta--float", float);
+    cta.style.bottom = float ? `${keyboard + 16}px` : "";
+  };
+  vv.addEventListener("resize", place);
+  vv.addEventListener("scroll", place);
+  place();
+}
+
+/**
  * A registration-* frame: logo and cancel link, centred content, footer-info.
  * @param {{content:string, cancel?:boolean, widget?:boolean, center?:boolean}} opts
  */
-export function page({ content, cancel = true, widget = false, center = false }) {
+export function page({ content, cta = "", cancel = true, widget = false, center = false }) {
   return `
-  <div class="ds-page">
+  <div class="ds-page ${cta ? "ds-page--cta" : ""}">
     <header class="ds-nav">
       <span class="logo">${logo()}<span class="logo__mark">${mark("var(--ink-logo)", 50)}</span></span>
       ${cancel ? cancelLink() : ""}
@@ -58,6 +83,7 @@ export function page({ content, cancel = true, widget = false, center = false })
     <main class="ds-main">
       <div class="ds-container ${widget ? "ds-container--widget" : ""} ${center ? "ds-container--center" : ""}">
         ${content}
+        ${cta ? `<div class="ds-cta">${cta}</div>` : ""}
       </div>
     </main>
     ${footerInfo()}
@@ -313,6 +339,7 @@ export const merchantPayment = (merchant, usd, token) => `
  */
 export function wirePage(root, onCancel) {
   root.querySelectorAll("[data-ds-cancel]").forEach((el) => el.addEventListener("click", onCancel));
+  floatCtaAboveKeyboard(root);
 
   root.querySelectorAll("[data-reveal]").forEach((btn) => {
     btn.addEventListener("click", () => {

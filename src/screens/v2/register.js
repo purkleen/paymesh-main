@@ -199,19 +199,15 @@ export const verify = {
     const { session } = getState();
     return page({
       content: `
-      <div class="ds-stack ds-stack--24">
-        <div class="ds-stack ds-stack--24">
-          <div class="ds-stack ds-stack--16">
-            ${header(
-              "Verify your email",
-              `Enter the 6-digit code we sent you to <strong>${esc(session.email || "your email")}</strong>.`
-            )}
-            <div style="padding-top:var(--spacing-16)">${otp()}</div>
-            <p class="ds-small ds-center" data-resend></p>
-          </div>
-          ${action("Verify your email", "verify")}
-        </div>
+      <div class="ds-stack ds-stack--16">
+        ${header(
+          "Verify your email",
+          `Enter the 6-digit code we sent you to <strong>${esc(session.email || "your email")}</strong>.`
+        )}
+        <div style="padding-top:var(--spacing-16)">${otp()}</div>
+        <p class="ds-small ds-center" data-resend></p>
       </div>`,
+      cta: action("Verify your email", "verify"),
     });
   },
 
@@ -252,15 +248,11 @@ export const contact = {
     const { session } = getState();
     return page({
       content: `
-      <div class="ds-stack ds-stack--24">
-        <div class="ds-stack ds-stack--24">
-          <div class="ds-stack ds-stack--16">
-            ${header("Your phone number")}
-            ${phoneInput({ value: session.phone || "", country: session.country, showLabel: false })}
-          </div>
-          ${action("Continue to address", "continue")}
-        </div>
+      <div class="ds-stack ds-stack--16">
+        ${header("Your phone number")}
+        ${phoneInput({ value: session.phone || "", country: session.country, showLabel: false })}
       </div>`,
+      cta: action("Continue to address", "continue"),
     });
   },
 

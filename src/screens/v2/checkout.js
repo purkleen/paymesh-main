@@ -68,13 +68,11 @@ export const welcome = {
       content: `
       <div class="ds-stack ds-stack--16 ds-stack--center">
         <img class="ds-art" src="${asset("success-check.png")}" alt="" />
-        <div class="ds-stack ds-stack--24" style="align-self:stretch">
-          <h1 class="ds-h1">Welcome, ${esc(session.firstName || "there")}!<br />Let’s finish the payment.</h1>
-          ${button(order ? `Continue with ${esc(order.merchant.name)} payment` : "Continue with payment", {
-            action: "continue",
-          })}
-        </div>
+        <h1 class="ds-h1">Welcome, ${esc(session.firstName || "there")}!<br />Let’s finish the payment.</h1>
       </div>`,
+      cta: button(order ? `Continue with ${esc(order.merchant.name)} payment` : "Continue with payment", {
+        action: "continue",
+      }),
     });
   },
 
