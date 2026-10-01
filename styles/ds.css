@@ -856,3 +856,100 @@ button.ds-option { cursor: pointer; }
 }
 
 .sw-cards { display: flex; flex-direction: column; gap: var(--spacing-8); }
+
+/* ==========================================================================
+   Newest payment widget — design system file, node 1444:11042 (widget-new.html)
+   ========================================================================== */
+
+.nw-wrap { width: var(--ds-col); gap: var(--spacing-40, 40px); }
+.nw.ds-card { gap: var(--spacing-12); }
+.nw-logo { width: 24px; height: 24px; border-radius: var(--radius-full); object-fit: cover; flex: 0 0 auto; }
+.sw-random__btn[aria-pressed="true"] { border-color: var(--action-primary-default); color: var(--text-brand); background: var(--surface-primary); }
+
+.nw-body {
+  display: flex; flex-direction: column; gap: var(--spacing-16);
+  padding: var(--spacing-16) 0;
+  background: var(--base-white);
+  border-radius: var(--radius-xl);
+  box-shadow: var(--shadow-card-inner);
+  overflow: hidden;
+}
+.nw-divider { height: 1px; margin: 0; border: 0; background: var(--border-subtle); }
+.nw-divider--inset { margin: 0; }
+.nw-pad { padding: 0 var(--spacing-16); }
+.nw-grey { font: var(--text-s); color: var(--text-tertiary); }
+.nw-grey--m { font: var(--text-m); }
+
+/* Rows with a leading 24px icon: Payment method, Billing address, Amount to pay */
+.nw-row {
+  display: flex; align-items: flex-start; gap: var(--spacing-16);
+  width: 100%; padding: 0 var(--spacing-16);
+  border: 0; background: none; text-align: left; font: inherit; color: inherit;
+}
+.nw-row > img { flex: 0 0 auto; margin-top: 1px; }
+button.nw-row { cursor: pointer; }
+.nw-row__content { flex: 1 1 auto; min-width: 0; display: flex; flex-direction: column; }
+.nw-row__title {
+  display: flex; align-items: center; justify-content: space-between; gap: var(--spacing-8);
+  font: 600 18px/26px var(--font-family-inter); letter-spacing: var(--tracking-text); color: var(--text-primary);
+}
+.nw-row__sub { display: block; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font: var(--text-m); }
+.nw-row__sub strong, .nw-billing strong { font-weight: 600; }
+.nw-chevron { flex: 0 0 auto; transition: transform .2s ease; }
+.nw-chevron--up { transform: rotate(180deg); }
+.nw-billing { display: flex; flex-direction: column; font: var(--text-m); }
+
+/* Amount to pay */
+.nw-total { align-items: flex-start; gap: var(--spacing-16); }
+.nw-total__label { font: 600 18px/26px var(--font-family-inter); letter-spacing: var(--tracking-text); color: #000; }
+.nw-total__value {
+  flex: 1 1 auto; display: flex; flex-direction: column; align-items: flex-end; gap: 2px; text-align: right;
+  font: 600 18px/26px var(--font-family-inter); letter-spacing: var(--tracking-text); color: #000;
+}
+
+/* Expanded payment methods */
+.nw-methods { display: flex; flex-direction: column; gap: var(--spacing-16); }
+.nw-switch-row { padding: 0 var(--spacing-16); }
+.nw-list { display: flex; flex-direction: column; gap: var(--spacing-16); padding: 0 var(--spacing-16) var(--spacing-16); }
+.nw-remaining { margin: 0; font: var(--heading-xs); letter-spacing: 0; color: var(--text-primary); }
+.nw-add { align-self: flex-start; }
+
+.nw-item { display: flex; align-items: center; gap: var(--spacing-12); min-height: 44px; cursor: pointer; }
+.nw-item__text { flex: 1 1 0; min-width: 0; display: flex; flex-direction: column; font: var(--text-m); }
+.nw-item--balance .nw-item__text { flex: 0 1 220px; }
+.nw-item__text strong, .nw-item__title { font-weight: 600; }
+.nw-amount { flex: 1 1 0; display: flex; flex-direction: column; align-items: flex-end; text-align: right; }
+.nw-amount__usd { font: 600 16px/24px var(--font-family-inter); letter-spacing: var(--tracking-text); }
+
+.nw-badge {
+  flex: 0 0 auto; display: grid; place-items: center;
+  width: 34px; height: 24px;
+  background: var(--base-white); border: 1px solid #e5e5e5; border-radius: 4px;
+}
+.nw-scheme { flex: 0 0 auto; width: 34px; height: 24px; }
+
+/* Radio / checkbox controls (24px) */
+.nw-control {
+  flex: 0 0 auto; width: 24px; height: 24px; padding: 0;
+  border: 1px solid var(--border-default); border-radius: var(--radius-full);
+  background: var(--base-white) center / 16.8px no-repeat;
+  cursor: pointer;
+}
+.nw-control--check { border-radius: 6px; }
+.nw-control[aria-checked="true"] {
+  border-color: var(--action-primary-default);
+  background-color: var(--action-primary-default);
+  background-image: url("../assets/ds/nw-check.svg");
+}
+.nw-control:focus-visible { outline: none; box-shadow: var(--shadow-xs-focused); }
+
+/* Split payment amounts */
+.nw-input { flex: 0 0 auto; width: 165px; margin-left: auto; }
+.nw-item--balance .nw-input { width: 122px; }
+@media (max-width: 560px) {
+  .nw-input, .nw-item--balance .nw-input { width: 112px; }
+}
+.nw-input input { text-align: right; }
+
+.nw-terms { padding: 0 var(--spacing-16) var(--spacing-8); }
+.nw-back { align-self: center; }

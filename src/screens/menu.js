@@ -6,8 +6,8 @@
  * code change; its link is the Vercel deployment of the branch's latest commit,
  * as Vercel reported it back to GitHub. `main` links to the production site.
  *
- * Each entry links to the same two pages: the registration journey and the
- * payment widget. Links for the deployment you're on are relative.
+ * Each entry links to the same pages: the registration journey, the payment
+ * widget and the newest payment widget. Links for the deployment you're on are relative.
  */
 
 import { esc } from "../ui.js";
@@ -60,6 +60,7 @@ function pageLinks(base) {
     <ul class="menu__links">
       <li><a href="${at("#/")}">Registration journey</a></li>
       <li><a href="${at("widget.html")}">Payment widget</a></li>
+      <li><a href="${at("widget-new.html")}">Newest payment widget</a></li>
     </ul>`;
 }
 
