@@ -947,7 +947,9 @@ button.nw-row { cursor: pointer; }
 /* Split payment amounts */
 .nw-input { flex: 0 0 auto; width: 150px; margin-left: auto; gap: var(--spacing-4); padding: 0 var(--spacing-12); }
 @media (max-width: 560px) {
-  .nw-input { width: 132px; }
+  /* Phones: the amount field drops below the method, lined up with its text */
+  .nw-item { flex-wrap: wrap; row-gap: var(--spacing-12); }
+  .nw-input { order: 1; flex: 1 0 calc(100% - 82px); width: auto; margin-left: 82px; }
 }
 .nw-input input { text-align: right; min-width: 0; }
 .nw-clear { flex: 0 0 auto; display: grid; place-items: center; width: 20px; height: 20px; padding: 0; border: 0; background: none; cursor: pointer; opacity: .6; }
