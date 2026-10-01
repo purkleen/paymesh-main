@@ -12,8 +12,10 @@
  *      what it can and a card the remaining balance; unticking the balance puts
  *      the whole amount on the card.
  *   3. Alternative UI: the balance covers the order, but "Split payment" lets
- *      the buyer spend only some of it and top up with a card, typing the two
- *      amounts (each one fills the other with what's left).
+ *      the buyer spend only some of it and top up with a card. The split starts
+ *      at 50/50; the balance is a checkbox (untick it to pay all by card), the
+ *      cards are radios, typing one amount fills the other with what's left,
+ *      and an amount's × clears it so the other method takes the whole order.
  */
 
 import { button, checkbox, icon, asset, merchantLogo, busy, isBusy } from "../ds.js";
@@ -28,7 +30,10 @@ export const SCENARIOS = [
   { id: 3, label: "Split payment (alternative UI)", total: 7000, balance: 8000, mode: "split" },
 ];
 
-const CARDS = [{ id: "visa-9876", scheme: "visa", label: "Visa ending in 9876", expiry: "Expiry 06/2027" }];
+const CARDS = [
+  { id: "visa-9876", scheme: "visa", label: "Visa ending in 9876", expiry: "Expiry 06/2027" },
+  { id: "mc-9833", scheme: "mastercard", label: "Mastercard ending in 9833", expiry: "Expiry 06/2027" },
+];
 const BILLING = { line1: "12 Marlow Gardens", rest: "BS7 9QT, Bristol, United Kingdom" };
 
 const cents = (n) => Math.round(n * 100) / 100;
@@ -56,9 +61,11 @@ const control = (type, checked, pick, label) => `
   <button type="button" class="nw-control nw-control--${type}" role="${type === "radio" ? "radio" : "checkbox"}"
           aria-checked="${checked}" aria-label="${esc(label)}" data-pick="${pick}"></button>`;
 
+/** Split-mode amount field; the × clears it and the other method takes the whole amount. */
 const amountInput = (name, value, label) => `
   <span class="ds-input nw-input">
     <input name="${name}" data-amount="${name}" inputmode="decimal" autocomplete="off" aria-label="${esc(label)}" value="${money(value)}" />
+    <button type="button" class="nw-clear" data-clear-amount="${name}" aria-label="Clear amount" ${value > 0 ? "" : "hidden"}>${icon("close", 16)}</button>
   </span>`;
 
 /* --------------------------------------------------------------------------
@@ -93,32 +100,52 @@ function create(scenario) {
     return CARDS.find((c) => c.id === state.choice) || null;
   };
 
-  const methodSummary = () => {
+  /** The methods paying for the order, each with what it pays. */
+  const inUse = () => {
     const a = amounts();
     const card = a.card > 0 ? chosenCard() : null;
-    if (a.balance > 0 && !card) return `<strong>Paymesh balance: ${money(balance)}</strong> <small class="nw-grey">(${tokens(balance)})</small>`;
-    if (!a.balance && card) return `<strong>${esc(card.label)}</strong> <small class="nw-grey">${esc(card.expiry)}</small>`;
-    if (a.balance > 0 && card)
-      return `<strong>Paymesh balance: ${money(balance)}</strong> <small class="nw-grey">(${tokens(balance)})</small> + <strong>${esc(card.label)}</strong>`;
-    return `<span class="nw-grey">Choose how to pay</span>`;
+    return [
+      ...(a.balance > 0 ? [{ label: "Paymesh balance", amount: a.balance }] : []),
+      ...(card ? [{ label: card.label, amount: a.card, expiry: card.expiry }] : []),
+    ];
+  };
+
+  /** Collapsed "Payment method" row: one method on one line; two get a line each with the breakdown. */
+  const methodTitle = () => (inUse().length > 1 ? `${inUse().length} payment methods` : "Payment method");
+  const methodSummary = () => {
+    const used = inUse();
+    if (!used.length) return `<span class="nw-row__sub"><span class="nw-grey">Choose how to pay</span></span>`;
+    if (used.length === 1) {
+      const [m] = used;
+      return m.expiry
+        ? `<span class="nw-row__sub"><strong>${esc(m.label)}</strong> <small class="nw-grey">${esc(m.expiry)}</small></span>`
+        : `<span class="nw-row__sub"><strong>Paymesh balance: ${money(balance)}</strong> <small class="nw-grey">(${tokens(balance)})</small></span>`;
+    }
+    return used
+      .map(
+        (m) =>
+          `<span class="nw-row__sub"><strong>${esc(m.label)}: ${money(m.amount)}</strong> <small class="nw-grey">(${tokens(m.amount)})</small></span>`
+      )
+      .join("");
   };
 
   const balanceItem = () => {
     const a = amounts();
     const splitting = mode === "split" && state.split;
+    // A checkbox wherever the balance can be combined with a card, a radio where it's one or the other.
     const ctl =
-      mode === "short"
+      mode === "short" || splitting
         ? control("check", state.useBalance, "balance", "Use Paymesh balance")
-        : control("radio", splitting || state.choice === "balance", "balance", "Pay with Paymesh balance");
+        : control("radio", state.choice === "balance", "balance", "Pay with Paymesh balance");
     return `
       <div class="nw-item nw-item--balance" data-item="balance">
         ${ctl}
         <span class="nw-badge"><img src="${asset("nw-paymesh-mark.svg")}" width="19" height="12" alt="" /></span>
         <span class="nw-item__text">
           <span class="nw-item__title">Paymesh balance</span>
-          <span><strong>${money(balance)}</strong> <small class="nw-grey">(${tokens(balance)})</small></span>
+          <span><strong>${money(balance)}</strong> <small class="nw-grey nw-grey--xs">(${tokens(balance)})</small></span>
         </span>
-        ${splitting ? amountInput("balance", a.balance, "Amount from your Paymesh balance") : amountPair(a.balance)}
+        ${splitting && state.useBalance ? amountInput("balance", a.balance, "Amount from your Paymesh balance") : amountPair(a.balance)}
       </div>`;
   };
 
@@ -130,7 +157,11 @@ function create(scenario) {
     return `
       <div class="nw-item" data-item="${card.id}">
         ${control("radio", selected, card.id, `Pay with ${card.label}`)}
-        <img class="nw-scheme" src="${asset("visa.svg")}" width="34" height="24" alt="Visa" />
+        ${
+          card.scheme === "visa"
+            ? `<img class="nw-scheme" src="${asset("visa.svg")}" width="34" height="24" alt="Visa" />`
+            : `<span class="nw-badge"><img src="${asset("mastercard.svg")}" width="22" height="14" alt="Mastercard" /></span>`
+        }
         <span class="nw-item__text">
           <span class="nw-item__title">${esc(card.label)}</span>
           <small class="nw-grey">${esc(card.expiry)}</small>
@@ -145,8 +176,8 @@ function create(scenario) {
         <button type="button" class="nw-row nw-toggle" data-toggle="methods" aria-expanded="false">
           ${icon("nw-card")}
           <span class="nw-row__content">
-            <span class="nw-row__title">Payment method ${chevron(false)}</span>
-            <span class="nw-row__sub" data-method-summary>${methodSummary()}</span>
+            <span class="nw-row__title">${methodTitle()} ${chevron(false)}</span>
+            ${methodSummary()}
           </span>
         </button>`;
 
@@ -225,6 +256,21 @@ function create(scenario) {
     </section>
     <button type="button" class="ds-link nw-back" data-noop>&larr; Back to Payment Method</button>`;
 
+  /** Split mode starts half from the balance (as far as it goes), half on the first card. */
+  const startSplit = () => {
+    state.useBalance = true;
+    state.cardId = state.cardId || CARDS[0].id;
+    state.fromBalance = cents(Math.min(balance, total / 2));
+    state.fromCard = cents(total - state.fromBalance);
+  };
+  /** The whole amount on the chosen card (the balance unticked). */
+  const allOnCard = () => {
+    state.useBalance = false;
+    state.cardId = state.cardId || CARDS[0].id;
+    state.fromBalance = 0;
+    state.fromCard = total;
+  };
+
   function mount(root) {
     const card = root.querySelector(".nw");
     const redraw = (part) => {
@@ -238,6 +284,10 @@ function create(scenario) {
         const name = field.dataset.amount;
         field.value = money(name === "balance" ? state.fromBalance : state.cardId === name.slice(5) ? state.fromCard : 0);
       });
+      card.querySelectorAll("[data-amount]").forEach((field) => {
+        const btn = field.parentElement.querySelector("[data-clear-amount]");
+        if (btn) btn.hidden = !parseAmount(field.value);
+      });
       card.querySelectorAll('[data-pick]:not([data-pick="balance"])').forEach((c) => c.setAttribute("aria-checked", String(c.dataset.pick === state.cardId)));
     };
 
@@ -249,6 +299,19 @@ function create(scenario) {
         else state.billingOpen = !state.billingOpen;
         return redraw(toggle.dataset.toggle);
       }
+      const clear = e.target.closest("[data-clear-amount]");
+      if (clear) {
+        clearFormError(root);
+        if (clear.dataset.clearAmount === "balance") allOnCard();
+        else {
+          // The balance takes the whole order (it covers it in this scenario).
+          state.useBalance = true;
+          state.fromCard = 0;
+          state.fromBalance = cents(Math.min(balance, total));
+        }
+        redraw("methods");
+        return card.querySelector(`[data-amount="${clear.dataset.clearAmount}"]`)?.focus();
+      }
       if (e.target.closest("input")) return;
       const item = e.target.closest("[data-item]");
       if (!item) return;
@@ -258,9 +321,15 @@ function create(scenario) {
         if (pick === "balance") state.useBalance = !state.useBalance;
         else state.cardId = pick;
       } else if (mode === "split" && state.split) {
-        if (pick === "balance") return; // the balance is always part of a split
-        state.cardId = pick;
-        state.fromCard = cents(Math.max(0, total - state.fromBalance));
+        if (pick === "balance") {
+          // Unticking the balance pays it all by card; ticking it again goes back to 50/50.
+          state.useBalance = !state.useBalance;
+          if (state.useBalance) startSplit();
+          else allOnCard();
+        } else {
+          state.cardId = pick; // the card's amount moves to the newly chosen card
+          if (!state.useBalance) state.fromCard = total;
+        }
       } else {
         state.choice = pick;
       }
@@ -270,12 +339,10 @@ function create(scenario) {
     card.addEventListener("change", (e) => {
       if (!e.target.matches("[data-split]")) return;
       state.split = e.target.checked;
-      // Splitting starts from nothing typed in, as in the design; turning it off
-      // goes back to paying everything with the balance.
+      // Splitting starts at 50/50; turning it off goes back to paying everything with the balance.
       state.choice = "balance";
       state.cardId = null;
-      state.fromBalance = 0;
-      state.fromCard = 0;
+      if (state.split) startSplit();
       clearFormError(root);
       redraw("methods");
     });
@@ -293,7 +360,7 @@ function create(scenario) {
       } else {
         state.cardId = field.dataset.amount.slice(5);
         state.fromCard = cents(Math.min(value, total));
-        state.fromBalance = cents(Math.min(balance, Math.max(0, total - state.fromCard)));
+        if (state.useBalance) state.fromBalance = cents(Math.min(balance, Math.max(0, total - state.fromCard)));
       }
       syncFields(field);
     });
