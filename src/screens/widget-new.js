@@ -302,8 +302,12 @@ function create(scenario) {
       const clear = e.target.closest("[data-clear-amount]");
       if (clear) {
         clearFormError(root);
-        if (clear.dataset.clearAmount === "balance") allOnCard();
-        else {
+        if (clear.dataset.clearAmount === "balance") {
+          // The balance stays ticked with its field at $0.00; the card takes the whole order.
+          state.cardId = state.cardId || CARDS[0].id;
+          state.fromBalance = 0;
+          state.fromCard = total;
+        } else {
           // The balance takes the whole order (it covers it in this scenario).
           state.useBalance = true;
           state.fromCard = 0;
