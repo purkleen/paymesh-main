@@ -829,6 +829,7 @@ button.ds-option { cursor: pointer; }
 .menu__links li + li { margin-top: var(--spacing-4); }
 .menu__links a { color: var(--text-primary); text-decoration: underline; text-underline-offset: 3px; }
 .menu__links a:hover { opacity: .7; }
+.menu .menu__sublinks { margin-top: var(--spacing-4); padding-left: var(--spacing-16); font: var(--text-s); }
 .menu__entry + .menu__entry { margin-top: var(--spacing-16); }
 .menu__note { margin: 0; color: var(--text-secondary); }
 
@@ -957,3 +958,18 @@ button.nw-row { cursor: pointer; }
 
 .nw-terms { padding: 0 var(--spacing-16) var(--spacing-8); }
 .nw-back { align-self: center; }
+
+/* ==========================================================================
+   Payment widget scenarios — Work in progress file, node 499:3741
+   (widget-scenarios.html). Reuses the newest widget; only the switcher is new.
+   ========================================================================== */
+.ws-switcher { width: 240px; gap: var(--spacing-16); }
+.ws-group { display: flex; flex-direction: column; align-items: flex-start; gap: var(--spacing-8); }
+.ws-group__label { font: var(--text-s); font-weight: 600; letter-spacing: var(--tracking-text); color: var(--text-tertiary); }
+.ws-note { margin: 0; font: var(--text-s); letter-spacing: var(--tracking-text); color: var(--text-tertiary); }
+@media (max-width: 760px) {
+  .ws-switcher { width: auto; flex-direction: column; align-items: center; }
+  .ws-group { flex-direction: row; flex-wrap: wrap; justify-content: center; align-items: center; }
+  .ws-group__label { width: 100%; text-align: center; }
+  .ws-note { text-align: center; }
+}

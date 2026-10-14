@@ -54,8 +54,10 @@ on Vercel's Deployment Protection for the project.
 ## Menu of prototypes
 
 After the password, opening the site's plain address shows a text-only menu
-(`#/menu`, `src/screens/menu.js`). It links to the registration journey and
-the payment widget (`/widget`) on:
+(`#/menu`, `src/screens/menu.js`). It links to the registration journey,
+the payment widget (`/widget`), the newest payment widget (`/widget-new`) and
+the payment widget scenarios (`/widget-scenarios`, every scenario and state of
+Figma node 499:3741, picked with `?scenario=1|2|3&state=a|b|c`) on:
 
 - **main** — the production site, https://paymesh-main.vercel.app
 - **every other branch** — read live from the GitHub API, so a branch appears
