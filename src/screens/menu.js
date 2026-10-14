@@ -7,7 +7,8 @@
  * as Vercel reported it back to GitHub. `main` links to the production site.
  *
  * Each entry links to the same pages: the registration journey, the payment
- * widget and the newest payment widget. Links for the deployment you're on are relative.
+ * widget, the newest payment widget and the payment widget scenarios (with a link to each
+ * scenario). Links for the deployment you're on are relative.
  */
 
 import { esc } from "../ui.js";
@@ -61,6 +62,14 @@ function pageLinks(base) {
       <li><a href="${at("#/")}">Registration journey</a></li>
       <li><a href="${at("widget.html")}">Payment widget</a></li>
       <li><a href="${at("widget-new.html")}">Newest payment widget</a></li>
+      <li>
+        <a href="${at("widget-scenarios.html")}">Payment widget scenarios</a>
+        <ul class="menu__sublinks">
+          <li><a href="${at("widget-scenarios.html?scenario=1")}">1. Balance covers the order</a></li>
+          <li><a href="${at("widget-scenarios.html?scenario=2")}">2. Balance doesn&rsquo;t cover the order</a></li>
+          <li><a href="${at("widget-scenarios.html?scenario=3")}">3. Split payment (alternative UI)</a></li>
+        </ul>
+      </li>
     </ul>`;
 }
 

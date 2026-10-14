@@ -30,7 +30,7 @@ export const SCENARIOS = [
   { id: 3, label: "Split payment (alternative UI)", total: 7000, balance: 8000, mode: "split" },
 ];
 
-const CARDS = [
+const DEMO_CARDS = [
   { id: "visa-9876", scheme: "visa", label: "Visa ending in 9876", expiry: "Expiry 06/2027" },
   { id: "mc-9833", scheme: "mastercard", label: "Mastercard ending in 9833", expiry: "Expiry 06/2027" },
 ];
@@ -72,7 +72,12 @@ const amountInput = (name, value, label) => `
    Widget
    -------------------------------------------------------------------------- */
 
-function create(scenario) {
+/**
+ * The widget for one scenario. `cards` are the saved cards on offer; `preset`
+ * overrides the starting state (which rows are open, what is chosen), so a page
+ * can open the widget in a particular state.
+ */
+export function create(scenario, { cards = DEMO_CARDS, preset = {} } = {}) {
   const { total, balance, mode } = scenario;
   const state = {
     open: false, // Payment method row expanded
@@ -81,10 +86,11 @@ function create(scenario) {
     // single: "balance" or a card id. short: whether the balance is ticked.
     choice: "balance",
     useBalance: true,
-    cardId: mode === "short" ? CARDS[0].id : null,
+    cardId: mode === "short" ? cards[0].id : null,
     fromBalance: 0, // split mode amounts
     fromCard: 0,
   };
+  Object.assign(state, preset);
 
   /** What each method pays, for the current state. */
   const amounts = () => {
@@ -96,8 +102,8 @@ function create(scenario) {
     return state.choice === "balance" ? { balance: total, card: 0 } : { balance: 0, card: total };
   };
   const chosenCard = () => {
-    if (mode === "short" || (mode === "split" && state.split)) return CARDS.find((c) => c.id === state.cardId) || null;
-    return CARDS.find((c) => c.id === state.choice) || null;
+    if (mode === "short" || (mode === "split" && state.split)) return cards.find((c) => c.id === state.cardId) || null;
+    return cards.find((c) => c.id === state.choice) || null;
   };
 
   /** The methods paying for the order, each with what it pays. */
@@ -184,7 +190,7 @@ function create(scenario) {
     const list = [balanceItem()];
     list.push(`<hr class="nw-divider nw-divider--inset" />`);
     if (mode === "short") list.push(`<h3 class="nw-remaining">Remaining balance</h3>`);
-    list.push(CARDS.map(cardItem).join(`<hr class="nw-divider nw-divider--inset" />`));
+    list.push(cards.map(cardItem).join(`<hr class="nw-divider nw-divider--inset" />`));
 
     return `
       <div class="nw-methods">
@@ -259,14 +265,14 @@ function create(scenario) {
   /** Split mode starts half from the balance (as far as it goes), half on the first card. */
   const startSplit = () => {
     state.useBalance = true;
-    state.cardId = state.cardId || CARDS[0].id;
+    state.cardId = state.cardId || cards[0].id;
     state.fromBalance = cents(Math.min(balance, total / 2));
     state.fromCard = cents(total - state.fromBalance);
   };
   /** The whole amount on the chosen card (the balance unticked). */
   const allOnCard = () => {
     state.useBalance = false;
-    state.cardId = state.cardId || CARDS[0].id;
+    state.cardId = state.cardId || cards[0].id;
     state.fromBalance = 0;
     state.fromCard = total;
   };
@@ -304,7 +310,7 @@ function create(scenario) {
         clearFormError(root);
         if (clear.dataset.clearAmount === "balance") {
           // The balance stays ticked with its field at $0.00; the card takes the whole order.
-          state.cardId = state.cardId || CARDS[0].id;
+          state.cardId = state.cardId || cards[0].id;
           state.fromBalance = 0;
           state.fromCard = total;
         } else {
@@ -360,7 +366,7 @@ function create(scenario) {
       if (field.dataset.amount === "balance") {
         state.fromBalance = cents(Math.min(value, balance, total));
         state.fromCard = cents(Math.max(0, total - state.fromBalance));
-        if (state.fromCard > 0 && !state.cardId) state.cardId = CARDS[0].id;
+        if (state.fromCard > 0 && !state.cardId) state.cardId = cards[0].id;
       } else {
         state.cardId = field.dataset.amount.slice(5);
         state.fromCard = cents(Math.min(value, total));
