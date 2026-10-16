@@ -15,7 +15,7 @@ import { esc } from "../ui.js";
 import { GITHUB_REPO, MAIN_BRANCH, PRODUCTION_URL } from "../config.js";
 
 const API = `https://api.github.com/repos/${GITHUB_REPO}`;
-const CACHE_KEY = "paymesh.menu.branches";
+const CACHE_KEY = "paymesh.menu.branches.v2";
 const CACHE_MS = 2 * 60 * 1000; // the unauthenticated GitHub API allows 60 calls an hour
 
 const getJSON = async (url) => {
@@ -40,8 +40,13 @@ async function loadBranches() {
     heads.map(async ({ name, commit }) => {
       const [deployment] = await getJSON(`${API}/deployments?sha=${commit.sha}&per_page=1`);
       if (!deployment) return { name, state: "none" };
-      const [status] = await getJSON(`${deployment.statuses_url}?per_page=1`);
-      return { name, state: status?.state || "pending", url: status?.environment_url || null };
+      const [[status], root] = await Promise.all([
+        getJSON(`${deployment.statuses_url}?per_page=1`),
+        // The pages are top-level files, so the branch's root lists which it has.
+        getJSON(`${API}/contents/?ref=${commit.sha}`).catch(() => null),
+      ]);
+      const files = root ? root.map((f) => f.name) : null;
+      return { name, state: status?.state || "pending", url: status?.environment_url || null, files };
     })
   );
 
@@ -53,31 +58,36 @@ async function loadBranches() {
   return branches;
 }
 
-/** Links into a deployment — relative when it's the one being viewed. */
-function pageLinks(base) {
+/**
+ * Links into a deployment — relative when it's the one being viewed. `files`
+ * is the branch's top-level files: a page it doesn't have isn't linked (older
+ * branches predate the newer pages). Without it, every page is linked.
+ */
+function pageLinks(base, files = null) {
   const here = base && new URL(base).origin === location.origin;
   const at = (path) => (here ? path : `${base.replace(/\/$/, "")}/${path}`);
+  const has = (file) => !files || files.includes(file);
   return `
     <ul class="menu__links">
       <li><a href="${at("#/")}">Registration journey</a></li>
-      <li><a href="${at("widget.html")}">Payment widget</a></li>
-      <li><a href="${at("widget-new.html")}">Newest payment widget</a></li>
-      <li>
+      ${has("widget.html") ? `<li><a href="${at("widget.html")}">Payment widget</a></li>` : ""}
+      ${has("widget-new.html") ? `<li><a href="${at("widget-new.html")}">Newest payment widget</a></li>` : ""}
+      ${has("widget-scenarios.html") ? `<li>
         <a href="${at("widget-scenarios.html")}">Payment widget scenarios</a>
         <ul class="menu__sublinks">
           <li><a href="${at("widget-scenarios.html?scenario=1")}">1. Balance covers the order</a></li>
           <li><a href="${at("widget-scenarios.html?scenario=2")}">2. Balance doesn&rsquo;t cover the order</a></li>
           <li><a href="${at("widget-scenarios.html?scenario=3")}">3. Split payment (alternative UI)</a></li>
         </ul>
-      </li>
-      <li><a href="${at("dashboard.html")}">Wallet dashboard</a></li>
+      </li>` : ""}
+      ${has("dashboard.html") ? `<li><a href="${at("dashboard.html")}">Wallet dashboard</a></li>` : ""}
     </ul>`;
 }
 
-function branchEntry({ name, state, url }) {
+function branchEntry({ name, state, url, files }) {
   const body =
     state === "success" && url
-      ? pageLinks(url)
+      ? pageLinks(url, files)
       : `<p class="menu__note">${
           state === "none" ? "Not deployed yet." : state === "failure" || state === "error" ? "Deployment failed." : "Building…"
         }</p>`;
