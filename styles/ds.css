@@ -1163,6 +1163,8 @@ body:has(.db) { background: #0e0e11; }
 .db { --border-default: #4f4f58; }
 /* the frame starts this page at 160px, 41px below the menu */
 .db-tx-page { display: flex; flex-direction: column; gap: var(--spacing-24); padding-top: 41px; }
+/* pages with no frame of their own start level with the menu */
+.db-tx-page--top { padding-top: 0; }
 .db-tx-page__head { display: flex; align-items: center; justify-content: space-between; gap: var(--spacing-16); }
 .db-tx-page__title { margin: 0; font: var(--heading-2xl); color: #fff; }
 .db-tx-page__actions { display: flex; align-items: center; gap: var(--spacing-16); }
