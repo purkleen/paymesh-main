@@ -86,6 +86,12 @@ of `styles/ds.css` (`.db-*`, with the dark values of the colour variables).
   **Filters** (All / Money in / Money out) and **Export**, which downloads
   what's shown as a CSV. The frame dates every row 13 Oct 2026; here each
   row takes its group's date.
+- The data is 20 example recipients, 10 people and 10 businesses
+  (`RECIPIENT_LIST` in `src/screens/dashboard.js`), and 60 transactions
+  generated from them over the last 60 days ("today" is 13 Oct 2026). The
+  transactions are random but come from a fixed seed, so every visit shows
+  the same history. Home shows the latest eight. Airbnb keeps its logo;
+  everyone else has an initials avatar, grey for businesses.
 - **Recipients** (`#recipients`, not in Figma yet) lists everyone who appears
   in the transactions, A–Z under a heading per first letter, with the total
   of all their transactions, last transaction date and transaction count.

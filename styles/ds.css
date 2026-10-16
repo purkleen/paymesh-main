@@ -1060,6 +1060,8 @@ body:has(.db) { background: #0e0e11; }
   letter-spacing: var(--tracking-text);
 }
 .db-avatar--logo { object-fit: contain; background: none; }
+/* businesses without a logo of their own */
+.db-avatar--business { background: var(--action-secondary-pressed); color: var(--text-primary); }
 
 /* Side menu — Button (ghost, L) */
 .db-nav {
