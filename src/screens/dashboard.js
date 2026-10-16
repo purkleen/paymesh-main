@@ -11,7 +11,9 @@
  *     (node 639:12567): search, Filters (money in / out) and Export (a CSV
  *     of what's shown), with the list grouped by day
  *   - Fold menu collapses the menu to its icons (and back)
- *   - Recipients, Cards and Settings aren't designed yet, so they say so
+ *   - Recipients lists everyone in the transactions, A–Z in letter sections,
+ *     with a search; picking one opens their transactions
+ *   - Cards and Settings aren't designed yet, so they say so
  *   - Log out goes back to the prototype menu
  * The page is in the URL hash (#home, #transactions, …), so Back works.
  */
@@ -163,6 +165,73 @@ function transactionsPage(state) {
     </section>`;
 }
 
+/**
+ * Recipients — everyone who appears in the transactions, once each, with how
+ * many transactions there are and the latest one (the groups run newest first).
+ */
+const RECIPIENTS = (() => {
+  const byParty = new Map();
+  for (const g of GROUPS)
+    for (const t of g.items) {
+      const r = byParty.get(t.party);
+      if (r) r.count += 1;
+      else byParty.set(t.party, { ...t, count: 1 });
+    }
+  return [...byParty.values()].sort((a, b) => a.party.localeCompare(b.party));
+})();
+
+const recipientRow = (r) => `
+  <li>
+    <button type="button" class="db-tx" data-recipient="${esc(r.party)}">
+      ${avatar(r)}
+      <span class="db-tx__info">
+        <span class="db-tx__line db-tx__line--main">
+          <span class="db-tx__party">${esc(r.party)}</span>
+          <span class="db-tx__amount ${r.amount < 0 ? "is-expense" : "is-income"}">${sign(r.amount)}$${num(r.amount)}</span>
+        </span>
+        <span class="db-tx__line db-tx__line--sub">
+          <span class="db-tx__date">Last transaction ${esc(r.date.split(" · ")[0])}</span>
+          <span class="db-tx__usdt">${r.count} transaction${r.count === 1 ? "" : "s"}</span>
+        </span>
+      </span>
+    </button>
+  </li>`;
+
+/** The recipients matching the search, in a section per first letter. */
+const recipientsHTML = ({ recipientQuery }) => {
+  const q = recipientQuery.trim().toLowerCase();
+  const sections = new Map();
+  for (const r of RECIPIENTS.filter((r) => !q || r.party.toLowerCase().includes(q))) {
+    const letter = /[a-z]/i.test(r.party[0]) ? r.party[0].toUpperCase() : "#";
+    if (!sections.has(letter)) sections.set(letter, []);
+    sections.get(letter).push(r);
+  }
+  return sections.size
+    ? [...sections]
+        .map(
+          ([letter, list]) =>
+            `<section class="db-group" aria-label="${letter}"><h3 class="db-group__label">${letter}</h3><ul class="db-txlist">${list.map(recipientRow).join("")}</ul></section>`
+        )
+        .join("")
+    : `<p class="db-empty">No recipients match.</p>`;
+};
+
+/** Recipients — laid out like the Transactions page. */
+function recipientsPage(state) {
+  return `
+    <section class="db-tx-page" aria-labelledby="db-recipients">
+      <div class="db-tx-page__head">
+        <h2 id="db-recipients" class="db-tx-page__title">Recipients</h2>
+      </div>
+      <label class="db-search">
+        <img src="${ICON}db-search.svg" width="24" height="24" alt="" />
+        <input type="search" data-recipient-search value="${esc(state.recipientQuery)}" placeholder="Search people and businesses"
+          aria-label="Search recipients" autocomplete="off" />
+      </label>
+      <div class="db-groups" data-recipients>${recipientsHTML(state)}</div>
+    </section>`;
+}
+
 /** Downloads what the list shows as a CSV. */
 function exportCSV(state) {
   const quote = (v) => `"${String(v).replace(/"/g, '""')}"`;
@@ -189,6 +258,8 @@ function main(state) {
         </section>`;
     case "transactions":
       return transactionsPage(state);
+    case "recipients":
+      return recipientsPage(state);
     default: {
       const label = state.page[0].toUpperCase() + state.page.slice(1);
       return `
@@ -233,7 +304,7 @@ export default {
       const id = location.hash.slice(1);
       return PAGES.has(id) ? id : "home";
     };
-    const state = { page: pageFromHash(), hidden: false, lead: "usd", folded: false, query: "", type: "all", filtersOpen: false };
+    const state = { page: pageFromHash(), hidden: false, lead: "usd", folded: false, query: "", type: "all", filtersOpen: false, recipientQuery: "" };
     const draw = () => (root.innerHTML = render(state));
 
     root.addEventListener("click", (e) => {
@@ -243,15 +314,26 @@ export default {
       else if (e.target.closest("[data-filters]")) state.filtersOpen = !state.filtersOpen;
       else if (e.target.closest("[data-type]")) state.type = e.target.closest("[data-type]").dataset.type;
       else if (e.target.closest("[data-export]")) return exportCSV(state);
+      else if (e.target.closest("[data-recipient]")) {
+        // A recipient opens the Transactions page, searched to them.
+        state.query = e.target.closest("[data-recipient]").dataset.recipient;
+        state.type = "all";
+        location.hash = "#transactions";
+        return;
+      }
       else return;
       draw();
     });
 
     // Typing only redraws the list, so the field keeps its focus.
     root.addEventListener("input", (e) => {
-      if (!e.target.matches("[data-search]")) return;
-      state.query = e.target.value;
-      root.querySelector("[data-groups]").innerHTML = groupsHTML(state);
+      if (e.target.matches("[data-search]")) {
+        state.query = e.target.value;
+        root.querySelector("[data-groups]").innerHTML = groupsHTML(state);
+      } else if (e.target.matches("[data-recipient-search]")) {
+        state.recipientQuery = e.target.value;
+        root.querySelector("[data-recipients]").innerHTML = recipientsHTML(state);
+      }
     });
 
     addEventListener("hashchange", () => {

@@ -85,8 +85,13 @@ of `styles/ds.css` (`.db-*`, with the dark values of the colour variables).
   Yesterday, 13 September 2026), a search that filters as you type,
   **Filters** (All / Money in / Money out) and **Export**, which downloads
   what's shown as a CSV. The frame dates every row 13 Oct 2026; here each
-  row takes its group's date. **Recipients**, **Cards** and **Settings**
-  aren't designed yet and say so. **Fold menu** collapses the menu to its icons;
+  row takes its group's date.
+- **Recipients** (`#recipients`, not in Figma yet) lists everyone who appears
+  in the transactions, A–Z under a heading per first letter, with their
+  latest amount, last transaction date and transaction count. Its search
+  filters as you type; picking someone opens Transactions searched to them.
+  It's built from the transaction data, so new parties there show up here.
+- **Cards** and **Settings** aren't designed yet and say so. **Fold menu** collapses the menu to its icons;
   **Log out** returns to the menu of prototypes.
 - Under 1000px the menu is icons only; on phones it becomes a bottom tab bar.
 

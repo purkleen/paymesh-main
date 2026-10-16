@@ -1019,19 +1019,29 @@ body:has(.db) { background: #0e0e11; }
   height: 119px;
 }
 .db-logo {
-  /* the text box from the frame, which the gradient spans */
   display: inline-block;
-  width: 143.265px;
   height: 40.19px;
   font: 700 24px/normal var(--font-family-rebond);
   letter-spacing: -0.72px;
   align-self: flex-start;
   margin-top: 32px;
   text-decoration: none;
-  background: linear-gradient(33.41deg, #3740ff 35.21%, #55d7ff 60.69%, #5a8eff 126.59%);
+  /* A highlight sweeps across the logo gradient (left to right: #3740ff,
+     #55d7ff at 59%, #5a8eff) once every 10 seconds. */
+  background:
+    linear-gradient(105deg, transparent 42%, rgba(255, 255, 255, .85) 50%, transparent 58%) 200% 0 / 250% 100% no-repeat,
+    linear-gradient(90deg, #3740ff 0%, #55d7ff 59%, #5a8eff 100%) 0 0 / 100% 100% no-repeat;
   -webkit-background-clip: text;
   background-clip: text;
   color: transparent !important;
+  animation: db-logo-shimmer 10s ease-in-out infinite;
+}
+@keyframes db-logo-shimmer {
+  0% { background-position: 200% 0, 0 0; }
+  15%, 100% { background-position: -100% 0, 0 0; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .db-logo { animation: none; }
 }
 .db-user { position: fixed; top: 32px; right: var(--spacing-16); display: flex; align-items: center; gap: 6px; }
 .db-user__name { font: var(--text-s); letter-spacing: var(--tracking-text); color: #fff; }
