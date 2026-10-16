@@ -87,8 +87,9 @@ of `styles/ds.css` (`.db-*`, with the dark values of the colour variables).
   what's shown as a CSV. The frame dates every row 13 Oct 2026; here each
   row takes its group's date.
 - **Recipients** (`#recipients`, not in Figma yet) lists everyone who appears
-  in the transactions, A–Z under a heading per first letter, with their
-  latest amount, last transaction date and transaction count. Its search
+  in the transactions, A–Z under a heading per first letter, with the total
+  of all their transactions, last transaction date and transaction count.
+  Its title sits level with the top of the menu. Its search
   filters as you type; picking someone opens Transactions searched to them.
   It's built from the transaction data, so new parties there show up here.
 - **Cards** and **Settings** aren't designed yet and say so. **Fold menu** collapses the menu to its icons;

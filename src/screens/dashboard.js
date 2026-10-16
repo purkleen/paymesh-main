@@ -166,16 +166,19 @@ function transactionsPage(state) {
 }
 
 /**
- * Recipients — everyone who appears in the transactions, once each, with how
- * many transactions there are and the latest one (the groups run newest first).
+ * Recipients — everyone who appears in the transactions, once each, with the
+ * total of all their transactions, how many there are and the date of the
+ * latest (the groups run newest first).
  */
 const RECIPIENTS = (() => {
   const byParty = new Map();
   for (const g of GROUPS)
     for (const t of g.items) {
       const r = byParty.get(t.party);
-      if (r) r.count += 1;
-      else byParty.set(t.party, { ...t, count: 1 });
+      if (r) {
+        r.count += 1;
+        r.amount += t.amount;
+      } else byParty.set(t.party, { ...t, count: 1 });
     }
   return [...byParty.values()].sort((a, b) => a.party.localeCompare(b.party));
 })();
@@ -219,7 +222,7 @@ const recipientsHTML = ({ recipientQuery }) => {
 /** Recipients — laid out like the Transactions page. */
 function recipientsPage(state) {
   return `
-    <section class="db-tx-page" aria-labelledby="db-recipients">
+    <section class="db-tx-page db-tx-page--top" aria-labelledby="db-recipients">
       <div class="db-tx-page__head">
         <h2 id="db-recipients" class="db-tx-page__title">Recipients</h2>
       </div>
