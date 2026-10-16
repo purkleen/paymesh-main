@@ -15,6 +15,9 @@
  *     with a search; picking one opens their transactions
  *   - Cards and Settings aren't designed yet, so they say so
  *   - Log out goes back to the prototype menu
+ *   - on phones the menu sits behind a hamburger button next to the avatar,
+ *     and a sticky "Add funds" button runs along the bottom (its page isn't
+ *     designed yet, so it says so)
  * The page is in the URL hash (#home, #transactions, …), so Back works.
  */
 
@@ -134,7 +137,8 @@ const NAV = [
   { id: "recipients", label: "Recipients", icon: "db-recipients.svg" },
   { id: "cards", label: "Cards", icon: "db-card.svg" },
 ];
-const PAGES = new Set([...NAV.map((n) => n.id), "settings"]);
+const PAGES = new Set([...NAV.map((n) => n.id), "settings", "add-funds"]);
+const PAGE_TITLES = { "add-funds": "Add funds" };
 
 const num = (n) => Math.abs(n).toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 const sign = (n) => (n < 0 ? "−" : "+");
@@ -340,7 +344,7 @@ function main(state) {
     case "recipients":
       return recipientsPage(state);
     default: {
-      const label = state.page[0].toUpperCase() + state.page.slice(1);
+      const label = PAGE_TITLES[state.page] || state.page[0].toUpperCase() + state.page.slice(1);
       return `
         <section class="db-section">
           <div class="db-section__head"><h2>${label}</h2></div>
@@ -352,16 +356,20 @@ function main(state) {
 
 function render(state) {
   return `
-  <div class="db ${state.folded ? "is-folded" : ""}">
+  <div class="db ${state.folded ? "is-folded" : ""} ${state.menuOpen ? "is-menu-open" : ""}">
     <header class="db-header">
       <a href="#home" class="db-logo">Paymesh</a>
       <div class="db-user">
         <span class="db-avatar">${USER.initials}</span>
         <span class="db-user__name">${esc(USER.name)}</span>
+        <button type="button" class="db-iconbtn db-menu-btn" data-menu aria-controls="db-nav" aria-expanded="${state.menuOpen}"
+          aria-label="${state.menuOpen ? "Close menu" : "Open menu"}">
+          ${state.menuOpen ? `<span class="db-icon db-icon--close" aria-hidden="true"></span>` : icon("db-menu.svg")}
+        </button>
       </div>
     </header>
 
-    <nav class="db-nav" aria-label="Main">
+    <nav class="db-nav" id="db-nav" aria-label="Main">
       <div class="db-nav__group">${NAV.map((n) => navButton(n, state.page)).join("")}</div>
       <div class="db-nav__group db-nav__group--foot">
         <button type="button" class="db-nav__item db-nav__fold" data-fold aria-expanded="${!state.folded}"
@@ -374,6 +382,10 @@ function render(state) {
     </nav>
 
     <main class="db-main">${main(state)}</main>
+
+    <div class="db-addfunds">
+      <a href="#add-funds" class="db-addfunds__btn"><img src="${ICON}add.svg" width="24" height="24" alt="" />Add funds</a>
+    </div>
   </div>`;
 }
 
@@ -383,13 +395,14 @@ export default {
       const id = location.hash.slice(1);
       return PAGES.has(id) ? id : "home";
     };
-    const state = { page: pageFromHash(), hidden: false, lead: "usd", folded: false, query: "", type: "all", filtersOpen: false, recipientQuery: "" };
+    const state = { page: pageFromHash(), hidden: false, lead: "usd", folded: false, menuOpen: false, query: "", type: "all", filtersOpen: false, recipientQuery: "" };
     const draw = () => (root.innerHTML = render(state));
 
     root.addEventListener("click", (e) => {
       if (e.target.closest("[data-toggle-hide]")) state.hidden = !state.hidden;
       else if (e.target.closest("[data-swap]")) state.lead = state.lead === "usd" ? "usdt" : "usd";
       else if (e.target.closest("[data-fold]")) state.folded = !state.folded;
+      else if (e.target.closest("[data-menu]")) state.menuOpen = !state.menuOpen;
       else if (e.target.closest("[data-filters]")) state.filtersOpen = !state.filtersOpen;
       else if (e.target.closest("[data-type]")) state.type = e.target.closest("[data-type]").dataset.type;
       else if (e.target.closest("[data-export]")) return exportCSV(state);
@@ -415,8 +428,16 @@ export default {
       }
     });
 
+    addEventListener("keydown", (e) => {
+      if (e.key === "Escape" && state.menuOpen) {
+        state.menuOpen = false;
+        draw();
+      }
+    });
+
     addEventListener("hashchange", () => {
       state.page = pageFromHash();
+      state.menuOpen = false;
       draw();
       scrollTo(0, 0);
     });

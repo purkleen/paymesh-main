@@ -100,7 +100,11 @@ of `styles/ds.css` (`.db-*`, with the dark values of the colour variables).
   someone opens Transactions searched to them.
 - **Cards** and **Settings** aren't designed yet and say so. **Fold menu** collapses the menu to its icons;
   **Log out** returns to the menu of prototypes.
-- Under 1000px the menu is icons only; on phones it becomes a bottom tab bar.
+- Under 1000px the menu is icons only. On phones (640px and under) it moves
+  behind a hamburger button next to the avatar, opening as a full-screen
+  sheet under the header (links and Escape close it), and a sticky
+  **Add funds** button runs along the bottom. Its page (`#add-funds`) isn't
+  designed yet and says so.
 
 ## Running it locally
 
