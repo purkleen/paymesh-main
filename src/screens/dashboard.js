@@ -24,25 +24,98 @@ const ICON = "assets/ds/";
 const USER = { name: "Arthur Brown", initials: "AB" };
 const BALANCE = 23562.89;
 
-const AIRBNB = { party: "Airbnb", logo: `${ICON}db-merchant-airbnb.jpg`, amount: -1200 };
-const JAMES = { party: "James Wilson", initials: "JW", amount: 4500 };
-
-/** The eight rows of the frame — Airbnb and James Wilson, alternating. */
-const RECENT = Array.from({ length: 8 }, (_, i) => ({ ...(i % 2 ? JAMES : AIRBNB), date: "13 Oct 2026 · 11:13 UTC" }));
+/**
+ * Recipients — 10 people and 10 businesses. Airbnb keeps the logo from the
+ * frame; everyone else gets an initials avatar (businesses in grey). `range`
+ * is how much a transaction with them tends to be, in dollars.
+ */
+const RECIPIENT_LIST = [
+  { party: "Airbnb", kind: "business", logo: `${ICON}db-merchant-airbnb.jpg`, range: [180, 1600] },
+  { party: "Aurora Stays", kind: "business", range: [240, 1400] },
+  { party: "Bluebird Coffee", kind: "business", range: [4, 28] },
+  { party: "Cedar & Co. Design", kind: "business", range: [350, 2800] },
+  { party: "Harbor Grocers", kind: "business", range: [18, 240] },
+  { party: "Lumen Electric", kind: "business", range: [60, 320] },
+  { party: "Metro Transit", kind: "business", range: [3, 95] },
+  { party: "Northwind Supplies", kind: "business", range: [40, 900] },
+  { party: "Peak Fitness", kind: "business", range: [29, 120] },
+  { party: "Pixel Print Shop", kind: "business", range: [12, 180] },
+  { party: "Ava Hughes", kind: "person", range: [15, 600] },
+  { party: "Emma Rodriguez", kind: "person", range: [20, 1200] },
+  { party: "Ethan Brooks", kind: "person", range: [10, 400] },
+  { party: "James Wilson", kind: "person", range: [500, 4500] },
+  { party: "Liam Carter", kind: "person", range: [25, 800] },
+  { party: "Lucas Kim", kind: "person", range: [10, 350] },
+  { party: "Mia Thompson", kind: "person", range: [40, 2000] },
+  { party: "Noah Patel", kind: "person", range: [15, 650] },
+  { party: "Olivia Bennett", kind: "person", range: [30, 1500] },
+  { party: "Sophia Nguyen", kind: "person", range: [20, 900] },
+].map((r) => ({
+  ...r,
+  initials: r.party
+    .split(/\s+/)
+    .filter((w) => /^[a-z]/i.test(w))
+    .slice(0, 2)
+    .map((w) => w[0].toUpperCase())
+    .join(""),
+}));
 
 /**
- * The Transactions page's groups, as in node 639:12567. The frame dates every
- * row 13 Oct 2026; here each row carries its group's date, with "today" taken
- * as 13 Oct 2026.
+ * The transaction history: random, but from a fixed seed, so every visit
+ * shows the same one. Everyone has at least one transaction; 40 more are
+ * spread over the last 60 days, weighted towards recent days. Businesses are
+ * payments out (now and then a refund); with people, money goes both ways.
+ * "Today" is 13 Oct 2026.
  */
-const GROUPS = [
-  { label: "Today", date: "13 Oct 2026", rows: 2 },
-  { label: "Yesterday", date: "12 Oct 2026", rows: 4 },
-  { label: "13 September 2026", date: "13 Sep 2026", rows: 4 },
-].map(({ label, date, rows }) => ({
-  label,
-  items: Array.from({ length: rows }, (_, i) => ({ ...(i % 2 ? JAMES : AIRBNB), date: `${date} · 11:13 UTC` })),
-}));
+const TODAY = Date.UTC(2026, 9, 13);
+const DAY = 24 * 60 * 60 * 1000;
+
+const TRANSACTIONS = (() => {
+  let seed = 20261013;
+  const rand = () => ((seed = (seed * 1664525 + 1013904223) >>> 0) / 2 ** 32);
+  const pick = (list) => list[Math.floor(rand() * list.length)];
+
+  const make = (r, daysAgo) => {
+    const [lo, hi] = r.range;
+    const size = Math.round((lo + rand() * (hi - lo)) * 100) / 100;
+    const incoming = r.kind === "business" ? rand() < 0.08 : rand() < 0.5;
+    const at = TODAY - daysAgo * DAY + Math.floor(rand() * DAY);
+    const { range, ...shown } = r;
+    return { ...shown, amount: incoming ? size : -size, at };
+  };
+  const someDay = () => Math.floor(rand() ** 2 * 60);
+
+  const list = [
+    ...RECIPIENT_LIST.map((r) => make(r, someDay())),
+    // a few on the first two days, so Today and Yesterday aren't empty
+    ...Array.from({ length: 4 }, (_, i) => make(pick(RECIPIENT_LIST), i < 2 ? 0 : 1)),
+    ...Array.from({ length: 36 }, () => make(pick(RECIPIENT_LIST), someDay())),
+  ];
+
+  const day = (at) => new Date(at).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric", timeZone: "UTC" });
+  const time = (at) => new Date(at).toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit", timeZone: "UTC" });
+  return list.sort((a, b) => b.at - a.at).map((t) => ({ ...t, date: `${day(t.at)} · ${time(t.at)} UTC` }));
+})();
+
+/** Home's list — the latest eight, as many rows as the frame has. */
+const RECENT = TRANSACTIONS.slice(0, 8);
+
+/** The Transactions page's groups (node 639:12567): Today, Yesterday, then one per date. */
+const GROUPS = (() => {
+  const label = (at) => {
+    const ago = Math.floor((TODAY + DAY - 1 - at) / DAY);
+    if (ago <= 0) return "Today";
+    if (ago === 1) return "Yesterday";
+    return new Date(at).toLocaleDateString("en-GB", { day: "numeric", month: "long", year: "numeric", timeZone: "UTC" });
+  };
+  const groups = [];
+  for (const t of TRANSACTIONS) {
+    const l = label(t.at);
+    if (groups.at(-1)?.label !== l) groups.push({ label: l, items: [] });
+    groups.at(-1).items.push(t);
+  }
+  return groups;
+})();
 
 const TYPES = [
   { id: "all", label: "All" },
@@ -66,7 +139,7 @@ const icon = (file) => `<img class="db-icon" src="${ICON}${file}" width="24" hei
 const avatar = (t) =>
   t.logo
     ? `<img class="db-avatar db-avatar--logo" src="${t.logo}" width="32" height="32" alt="" />`
-    : `<span class="db-avatar">${esc(t.initials)}</span>`;
+    : `<span class="db-avatar${t.kind === "business" ? " db-avatar--business" : ""}">${esc(t.initials)}</span>`;
 
 /** Transaction — one row of the list. */
 const row = (t) => `
