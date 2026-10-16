@@ -973,3 +973,203 @@ button.nw-row { cursor: pointer; }
   .ws-group__label { width: 100%; text-align: center; }
   .ws-note { text-align: center; }
 }
+
+/* ==========================================================================
+   Wallet dashboard — Work in progress file, node 646:16528 "Desktop-large (XL)"
+   (dashboard.html). The frame is in the dark theme, so the colour variables
+   take their dark values inside .db.
+   ========================================================================== */
+.db {
+  --background-canvas: #0e0e11;
+  --text-primary: #fafafb;
+  --text-secondary: #bdbdc1;
+  --text-tertiary: #97979d;
+  --text-inverse: #0e0e11;
+  --action-primary-default: #9facff;
+  --action-secondary-pressed: #4f4f58;
+  --surface-secondary: #26262a;
+  --transaction-expense: #fe9a93;
+  --transaction-completed: #8fe6a2;
+  --radius-lg: 12px;
+  --db-nav-w: 340px;
+
+  min-height: 100vh;
+  display: grid;
+  grid-template-columns: var(--db-nav-w) minmax(0, 696px);
+  grid-template-rows: auto 1fr;
+  column-gap: var(--spacing-16);
+  padding: 0 var(--spacing-16);
+  background: var(--background-canvas);
+  color: var(--text-primary);
+  font: var(--text-m);
+  letter-spacing: var(--tracking-text);
+}
+body:has(.db) { background: #0e0e11; }
+.db.is-folded { --db-nav-w: 52px; }
+.db a { color: inherit; }
+.db :focus-visible { outline: 2px solid var(--action-primary-default); outline-offset: 2px; }
+
+/* Header — logo and account */
+.db-header {
+  grid-column: 1 / -1;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  /* the logo sits 32px down; the menu and content start at 119px */
+  height: 119px;
+}
+.db-logo {
+  /* the text box from the frame, which the gradient spans */
+  display: inline-block;
+  width: 143.265px;
+  height: 40.19px;
+  font: 700 24px/normal var(--font-family-rebond);
+  letter-spacing: -0.72px;
+  align-self: flex-start;
+  margin-top: 32px;
+  text-decoration: none;
+  background: linear-gradient(33.41deg, #3740ff 35.21%, #55d7ff 60.69%, #5a8eff 126.59%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent !important;
+}
+.db-user { position: fixed; top: 32px; right: var(--spacing-16); display: flex; align-items: center; gap: 6px; }
+.db-user__name { font: var(--text-s); letter-spacing: var(--tracking-text); color: #fff; }
+
+/* Account avatar / merchant logo */
+.db-avatar {
+  flex: 0 0 auto;
+  display: grid;
+  place-items: center;
+  width: 32px;
+  height: 32px;
+  border-radius: var(--radius-full);
+  background: var(--action-primary-default);
+  color: var(--text-inverse);
+  font: var(--label-m);
+  letter-spacing: var(--tracking-text);
+}
+.db-avatar--logo { object-fit: contain; background: none; }
+
+/* Side menu — Button (ghost, L) */
+.db-nav {
+  position: sticky;
+  top: 119px;
+  height: calc(100vh - 119px);
+  height: calc(100dvh - 119px);
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  padding-bottom: 30px;
+}
+.db-nav__group { display: flex; flex-direction: column; }
+.db-nav__item {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-8);
+  height: 52px;
+  padding: var(--spacing-12) var(--spacing-16) var(--spacing-12) 14px;
+  border: 0;
+  border-radius: var(--radius-xl);
+  background: none;
+  color: var(--text-primary);
+  font: var(--button-l);
+  text-decoration: none;
+  white-space: nowrap;
+  overflow: hidden;
+  cursor: pointer;
+}
+.db-nav__group--foot .db-nav__item { height: 50px; }
+.db-nav__item:hover { background: var(--surface-secondary); }
+.db-nav__item:active { background: var(--action-secondary-pressed); }
+.db-icon { flex: 0 0 auto; display: block; width: 24px; height: 24px; }
+/* "Show balance": the design system's eye, in the dark theme's icon colour */
+.db-icon--eye { background: #f4f4f6; -webkit-mask: url("../assets/ds/eye.svg") center / 24px 24px no-repeat; mask: url("../assets/ds/eye.svg") center / 24px 24px no-repeat; }
+.is-folded .db-nav__label { display: none; }
+.is-folded .db-nav__fold .db-icon { transform: scaleX(-1); }
+
+/* Main column */
+.db-main { display: flex; flex-direction: column; gap: 40px; padding-bottom: var(--spacing-48); min-width: 0; }
+
+/* Balance */
+.db-balance { padding: 0 var(--spacing-16); }
+.db-balance h2 { margin: 0; }
+.db-balance__label { font: var(--heading-l); color: var(--text-tertiary); }
+.db-balance__row { display: flex; align-items: center; gap: var(--spacing-16); }
+.db-balance__amount { margin: 0; font: 700 56px/64px var(--font-family-rebond); letter-spacing: -2.24px; white-space: nowrap; }
+.db-balance__cents { font-size: 32px; line-height: 32px; }
+.db-balance__other { margin: 0; font: var(--heading-m); color: var(--text-tertiary); white-space: nowrap; }
+.db-iconbtn { display: grid; place-items: center; width: 32px; height: 32px; margin: -4px; padding: 0; border: 0; border-radius: var(--radius-m); background: none; cursor: pointer; }
+.db-iconbtn:hover { background: var(--surface-secondary); }
+
+/* Transactions */
+.db-section { display: flex; flex-direction: column; gap: var(--spacing-8); }
+.db-section__head { display: flex; align-items: center; justify-content: space-between; padding: 0 var(--spacing-16); }
+.db-section__head h2 { margin: 0; font: var(--heading-l); color: #fff; }
+.db-link { font: var(--link-m); letter-spacing: var(--tracking-text); text-decoration: underline; color: #fff; }
+.db-link:hover { opacity: .7; }
+.db-txlist { margin: 0; padding: 0; list-style: none; }
+.db-tx {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-12);
+  width: 100%;
+  padding: var(--spacing-8) var(--spacing-16);
+  border: 0;
+  border-radius: var(--radius-lg);
+  background: none;
+  color: inherit;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+.db-tx:hover { background: var(--surface-secondary); }
+.db-tx:active { background: var(--action-secondary-pressed); }
+.db-tx__info { flex: 1 1 0; min-width: 0; display: flex; flex-direction: column; }
+.db-tx__line { display: flex; align-items: center; gap: var(--spacing-8); }
+.db-tx__line--main { font: var(--text-m-semibold); letter-spacing: var(--tracking-text); }
+.db-tx__line--sub { font: var(--text-s); letter-spacing: var(--tracking-text); }
+.db-tx__party, .db-tx__date { flex: 1 1 0; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.db-tx__party { color: var(--text-primary); }
+.db-tx__date { color: var(--text-tertiary); }
+.db-tx__amount, .db-tx__usdt { white-space: nowrap; }
+.db-tx__amount.is-expense { color: var(--transaction-expense); }
+.db-tx__amount.is-income { color: var(--transaction-completed); }
+.db-tx__usdt { color: var(--text-secondary); }
+.db-empty { margin: 0; padding: 0 var(--spacing-16); color: var(--text-tertiary); }
+
+/* Narrower screens: the menu folds to its icons */
+@media (max-width: 1000px) {
+  .db { --db-nav-w: 52px; }
+  .db .db-nav__label { display: none; }
+  .db .db-nav__fold { display: none; }
+}
+/* Phones: the menu becomes a tab bar along the bottom */
+@media (max-width: 640px) {
+  .db { grid-template-columns: minmax(0, 1fr); padding: 0 var(--spacing-8); column-gap: 0; }
+  .db-header { height: auto; padding: var(--spacing-24) var(--spacing-8); }
+  .db-logo { margin-top: 0; align-self: center; }
+  .db-user { position: static; }
+  .db-nav__item[aria-current="page"] { background: var(--surface-secondary); }
+  .db-user__name { display: none; }
+  .db-main { padding-bottom: 96px; }
+  .db-balance__amount { font-size: 44px; line-height: 52px; letter-spacing: -1.76px; }
+  .db-balance__cents { font-size: 26px; line-height: 26px; }
+  .db-nav {
+    position: fixed;
+    inset: auto 0 0 0;
+    top: auto;
+    height: auto;
+    z-index: 10;
+    flex-direction: row;
+    justify-content: space-around;
+    padding: var(--spacing-8) var(--spacing-8) calc(var(--spacing-8) + env(safe-area-inset-bottom));
+    background: var(--background-canvas);
+    border-top: 1px solid var(--surface-secondary);
+  }
+  .db-nav__group, .db-nav__group--foot { flex-direction: row; }
+  .db-nav__group { flex: 4 1 0; justify-content: space-around; }
+  .db-nav__group--foot { flex: 1 1 0; justify-content: space-around; }
+  .db-nav__group--foot .db-nav__item:last-child { display: none; }
+  .db-nav__item, .db-nav__group--foot .db-nav__item { height: 48px; padding: var(--spacing-12); }
+}
