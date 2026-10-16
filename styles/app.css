@@ -678,8 +678,8 @@ img.shop__mark { display: block; border-radius: 50%; object-fit: cover; }
 .dev__item:hover { background: var(--surface-3); }
 .dev__item[aria-current="true"] { background: var(--brand-soft); color: var(--brand); font-weight: 500; }
 .dev__num { font-weight: 600; margin-right: 6px; }
-.dev__foot { margin-top: 10px; padding-top: 10px; border-top: 1px solid var(--line-soft); display: flex; gap: 8px; }
-.dev__foot button { flex: 1; height: 32px; border-radius: 8px; border: 1px solid var(--line); background: #fff; font-size: 12px; cursor: pointer; }
+.dev__foot { margin-top: 10px; padding-top: 10px; border-top: 1px solid var(--line-soft); display: flex; flex-wrap: wrap; gap: 8px; }
+.dev__foot button { flex: 1 1 40%; height: 32px; border-radius: 8px; border: 1px solid var(--line); background: #fff; font-size: 12px; cursor: pointer; }
 .dev__foot button:hover { background: var(--surface-3); }
 [hidden] { display: none !important; }
 

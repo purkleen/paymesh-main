@@ -35,6 +35,7 @@ export function mountDevPanel(host) {
           <button data-act="restart">Restart journey</button>
           <button data-act="merchant">Merchant page</button>
           <button data-act="menu">Menu</button>
+          <button data-act="wallet">Wallet</button>
         </div>
       </div>
       <button class="dev__toggle" data-act="toggle" aria-expanded="${open}">
@@ -67,6 +68,8 @@ export function mountDevPanel(host) {
       go("#/");
     } else if (act === "menu") {
       go("#/menu");
+    } else if (act === "wallet") {
+      location.href = "dashboard.html";
     }
   });
 

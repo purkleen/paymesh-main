@@ -66,7 +66,7 @@ dashboard (`/dashboard`, Figma node 646:16528 — see below) on:
   ("Building…" or "Not deployed yet" until there is one)
 
 Deep links such as `/?journey=9` skip the menu; the dev panel's **Menu**
-button goes back to it. Branch previews live on their own `vercel.app`
+button goes back to it, and its **Wallet** button opens the wallet dashboard. Branch previews live on their own `vercel.app`
 addresses, so the password is asked again there, and Vercel may ask for a
 Vercel login first, depending on the project's Deployment Protection setting.
 
