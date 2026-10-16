@@ -7,7 +7,9 @@
  *   - the eye hides and shows the balance
  *   - the arrows swap which currency the balance leads with (USD ↔ USDT)
  *   - transaction rows have the frame's hover (row 2) and pressed (row 3) states
- *   - "See all" and the menu's Transactions open the full list
+ *   - "See all" and the menu's Transactions open the Transactions page
+ *     (node 639:12567): search, Filters (money in / out) and Export (a CSV
+ *     of what's shown), with the list grouped by day
  *   - Fold menu collapses the menu to its icons (and back)
  *   - Recipients, Cards and Settings aren't designed yet, so they say so
  *   - Log out goes back to the prototype menu
@@ -26,11 +28,25 @@ const JAMES = { party: "James Wilson", initials: "JW", amount: 4500 };
 /** The eight rows of the frame — Airbnb and James Wilson, alternating. */
 const RECENT = Array.from({ length: 8 }, (_, i) => ({ ...(i % 2 ? JAMES : AIRBNB), date: "13 Oct 2026 · 11:13 UTC" }));
 
-/** The full list behind "See all": the same pair, a day apart, going back. */
-const ALL = Array.from({ length: 16 }, (_, i) => {
-  const day = 13 - Math.floor(i / 2);
-  return { ...(i % 2 ? JAMES : AIRBNB), date: `${String(day).padStart(2, "0")} Oct 2026 · 11:13 UTC` };
-});
+/**
+ * The Transactions page's groups, as in node 639:12567. The frame dates every
+ * row 13 Oct 2026; here each row carries its group's date, with "today" taken
+ * as 13 Oct 2026.
+ */
+const GROUPS = [
+  { label: "Today", date: "13 Oct 2026", rows: 2 },
+  { label: "Yesterday", date: "12 Oct 2026", rows: 4 },
+  { label: "13 September 2026", date: "13 Sep 2026", rows: 4 },
+].map(({ label, date, rows }) => ({
+  label,
+  items: Array.from({ length: rows }, (_, i) => ({ ...(i % 2 ? JAMES : AIRBNB), date: `${date} · 11:13 UTC` })),
+}));
+
+const TYPES = [
+  { id: "all", label: "All" },
+  { id: "in", label: "Money in" },
+  { id: "out", label: "Money out" },
+];
 
 const NAV = [
   { id: "home", label: "Home", icon: "db-home.svg" },
@@ -98,6 +114,67 @@ function balance({ hidden, lead }) {
     </section>`;
 }
 
+/** The groups and rows left after the search and the type filter. */
+function filtered({ query, type }) {
+  const q = query.trim().toLowerCase();
+  const keep = (t) =>
+    (type === "all" || (type === "in" ? t.amount > 0 : t.amount < 0)) &&
+    (!q || [t.party, t.date, `${sign(t.amount)}$${num(t.amount)}`, num(t.amount)].some((v) => v.toLowerCase().includes(q)));
+  return GROUPS.map((g) => ({ ...g, items: g.items.filter(keep) })).filter((g) => g.items.length);
+}
+
+const groupsHTML = (state) => {
+  const groups = filtered(state);
+  return groups.length
+    ? groups
+        .map((g) => `<section class="db-group"><h3 class="db-group__label">${esc(g.label)}</h3><ul class="db-txlist">${g.items.map(row).join("")}</ul></section>`)
+        .join("")
+    : `<p class="db-empty">No transactions match.</p>`;
+};
+
+/** Transactions — node 639:12567. */
+function transactionsPage(state) {
+  return `
+    <section class="db-tx-page" aria-labelledby="db-all">
+      <div class="db-tx-page__head">
+        <h2 id="db-all" class="db-tx-page__title">Transactions</h2>
+        <div class="db-tx-page__actions">
+          <button type="button" class="db-chip db-chip--primary" data-filters aria-expanded="${state.filtersOpen}">
+            <img src="${ICON}db-filters.svg" width="20" height="20" alt="" />Filters${state.type === "all" ? "" : " (1)"}
+          </button>
+          <button type="button" class="db-chip" data-export>
+            <img src="${ICON}db-export.svg" width="20" height="20" alt="" />Export
+          </button>
+        </div>
+      </div>
+      ${
+        state.filtersOpen
+          ? `<div class="db-filters" role="radiogroup" aria-label="Type">${TYPES.map(
+              (t) => `<button type="button" class="db-filter" role="radio" data-type="${t.id}" aria-checked="${t.id === state.type}">${t.label}</button>`
+            ).join("")}</div>`
+          : ""
+      }
+      <label class="db-search">
+        <img src="${ICON}db-search.svg" width="24" height="24" alt="" />
+        <input type="search" data-search value="${esc(state.query)}" placeholder="Search transaction, people, businesses, etc."
+          aria-label="Search transactions" autocomplete="off" />
+      </label>
+      <div class="db-groups" data-groups>${groupsHTML(state)}</div>
+    </section>`;
+}
+
+/** Downloads what the list shows as a CSV. */
+function exportCSV(state) {
+  const quote = (v) => `"${String(v).replace(/"/g, '""')}"`;
+  const lines = [["Date", "Party", "Amount (USD)", "Amount (USDT)"]];
+  for (const g of filtered(state))
+    for (const t of g.items) lines.push([t.date, t.party, (t.amount).toFixed(2), (t.amount).toFixed(2)]);
+  const blob = new Blob([lines.map((l) => l.map(quote).join(",")).join("\n")], { type: "text/csv" });
+  const a = Object.assign(document.createElement("a"), { href: URL.createObjectURL(blob), download: "paymesh-transactions.csv" });
+  a.click();
+  setTimeout(() => URL.revokeObjectURL(a.href), 0);
+}
+
 function main(state) {
   switch (state.page) {
     case "home":
@@ -111,11 +188,7 @@ function main(state) {
           <ul class="db-txlist">${RECENT.map(row).join("")}</ul>
         </section>`;
     case "transactions":
-      return `
-        <section class="db-section" aria-labelledby="db-all">
-          <div class="db-section__head"><h2 id="db-all">Transactions</h2></div>
-          <ul class="db-txlist">${ALL.map(row).join("")}</ul>
-        </section>`;
+      return transactionsPage(state);
     default: {
       const label = state.page[0].toUpperCase() + state.page.slice(1);
       return `
@@ -160,15 +233,25 @@ export default {
       const id = location.hash.slice(1);
       return PAGES.has(id) ? id : "home";
     };
-    const state = { page: pageFromHash(), hidden: false, lead: "usd", folded: false };
+    const state = { page: pageFromHash(), hidden: false, lead: "usd", folded: false, query: "", type: "all", filtersOpen: false };
     const draw = () => (root.innerHTML = render(state));
 
     root.addEventListener("click", (e) => {
       if (e.target.closest("[data-toggle-hide]")) state.hidden = !state.hidden;
       else if (e.target.closest("[data-swap]")) state.lead = state.lead === "usd" ? "usdt" : "usd";
       else if (e.target.closest("[data-fold]")) state.folded = !state.folded;
+      else if (e.target.closest("[data-filters]")) state.filtersOpen = !state.filtersOpen;
+      else if (e.target.closest("[data-type]")) state.type = e.target.closest("[data-type]").dataset.type;
+      else if (e.target.closest("[data-export]")) return exportCSV(state);
       else return;
       draw();
+    });
+
+    // Typing only redraws the list, so the field keeps its focus.
+    root.addEventListener("input", (e) => {
+      if (!e.target.matches("[data-search]")) return;
+      state.query = e.target.value;
+      root.querySelector("[data-groups]").innerHTML = groupsHTML(state);
     });
 
     addEventListener("hashchange", () => {

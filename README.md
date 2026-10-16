@@ -80,9 +80,13 @@ of `styles/ds.css` (`.db-*`, with the dark values of the colour variables).
 - The eye hides and shows the balance; the arrows swap whether it leads with
   US dollars or USDT.
 - Transaction rows use the frame's hover (row 2) and pressed (row 3) colours.
-- **See all** and the menu's **Transactions** open a longer list
-  (`#transactions`); **Recipients**, **Cards** and **Settings** aren't
-  designed yet and say so. **Fold menu** collapses the menu to its icons;
+- **See all** and the menu's **Transactions** open the Transactions page
+  (`#transactions`, Figma node 639:12567): the list grouped by day (Today,
+  Yesterday, 13 September 2026), a search that filters as you type,
+  **Filters** (All / Money in / Money out) and **Export**, which downloads
+  what's shown as a CSV. The frame dates every row 13 Oct 2026; here each
+  row takes its group's date. **Recipients**, **Cards** and **Settings**
+  aren't designed yet and say so. **Fold menu** collapses the menu to its icons;
   **Log out** returns to the menu of prototypes.
 - Under 1000px the menu is icons only; on phones it becomes a bottom tab bar.
 
