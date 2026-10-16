@@ -1209,7 +1209,7 @@ body:has(.db) { background: #0e0e11; }
 .db-search input::placeholder { color: var(--text-tertiary); }
 .db-search input::-webkit-search-cancel-button { filter: invert(1); }
 .db-groups { display: flex; flex-direction: column; gap: var(--spacing-24); }
-.db-group__label { margin: 0; font: 600 14px/20px var(--font-family-inter); color: #fff; }
+.db-group__label { margin: 0 0 var(--spacing-8); font: 600 14px/20px var(--font-family-inter); color: #fff; }
 .db-groups .db-empty { padding: 0; }
 
 /* Narrower screens: the menu folds to its icons */
