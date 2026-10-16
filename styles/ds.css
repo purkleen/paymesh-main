@@ -995,7 +995,7 @@ button.nw-row { cursor: pointer; }
 
   min-height: 100vh;
   display: grid;
-  grid-template-columns: var(--db-nav-w) minmax(0, 696px);
+  grid-template-columns: var(--db-nav-w) minmax(0, 1fr);
   grid-template-rows: auto 1fr;
   column-gap: var(--spacing-16);
   padding: 0 var(--spacing-16);
@@ -1089,7 +1089,18 @@ body:has(.db) { background: #0e0e11; }
 .is-folded .db-nav__fold .db-icon { transform: scaleX(-1); }
 
 /* Main column */
-.db-main { display: flex; flex-direction: column; gap: 40px; padding-bottom: var(--spacing-48); min-width: 0; }
+.db-main {
+  display: flex;
+  flex-direction: column;
+  gap: 40px;
+  width: 100%;
+  max-width: 696px;
+  /* Centred on the page. At 1440px that's exactly where the frame puts it
+     (372px in), so wider screens keep it centred instead of left-aligned. */
+  margin-left: max(0px, calc((100vw - 696px) / 2 - 2 * var(--spacing-16) - var(--db-nav-w)));
+  padding-bottom: var(--spacing-48);
+  min-width: 0;
+}
 
 /* Balance */
 .db-balance { padding: 0 var(--spacing-16); }
