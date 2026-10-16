@@ -61,9 +61,10 @@ const RECIPIENT_LIST = [
 }));
 
 /**
- * The transaction history: random, but from a fixed seed, so every visit
- * shows the same one. Everyone has at least one transaction; 40 more are
- * spread over the last 60 days, weighted towards recent days. Businesses are
+ * The transaction history: 13 transactions, random but from a fixed seed, so
+ * every visit shows the same ones. Two are today and two yesterday; the rest
+ * are spread over the last 60 days, weighted towards recent days. Each is
+ * with a different recipient, so 7 of the 20 have none yet. Businesses are
  * payments out (now and then a refund); with people, money goes both ways.
  * "Today" is 13 Oct 2026.
  */
@@ -73,7 +74,6 @@ const DAY = 24 * 60 * 60 * 1000;
 const TRANSACTIONS = (() => {
   let seed = 20261013;
   const rand = () => ((seed = (seed * 1664525 + 1013904223) >>> 0) / 2 ** 32);
-  const pick = (list) => list[Math.floor(rand() * list.length)];
 
   const make = (r, daysAgo) => {
     const [lo, hi] = r.range;
@@ -83,16 +83,21 @@ const TRANSACTIONS = (() => {
     const { range, ...shown } = r;
     return { ...shown, amount: incoming ? size : -size, at };
   };
-  const someDay = () => Math.floor(rand() ** 2 * 60);
+  const someDay = () => Math.floor(rand() ** 2 * 58);
 
-  const list = [
-    ...RECIPIENT_LIST.map((r) => make(r, someDay())),
-    // a few on the first two days, so Today and Yesterday aren't empty
-    ...Array.from({ length: 4 }, (_, i) => make(pick(RECIPIENT_LIST), i < 2 ? 0 : 1)),
-    ...Array.from({ length: 36 }, () => make(pick(RECIPIENT_LIST), someDay())),
-  ];
+  // 13 different recipients, in a seeded shuffle
+  const who = RECIPIENT_LIST.map((r) => [rand(), r])
+    .sort((a, b) => a[0] - b[0])
+    .slice(0, 13)
+    .map(([, r]) => r);
+  const list = who.map((r, i) => make(r, i < 2 ? 0 : i < 4 ? 1 : 2 + someDay()));
 
-  const day = (at) => new Date(at).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric", timeZone: "UTC" });
+  // "13 Oct 2026", as in the frames (en-GB would write "Sept")
+  const MONTHS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+  const day = (at) => {
+    const d = new Date(at);
+    return `${d.getUTCDate()} ${MONTHS[d.getUTCMonth()]} ${d.getUTCFullYear()}`;
+  };
   const time = (at) => new Date(at).toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit", timeZone: "UTC" });
   return list.sort((a, b) => b.at - a.at).map((t) => ({ ...t, date: `${day(t.at)} · ${time(t.at)} UTC` }));
 })();
@@ -239,19 +244,17 @@ function transactionsPage(state) {
 }
 
 /**
- * Recipients — everyone who appears in the transactions, once each, with the
- * total of all their transactions, how many there are and the date of the
- * latest (the groups run newest first).
+ * Recipients — all 20, with the total of their transactions, how many there
+ * are and the date of the latest (the groups run newest first).
  */
 const RECIPIENTS = (() => {
-  const byParty = new Map();
+  const byParty = new Map(RECIPIENT_LIST.map(({ range, ...r }) => [r.party, { ...r, count: 0, amount: 0 }]));
   for (const g of GROUPS)
     for (const t of g.items) {
       const r = byParty.get(t.party);
-      if (r) {
-        r.count += 1;
-        r.amount += t.amount;
-      } else byParty.set(t.party, { ...t, count: 1 });
+      if (!r.count) r.date = t.date;
+      r.count += 1;
+      r.amount += t.amount;
     }
   return [...byParty.values()].sort((a, b) => a.party.localeCompare(b.party));
 })();
@@ -263,11 +266,11 @@ const recipientRow = (r) => `
       <span class="db-tx__info">
         <span class="db-tx__line db-tx__line--main">
           <span class="db-tx__party">${esc(r.party)}</span>
-          <span class="db-tx__amount ${r.amount < 0 ? "is-expense" : "is-income"}">${sign(r.amount)}$${num(r.amount)}</span>
+          ${r.count ? `<span class="db-tx__amount ${r.amount < 0 ? "is-expense" : "is-income"}">${sign(r.amount)}$${num(r.amount)}</span>` : ""}
         </span>
         <span class="db-tx__line db-tx__line--sub">
-          <span class="db-tx__date">Last transaction ${esc(r.date.split(" · ")[0])}</span>
-          <span class="db-tx__usdt">${r.count} transaction${r.count === 1 ? "" : "s"}</span>
+          <span class="db-tx__date">${r.count ? `Last transaction ${esc(r.date.split(" · ")[0])}` : "No transactions yet"}</span>
+          ${r.count ? `<span class="db-tx__usdt">${r.count} transaction${r.count === 1 ? "" : "s"}</span>` : ""}
         </span>
       </span>
     </button>

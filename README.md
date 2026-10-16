@@ -87,17 +87,17 @@ of `styles/ds.css` (`.db-*`, with the dark values of the colour variables).
   what's shown as a CSV. The frame dates every row 13 Oct 2026; here each
   row takes its group's date.
 - The data is 20 example recipients, 10 people and 10 businesses
-  (`RECIPIENT_LIST` in `src/screens/dashboard.js`), and 60 transactions
-  generated from them over the last 60 days ("today" is 13 Oct 2026). The
-  transactions are random but come from a fixed seed, so every visit shows
-  the same history. Home shows the latest eight. Airbnb keeps its logo;
+  (`RECIPIENT_LIST` in `src/screens/dashboard.js`), and 13 transactions with
+  13 of them over the last 60 days: two today, two yesterday ("today" is
+  13 Oct 2026). The transactions are random but come from a fixed seed, so
+  every visit shows the same history. Home shows the latest eight; the
+  recipients without a transaction say "No transactions yet". Airbnb keeps its logo;
   everyone else has an initials avatar, grey for businesses.
-- **Recipients** (`#recipients`, not in Figma yet) lists everyone who appears
-  in the transactions, A–Z under a heading per first letter, with the total
-  of all their transactions, last transaction date and transaction count.
-  Its title sits level with the top of the menu. Its search
-  filters as you type; picking someone opens Transactions searched to them.
-  It's built from the transaction data, so new parties there show up here.
+- **Recipients** (`#recipients`, not in Figma yet) lists all 20 recipients,
+  A–Z under a heading per first letter, with the total of their
+  transactions, last transaction date and transaction count. Its title sits
+  level with the top of the menu. Its search filters as you type; picking
+  someone opens Transactions searched to them.
 - **Cards** and **Settings** aren't designed yet and say so. **Fold menu** collapses the menu to its icons;
   **Log out** returns to the menu of prototypes.
 - Under 1000px the menu is icons only; on phones it becomes a bottom tab bar.
