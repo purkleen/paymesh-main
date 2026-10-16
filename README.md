@@ -57,7 +57,8 @@ After the password, opening the site's plain address shows a text-only menu
 (`#/menu`, `src/screens/menu.js`). It links to the registration journey,
 the payment widget (`/widget`), the newest payment widget (`/widget-new`) and
 the payment widget scenarios (`/widget-scenarios`, every scenario and state of
-Figma node 499:3741, picked with `?scenario=1|2|3&state=a|b|c`) on:
+Figma node 499:3741, picked with `?scenario=1|2|3&state=a|b|c`) and the wallet
+dashboard (`/dashboard`, Figma node 646:16528 — see below) on:
 
 - **main** — the production site, https://paymesh-main.vercel.app
 - **every other branch** — read live from the GitHub API, so a branch appears
@@ -68,6 +69,22 @@ Deep links such as `/?journey=9` skip the menu; the dev panel's **Menu**
 button goes back to it. Branch previews live on their own `vercel.app`
 addresses, so the password is asked again there, and Vercel may ask for a
 Vercel login first, depending on the project's Deployment Protection setting.
+
+## Wallet dashboard
+
+`dashboard.html` is the logged-in wallet home from the *Work in progress* file
+(node 646:16528, "Desktop-large (XL)"), in the dark theme: side menu, balance
+and recent transactions. Code in `src/screens/dashboard.js`, styles at the end
+of `styles/ds.css` (`.db-*`, with the dark values of the colour variables).
+
+- The eye hides and shows the balance; the arrows swap whether it leads with
+  US dollars or USDT.
+- Transaction rows use the frame's hover (row 2) and pressed (row 3) colours.
+- **See all** and the menu's **Transactions** open a longer list
+  (`#transactions`); **Recipients**, **Cards** and **Settings** aren't
+  designed yet and say so. **Fold menu** collapses the menu to its icons;
+  **Log out** returns to the menu of prototypes.
+- Under 1000px the menu is icons only; on phones it becomes a bottom tab bar.
 
 ## Running it locally
 

@@ -70,6 +70,7 @@ function pageLinks(base) {
           <li><a href="${at("widget-scenarios.html?scenario=3")}">3. Split payment (alternative UI)</a></li>
         </ul>
       </li>
+      <li><a href="${at("dashboard.html")}">Wallet dashboard</a></li>
     </ul>`;
 }
 
