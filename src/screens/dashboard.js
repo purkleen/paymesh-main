@@ -13,6 +13,9 @@
  *   - Fold menu collapses the menu to its icons (and back)
  *   - Light mode / Dark mode in the menu switches the theme; the browser
  *     remembers it
+ *   - any transaction opens its details (#tx/<id>), the checkout's receipt
+ *     (node 1147:5103) in the dashboard's frame: amount, from, to, time and
+ *     an ID that copies
  *   - Recipients lists everyone in the transactions, A–Z in letter sections,
  *     with a search; picking one opens their transactions
  *   - Cards and Settings aren't designed yet, so they say so
@@ -114,6 +117,24 @@ const TRANSACTIONS = (() => {
   return list.sort((a, b) => b.at - a.at).map((t) => ({ ...t, date: `${day(t.at)} · ${time(t.at)} UTC` }));
 })();
 
+/**
+ * Each transaction's ID: 24 digits, like the checkout receipt's, worked out
+ * from the transaction itself so it is the same on every visit — and kept
+ * off the history's seed, which would change the history.
+ */
+const txId = (t) => {
+  let h = 2166136261;
+  for (const c of `${t.party}|${t.at}`) h = Math.imul(h ^ c.charCodeAt(0), 16777619) >>> 0;
+  let id = "";
+  while (id.length < 24) {
+    h = (Math.imul(h, 1664525) + 1013904223) >>> 0;
+    id += String(h).padStart(10, "0");
+  }
+  return id.slice(0, 24);
+};
+for (const t of TRANSACTIONS) t.id = txId(t);
+const BY_ID = new Map(TRANSACTIONS.map((t) => [t.id, t]));
+
 /** Home's list — the latest eight, as many rows as the frame has. */
 const RECENT = TRANSACTIONS.slice(0, 8);
 
@@ -186,10 +207,9 @@ const applyTheme = (light) => {
   document.querySelector('meta[name="theme-color"]')?.setAttribute("content", light ? "#ffffff" : "#0e0e11");
 };
 
-/** Account avatar or merchant logo; `large` is the Transactions page's 40px one. */
-const avatar = (t, large = false) => {
-  const size = large ? 40 : 32;
-  const cls = `db-avatar${large ? " db-avatar--l" : ""}`;
+/** Account avatar or merchant logo: 32px, 40 on the Transactions page, 24 on the details page. */
+const avatar = (t, size = 32) => {
+  const cls = `db-avatar${size === 40 ? " db-avatar--l" : size === 24 ? " db-avatar--s" : ""}`;
   if (t.logo) return `<img class="${cls} db-avatar--logo" src="${t.logo}" width="${size}" height="${size}" alt="" />`;
   return `<span class="${cls} db-avatar--${t.color}">${esc(t.initials)}</span>`;
 };
@@ -197,8 +217,8 @@ const avatar = (t, large = false) => {
 /** Transaction — one row of the list. */
 const row = (t, large = false) => `
   <li>
-    <button type="button" class="db-tx">
-      ${avatar(t, large)}
+    <button type="button" class="db-tx" data-tx="${t.id}" aria-label="${esc(t.party)}, ${sign(t.amount)}$${num(t.amount)}, ${esc(t.date)}">
+      ${avatar(t, large ? 40 : 32)}
       <span class="db-tx__info">
         <span class="db-tx__line db-tx__line--main">
           <span class="db-tx__party">${esc(t.party)}</span>
@@ -405,6 +425,50 @@ function recipientsPage(state) {
     </section>`;
 }
 
+/** "13 October 2026, 4:28pm", as the receipt writes it — in UTC, like the rows. */
+const longWhen = (at) => {
+  const d = new Date(at);
+  const h = d.getUTCHours();
+  const month = d.toLocaleDateString("en-GB", { month: "long", timeZone: "UTC" });
+  return `${d.getUTCDate()} ${month} ${d.getUTCFullYear()}, ${h % 12 || 12}:${String(d.getUTCMinutes()).padStart(2, "0")}${h < 12 ? "am" : "pm"}`;
+};
+
+const shortId = (id) => `${id.slice(0, 5)}...${id.slice(-6)}`;
+
+const detailRow = (label, value) => `
+  <div class="db-detail__row"><dt>${label}</dt><dd>${value}</dd></div>`;
+
+/**
+ * Transaction details — the checkout's "Order complete" receipt (node
+ * 1147:5103) inside the dashboard. Its merchant bar and legal footer are the
+ * checkout's, so the dashboard's own header and menu stand in for them, and
+ * its "Go back to [merchant]" goes back to the list the transaction came from.
+ */
+function detailPage(t, back) {
+  const out = t.amount < 0;
+  const verb = out ? "Paid" : "Received";
+  const party = `${avatar(t, 24)}${esc(t.party)}`;
+  const wallet = "Your Paymesh wallet";
+  return `
+    <section class="db-detail" aria-labelledby="db-detail-title">
+      <img class="db-detail__art" src="${ICON}success-check.png" width="120" height="120" alt="" />
+      <h2 id="db-detail-title" class="db-detail__title">${out ? "Payment sent" : "Payment received"}</h2>
+      <dl class="db-detail__rows">
+        ${detailRow(verb, `$${num(t.amount)}`)}
+        ${detailRow(`${verb} (USDT)`, `${num(t.amount)} USDT`)}
+        ${detailRow("From", out ? wallet : party)}
+        ${detailRow("To", out ? party : wallet)}
+        ${detailRow("Timestamp", `${longWhen(t.at)}<span class="db-badge">UTC</span>`)}
+        ${detailRow(
+          "Transaction ID",
+          `<button type="button" class="db-copy" data-copy="${t.id}" aria-label="Copy transaction ID" title="Copy transaction ID">${icon("copy.svg")}</button>
+           <span data-copy-label>${shortId(t.id)}</span>`
+        )}
+      </dl>
+      <a href="#${back.id}" class="db-btn">Back to ${back.label}</a>
+    </section>`;
+}
+
 function main(state) {
   switch (state.page) {
     case "home":
@@ -421,6 +485,8 @@ function main(state) {
       return transactionsPage(state);
     case "recipients":
       return recipientsPage(state);
+    case "tx":
+      return detailPage(BY_ID.get(state.txId), state.back);
     default: {
       const label = PAGE_TITLES[state.page] || state.page[0].toUpperCase() + state.page.slice(1);
       return `
@@ -448,7 +514,7 @@ function render(state) {
     </header>
 
     <nav class="db-nav" id="db-nav" aria-label="Main">
-      <div class="db-nav__group">${NAV.map((n) => navButton(n, state.page)).join("")}</div>
+      <div class="db-nav__group">${NAV.map((n) => navButton(n, state.page === "tx" ? "transactions" : state.page)).join("")}</div>
       <div class="db-nav__group db-nav__group--foot">
         <button type="button" class="db-nav__item db-nav__fold" data-fold aria-expanded="${!state.folded}"
           title="${state.folded ? "Unfold menu" : "Fold menu"}">
@@ -472,12 +538,21 @@ function render(state) {
 
 export default {
   mount(root) {
+    // "#tx/<id>" is a transaction's details; anything unknown is Home.
     const pageFromHash = () => {
       const id = location.hash.slice(1);
+      if (id.startsWith("tx/") && BY_ID.has(id.slice(3))) {
+        state.txId = id.slice(3);
+        return "tx";
+      }
       return PAGES.has(id) ? id : "home";
     };
-    const state = { page: pageFromHash(), hidden: false, lead: "usd", folded: false, menuOpen: false, query: "", type: "all", filtersOpen: true, sort: "newest", sortOpen: false, recipientQuery: "", light: savedLight() };
+    // Where the details page's button goes: the list the transaction was picked from.
+    const BACK = { home: { id: "home", label: "Home" }, transactions: { id: "transactions", label: "transactions" } };
+    const state = { txId: null, back: BACK.transactions };
+    Object.assign(state, { page: pageFromHash(), hidden: false, lead: "usd", folded: false, menuOpen: false, query: "", type: "all", filtersOpen: true, sort: "newest", sortOpen: false, recipientQuery: "", light: savedLight() });
     applyTheme(state.light);
+    let copyTimer = 0;
     const draw = () => (root.innerHTML = render(state));
 
     root.addEventListener("click", (e) => {
@@ -504,6 +579,23 @@ export default {
         input.value = "";
         input.dispatchEvent(new Event("input", { bubbles: true }));
         input.focus();
+        return;
+      }
+      else if (e.target.closest("[data-tx]")) {
+        state.back = BACK[state.page] || BACK.transactions;
+        location.hash = `#tx/${e.target.closest("[data-tx]").dataset.tx}`;
+        return;
+      }
+      else if (e.target.closest("[data-copy]")) {
+        // Copies the whole ID; the label says so for a moment.
+        const btn = e.target.closest("[data-copy]");
+        const label = btn.parentElement.querySelector("[data-copy-label]");
+        navigator.clipboard
+          ?.writeText(btn.dataset.copy)
+          .then(() => (label.textContent = "Copied"))
+          .catch(() => (label.textContent = btn.dataset.copy));
+        clearTimeout(copyTimer);
+        copyTimer = setTimeout(() => (label.textContent = shortId(btn.dataset.copy)), 1600);
         return;
       }
       else if (e.target.closest("[data-recipient]")) {

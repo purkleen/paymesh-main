@@ -99,6 +99,16 @@ of `styles/ds.css` (`.db-*`, with the dark values of the colour variables).
   everyone else has an initials avatar in one of eight colours (red,
   orange, yellow, green, teal, blue, purple, pink — `--avatar-*` in
   `styles/ds.css`), taken in turn A–Z.
+- Any transaction, on Home or the Transactions page, opens its **details**
+  (`#tx/<id>`): the checkout's "Order complete" receipt (Figma node
+  1147:5103) inside the dashboard — "Payment sent" or "Payment received",
+  the amount in dollars and USDT, from and to (your wallet and the
+  recipient, with their avatar), the time in UTC and a transaction ID that
+  copies in full. Its button goes back to the list the transaction came
+  from, and the menu keeps Transactions selected. The checkout's merchant
+  bar and legal footer are left out; the dashboard's own header and menu
+  stand in. Each ID is 24 digits worked out from the transaction, so it
+  stays the same between visits.
 - **Recipients** (`#recipients`, not in Figma yet) lists all 20 recipients,
   A–Z under a heading per first letter, with the total of their
   transactions, last transaction date and transaction count. Like

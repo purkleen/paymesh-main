@@ -1309,6 +1309,38 @@ body:has(.db.is-light) { --db-page: #ffffff; }
 .db-groups { display: flex; flex-direction: column; gap: var(--spacing-16); }
 .db-group__label { margin-top: 0; margin-bottom: 0; font: var(--heading-s); letter-spacing: 0; color: var(--text-heading); }
 
+/* Transaction details — the checkout receipt, node 1147:5103 ("order
+   complete"): a 422px column, centred in the content column */
+.db-avatar--s { width: 24px; height: 24px; font: 600 10px/1 var(--font-family-inter); letter-spacing: 0; }
+.db-detail { display: flex; flex-direction: column; align-items: center; gap: var(--spacing-24); width: 100%; max-width: 422px; margin: 0 auto; padding: 0 var(--spacing-16); box-sizing: content-box; }
+.db-detail__art { display: block; width: 120px; height: 120px; object-fit: contain; }
+.db-detail__title { margin: 0; font: var(--heading-3xl); letter-spacing: 0; color: var(--text-heading); text-align: center; }
+.db-detail__rows { align-self: stretch; display: flex; flex-direction: column; gap: var(--spacing-16); margin: 0; padding: var(--spacing-24) 0; }
+.db-detail__row { display: flex; align-items: center; justify-content: space-between; gap: var(--spacing-16); font: var(--text-m-semibold); letter-spacing: var(--tracking-text); }
+.db-detail__row dt { flex: 0 0 auto; color: var(--text-tertiary); }
+.db-detail__row dd { display: flex; align-items: center; justify-content: flex-end; gap: var(--spacing-8); min-width: 0; margin: 0; color: var(--text-primary); text-align: right; white-space: nowrap; }
+/* the time zone, as a small tag after the time */
+.db-badge { padding: 2px 4px; border: 1px solid var(--border-default); border-radius: var(--radius-s); background: var(--surface-secondary); font: 600 10px/normal var(--font-family-inter); letter-spacing: -0.2px; color: var(--text-tertiary); }
+.db-copy { display: grid; place-items: center; width: 24px; height: 24px; padding: 0; border: 0; background: none; cursor: pointer; }
+.db-copy .db-icon { width: 24px; height: 24px; }
+.db-copy:hover .db-icon { background: var(--text-tertiary); }
+/* Button (primary, L) */
+.db-btn {
+  align-self: stretch;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 52px;
+  padding: var(--spacing-12) var(--spacing-16) var(--spacing-12) 14px;
+  border-radius: var(--radius-xl);
+  background: var(--action-primary-default);
+  color: var(--text-inverse) !important;
+  font: var(--button-l);
+  text-decoration: none;
+  box-sizing: border-box;
+}
+.db-btn:hover { background: var(--action-primary-hover); }
+
 /* Phones only: the hamburger button and the sticky Add funds button */
 .db-menu-btn, .db-addfunds { display: none; }
 .db-icon--close { background: var(--icon-primary); -webkit-mask: url("../assets/ds/close.svg") center / 24px 24px no-repeat; mask: url("../assets/ds/close.svg") center / 24px 24px no-repeat; }
