@@ -29,11 +29,11 @@ const BALANCE = 23562.89;
 
 /**
  * Recipients — 10 people and 10 businesses. Airbnb keeps the logo from the
- * frame; everyone else gets an initials avatar (businesses in grey). `range`
- * is how much a transaction with them tends to be, in dollars. People take
- * turns with the Transactions frame's four avatar colours.
+ * frame; everyone else gets an initials avatar, taking the eight avatar
+ * colours in turn, A–Z (`--avatar-*` in ds.css). `range` is how much a
+ * transaction with them tends to be, in dollars.
  */
-const AVATAR_COLORS = ["#f6948c", "#9facff", "#81c783", "#cbb251"];
+const AVATAR_COLORS = ["red", "orange", "yellow", "green", "teal", "blue", "purple", "pink"];
 
 const RECIPIENT_LIST = [
   { party: "Airbnb", kind: "business", logo: `${ICON}db-merchant-airbnb.jpg`, range: [180, 1600] },
@@ -56,9 +56,12 @@ const RECIPIENT_LIST = [
   { party: "Noah Patel", kind: "person", range: [15, 650] },
   { party: "Olivia Bennett", kind: "person", range: [30, 1500] },
   { party: "Sophia Nguyen", kind: "person", range: [20, 900] },
-].map((r, i) => ({
+].map((r, _, list) => ({
   ...r,
-  color: r.kind === "person" ? AVATAR_COLORS[i % AVATAR_COLORS.length] : undefined,
+  // in A–Z order, so neighbours on Recipients differ
+  color: r.logo
+    ? undefined
+    : AVATAR_COLORS[list.filter((o) => !o.logo && o.party.localeCompare(r.party) < 0).length % AVATAR_COLORS.length],
   initials: r.party
     .split(/\s+/)
     .filter((w) => /^[a-z]/i.test(w))
@@ -162,13 +165,12 @@ const sign = (n) => (n < 0 ? "−" : "+");
 
 const icon = (file) => `<img class="db-icon" src="${ICON}${file}" width="24" height="24" alt="" />`;
 
-/** Account avatar or merchant logo; `large` is the Transactions page's 40px one, in the person's colour. */
+/** Account avatar or merchant logo; `large` is the Transactions page's 40px one. */
 const avatar = (t, large = false) => {
   const size = large ? 40 : 32;
   const cls = `db-avatar${large ? " db-avatar--l" : ""}`;
   if (t.logo) return `<img class="${cls} db-avatar--logo" src="${t.logo}" width="${size}" height="${size}" alt="" />`;
-  const color = large && t.color ? ` style="background: ${t.color}"` : "";
-  return `<span class="${cls}${t.kind === "business" ? " db-avatar--business" : ""}"${color}>${esc(t.initials)}</span>`;
+  return `<span class="${cls} db-avatar--${t.color}">${esc(t.initials)}</span>`;
 };
 
 /** Transaction — one row of the list. */
