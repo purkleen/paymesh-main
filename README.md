@@ -104,6 +104,11 @@ of `styles/ds.css` (`.db-*`, with the dark values of the colour variables).
   transactions, last transaction date and transaction count. Like
   Transactions, its title sits level with the top of the menu. Its search filters as you type; picking
   someone opens Transactions searched to them.
+- **Light mode** in the menu (above Settings) switches the dashboard to the
+  design system's light colours, and **Dark mode** switches back; the
+  browser remembers the choice. Icons are masks in the theme's icon colour,
+  so one set of SVGs serves both. The rise and fall colours have no light
+  value in Figma yet, so light mode uses #15803d and #d92d20.
 - **Cards** and **Settings** aren't designed yet and say so. **Fold menu** collapses the menu to its icons;
   **Log out** returns to the menu of prototypes.
 - Under 1000px the menu is icons only. On phones (640px and under) it moves

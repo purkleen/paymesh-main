@@ -11,6 +11,8 @@
  *     (node 1141:4323): search, All / In / Out, Filters (shows and hides
  *     those) and Sort by date (or amount), with the list grouped by day
  *   - Fold menu collapses the menu to its icons (and back)
+ *   - Light mode / Dark mode in the menu switches the theme; the browser
+ *     remembers it
  *   - Recipients lists everyone in the transactions, A–Z in letter sections,
  *     with a search; picking one opens their transactions
  *   - Cards and Settings aren't designed yet, so they say so
@@ -163,7 +165,26 @@ const PAGE_TITLES = { "add-funds": "Add funds" };
 const num = (n) => Math.abs(n).toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 const sign = (n) => (n < 0 ? "−" : "+");
 
-const icon = (file) => `<img class="db-icon" src="${ICON}${file}" width="24" height="24" alt="" />`;
+/** An icon, as a mask in the theme's icon colour (see .db-icon); `tone` is an extra class. */
+const icon = (file, tone = "") =>
+  `<span class="db-icon${tone ? ` db-icon--${tone}` : ""}" style="-webkit-mask-image: url(${ICON}${file}); mask-image: url(${ICON}${file})" aria-hidden="true"></span>`;
+
+/** The theme the browser last chose, if storage is there to ask. */
+const THEME_KEY = "paymesh.dashboard.theme";
+const savedLight = () => {
+  try {
+    return localStorage.getItem(THEME_KEY) === "light";
+  } catch {
+    return false;
+  }
+};
+/** Saves the theme and matches the browser chrome to the page. */
+const applyTheme = (light) => {
+  try {
+    localStorage.setItem(THEME_KEY, light ? "light" : "dark");
+  } catch {}
+  document.querySelector('meta[name="theme-color"]')?.setAttribute("content", light ? "#ffffff" : "#0e0e11");
+};
 
 /** Account avatar or merchant logo; `large` is the Transactions page's 40px one. */
 const avatar = (t, large = false) => {
@@ -216,7 +237,7 @@ function balance({ hidden, lead }) {
       <div class="db-balance__row db-balance__row--sub">
         <p class="db-balance__other">${small}</p>
         <button type="button" class="db-iconbtn" data-swap aria-label="Show balance in ${usd ? "USDT" : "US dollars"} first"
-          title="Swap currency">${icon("db-swap.svg")}</button>
+          title="Swap currency">${icon("db-swap.svg", "muted")}</button>
       </div>
     </section>`;
 }
@@ -263,7 +284,7 @@ const groupsHTML = (state) => {
 const searchField = ({ attr, value, placeholder, label }) => `
   <div class="db-search">
     <label class="db-search__field">
-      <img src="${ICON}db-search.svg" width="24" height="24" alt="" />
+      ${icon("db-search.svg")}
       <input type="search" ${attr} value="${esc(value)}" placeholder="${placeholder}" aria-label="${label}" autocomplete="off" />
     </label>
     <button type="button" class="db-search__clear" data-clear aria-label="Clear search" title="Clear search">
@@ -413,7 +434,7 @@ function main(state) {
 
 function render(state) {
   return `
-  <div class="db ${state.folded ? "is-folded" : ""} ${state.menuOpen ? "is-menu-open" : ""}">
+  <div class="db ${state.folded ? "is-folded" : ""} ${state.menuOpen ? "is-menu-open" : ""} ${state.light ? "is-light" : ""}">
     <header class="db-header">
       <a href="#home" class="db-logo">Paymesh</a>
       <div class="db-user">
@@ -433,6 +454,9 @@ function render(state) {
           title="${state.folded ? "Unfold menu" : "Fold menu"}">
           ${icon("db-panel-left-close.svg")}<span class="db-nav__label">${state.folded ? "Unfold menu" : "Fold menu"}</span>
         </button>
+        <button type="button" class="db-nav__item" data-theme-toggle title="${state.light ? "Dark mode" : "Light mode"}">
+          ${icon(state.light ? "db-moon.svg" : "db-sun.svg")}<span class="db-nav__label">${state.light ? "Dark mode" : "Light mode"}</span>
+        </button>
         ${navButton({ id: "settings", label: "Settings", icon: "db-settings.svg" }, state.page)}
         <a class="db-nav__item" href="./" title="Log out">${icon("db-log-out.svg")}<span class="db-nav__label">Log out</span></a>
       </div>
@@ -441,7 +465,7 @@ function render(state) {
     <main class="db-main">${main(state)}</main>
 
     <div class="db-addfunds">
-      <a href="#add-funds" class="db-addfunds__btn"><img src="${ICON}add.svg" width="24" height="24" alt="" />Add funds</a>
+      <a href="#add-funds" class="db-addfunds__btn">${icon("add.svg", "current")}Add funds</a>
     </div>
   </div>`;
 }
@@ -452,7 +476,8 @@ export default {
       const id = location.hash.slice(1);
       return PAGES.has(id) ? id : "home";
     };
-    const state = { page: pageFromHash(), hidden: false, lead: "usd", folded: false, menuOpen: false, query: "", type: "all", filtersOpen: true, sort: "newest", sortOpen: false, recipientQuery: "" };
+    const state = { page: pageFromHash(), hidden: false, lead: "usd", folded: false, menuOpen: false, query: "", type: "all", filtersOpen: true, sort: "newest", sortOpen: false, recipientQuery: "", light: savedLight() };
+    applyTheme(state.light);
     const draw = () => (root.innerHTML = render(state));
 
     root.addEventListener("click", (e) => {
@@ -464,6 +489,7 @@ export default {
       if (e.target.closest("[data-toggle-hide]")) state.hidden = !state.hidden;
       else if (e.target.closest("[data-swap]")) state.lead = state.lead === "usd" ? "usdt" : "usd";
       else if (e.target.closest("[data-fold]")) state.folded = !state.folded;
+      else if (e.target.closest("[data-theme-toggle]")) applyTheme((state.light = !state.light));
       else if (e.target.closest("[data-menu]")) state.menuOpen = !state.menuOpen;
       else if (e.target.closest("[data-filters]")) state.filtersOpen = !state.filtersOpen;
       else if (e.target.closest("[data-type]")) state.type = e.target.closest("[data-type]").dataset.type;
