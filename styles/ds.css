@@ -977,7 +977,8 @@ button.nw-row { cursor: pointer; }
 /* ==========================================================================
    Wallet dashboard — Work in progress file, node 646:16528 "Desktop-large (XL)"
    (dashboard.html). The frame is in the dark theme, so the colour variables
-   take their dark values inside .db.
+   take their dark values inside .db; .db.is-light (the menu's "Light mode")
+   puts back the design system's light ones.
    ========================================================================== */
 .db {
   --background-canvas: #0e0e11;
@@ -985,9 +986,16 @@ button.nw-row { cursor: pointer; }
   --text-secondary: #bdbdc1;
   --text-tertiary: #97979d;
   --text-inverse: #0e0e11;
+  --text-heading: #fff;
+  --icon-primary: #f4f4f6;
   --action-primary-default: #9facff;
+  --action-primary-hover: #b6c0ff;
   --action-secondary-pressed: #4f4f58;
   --surface-secondary: #26262a;
+  --surface-raised: #1a1a1e;
+  --shadow-raised: 0 8px 24px rgba(0, 0, 0, .4);
+  --border-default: #4f4f58;
+  --border-focus: #503ff1;
   --transaction-expense: #fe9a93;
   --transaction-completed: #8fe6a2;
   --radius-lg: 12px;
@@ -1004,7 +1012,31 @@ button.nw-row { cursor: pointer; }
   font: var(--text-m);
   letter-spacing: var(--tracking-text);
 }
-body:has(.db) { background: #0e0e11; }
+body:has(.db) { background: var(--db-page, #0e0e11); }
+
+/* Light mode — the design system's light values (the :root block above).
+   The rise and fall colours have no light value in the file yet: these are
+   the same green and red, deep enough to read as text on white. */
+.db.is-light {
+  --background-canvas: #ffffff;
+  --text-primary: #1b1b1e;
+  --text-secondary: #4f4f58;
+  --text-tertiary: #72727a;
+  --text-inverse: #fafafb;
+  --text-heading: #1b1b1e;
+  --icon-primary: #26262a;
+  --action-primary-default: #503ff1;
+  --action-primary-hover: #4331d4;
+  --action-secondary-pressed: #e5e5e7;
+  --surface-secondary: #f4f4f6;
+  --surface-raised: #ffffff;
+  --shadow-raised: 0 8px 24px rgba(0, 0, 0, .12);
+  --border-default: #bdbdc1;
+  --border-focus: #503ff1;
+  --transaction-expense: #d92d20;
+  --transaction-completed: #15803d;
+}
+body:has(.db.is-light) { --db-page: #ffffff; }
 .db.is-folded { --db-nav-w: 52px; }
 .db a { color: inherit; }
 .db :focus-visible { outline: 2px solid var(--action-primary-default); outline-offset: 2px; }
@@ -1044,7 +1076,7 @@ body:has(.db) { background: #0e0e11; }
   .db-logo { animation: none; }
 }
 .db-user { position: fixed; top: 32px; right: var(--spacing-16); display: flex; align-items: center; gap: 6px; }
-.db-user__name { font: var(--text-s); letter-spacing: var(--tracking-text); color: #fff; }
+.db-user__name { font: var(--text-s); letter-spacing: var(--tracking-text); color: var(--text-heading); }
 
 /* Account avatar / merchant logo. Avatars without a logo use only these. */
 .db {
@@ -1056,6 +1088,8 @@ body:has(.db) { background: #0e0e11; }
   --avatar-blue: #9facff;
   --avatar-purple: #bfa1f4;
   --avatar-pink: #e993c5;
+  /* the initials stay dark on these pastels in both themes */
+  --avatar-ink: #0e0e11;
 }
 .db-avatar {
   flex: 0 0 auto;
@@ -1065,7 +1099,7 @@ body:has(.db) { background: #0e0e11; }
   height: 32px;
   border-radius: var(--radius-full);
   background: var(--avatar-blue);
-  color: var(--text-inverse);
+  color: var(--avatar-ink);
   font: var(--label-m);
   letter-spacing: var(--tracking-text);
 }
@@ -1111,9 +1145,14 @@ body:has(.db) { background: #0e0e11; }
 .db-nav__group--foot .db-nav__item { height: 50px; }
 .db-nav__item:hover { background: var(--surface-secondary); }
 .db-nav__item:active { background: var(--action-secondary-pressed); }
-.db-icon { flex: 0 0 auto; display: block; width: 24px; height: 24px; }
+/* Icons are masks filled with the theme's icon colour, so one set of SVGs
+   serves both themes. The SVG comes in as an inline mask-image. */
+.db-icon { flex: 0 0 auto; display: block; width: 24px; height: 24px; background: var(--icon-primary); -webkit-mask: center / 24px 24px no-repeat; mask: center / 24px 24px no-repeat; }
+.db-icon--muted { background: var(--text-tertiary); }
+/* on a filled button: the button's own text colour */
+.db-icon--current { background: currentColor; }
 /* "Show balance": the design system's eye, in the dark theme's icon colour */
-.db-icon--eye { background: #f4f4f6; -webkit-mask: url("../assets/ds/eye.svg") center / 24px 24px no-repeat; mask: url("../assets/ds/eye.svg") center / 24px 24px no-repeat; }
+.db-icon--eye { background: var(--icon-primary); -webkit-mask: url("../assets/ds/eye.svg") center / 24px 24px no-repeat; mask: url("../assets/ds/eye.svg") center / 24px 24px no-repeat; }
 .is-folded .db-nav__label { display: none; }
 .is-folded .db-nav__fold .db-icon { transform: scaleX(-1); }
 
@@ -1145,8 +1184,8 @@ body:has(.db) { background: #0e0e11; }
 /* Transactions */
 .db-section { display: flex; flex-direction: column; gap: var(--spacing-8); }
 .db-section__head { display: flex; align-items: center; justify-content: space-between; padding: 0 var(--spacing-16); }
-.db-section__head h2 { margin: 0; font: var(--heading-l); color: #fff; }
-.db-link { font: var(--link-m); letter-spacing: var(--tracking-text); text-decoration: underline; color: #fff; }
+.db-section__head h2 { margin: 0; font: var(--heading-l); color: var(--text-heading); }
+.db-link { font: var(--link-m); letter-spacing: var(--tracking-text); text-decoration: underline; color: var(--text-heading); }
 .db-link:hover { opacity: .7; }
 .db-txlist { margin: 0; padding: 0; list-style: none; }
 .db-tx {
@@ -1179,12 +1218,11 @@ body:has(.db) { background: #0e0e11; }
 .db-empty { margin: 0; padding: 0 var(--spacing-16); color: var(--text-tertiary); }
 
 /* Transactions page — node 1141:4323. Every row of it sits 16px in. */
-.db { --border-default: #4f4f58; }
 .db-tx-page { display: flex; flex-direction: column; gap: var(--spacing-24); }
 .db-tx-page__top, .db-tx-page__list { display: flex; flex-direction: column; gap: var(--spacing-16); }
 .db-tx-page__head, .db-tx-page .db-search, .db-types, .db-group__label, .db-tx-page .db-empty { margin-left: var(--spacing-16); margin-right: var(--spacing-16); }
 .db-tx-page__head { display: flex; align-items: center; justify-content: space-between; gap: var(--spacing-16); }
-.db-tx-page__title { margin: 0; font: var(--heading-2xl); color: #fff; }
+.db-tx-page__title { margin: 0; font: var(--heading-2xl); color: var(--text-heading); }
 .db-tx-page__actions { display: flex; align-items: center; gap: var(--spacing-8); }
 /* Filters and Sort by date — Button/S, primary and secondary */
 .db-chip {
@@ -1203,7 +1241,7 @@ body:has(.db) { background: #0e0e11; }
 .db-chip:hover { background: var(--surface-secondary); }
 .db-chip--trailing { padding: 5px 7px 5px 9px; }
 .db-chip--primary { padding: 6px 10px 6px 8px; border: 0; border-radius: 10px; background: var(--action-primary-default); color: var(--text-inverse); }
-.db-chip--primary:hover { background: #b6c0ff; }
+.db-chip--primary:hover { background: var(--action-primary-hover); }
 .db-filters-icon, .db-chevron { flex: 0 0 auto; width: 20px; height: 20px; background: currentColor; }
 .db-filters-icon { -webkit-mask: url("../assets/ds/db-filters.svg") center / 20px 20px no-repeat; mask: url("../assets/ds/db-filters.svg") center / 20px 20px no-repeat; }
 .db-chevron { -webkit-mask: url("../assets/ds/chevron-down.svg") center / 20px 20px no-repeat; mask: url("../assets/ds/chevron-down.svg") center / 20px 20px no-repeat; transition: transform .15s; }
@@ -1220,8 +1258,8 @@ body:has(.db) { background: #0e0e11; }
   padding: 4px;
   border: 1px solid var(--border-default);
   border-radius: var(--radius-lg);
-  background: #1a1a1e;
-  box-shadow: 0 8px 24px rgba(0, 0, 0, .4);
+  background: var(--surface-raised);
+  box-shadow: var(--shadow-raised);
 }
 .db-sort__item { padding: 8px 12px; border: 0; border-radius: var(--radius-m); background: none; color: var(--text-primary); font: var(--text-s); letter-spacing: var(--tracking-text); text-align: left; white-space: nowrap; cursor: pointer; }
 .db-sort__item:hover { background: var(--surface-secondary); }
@@ -1244,7 +1282,6 @@ body:has(.db) { background: #0e0e11; }
 .db-type:hover { background: var(--action-secondary-pressed); }
 .db-type[aria-checked="true"] { background: var(--action-primary-default); color: var(--text-inverse); }
 /* Search — Paymesh Design System node 1484:15499 */
-.db { --border-focus: #503ff1; }
 .db-search {
   display: flex;
   align-items: center;
@@ -1258,7 +1295,7 @@ body:has(.db) { background: #0e0e11; }
 /* focused: a 2px border/focus, drawn inside so nothing shifts */
 .db-search:focus-within { border-color: var(--border-focus); box-shadow: inset 0 0 0 1px var(--border-focus), var(--shadow-xs); }
 .db-search__field { flex: 1 1 0; min-width: 0; height: 100%; display: flex; align-items: center; gap: var(--spacing-8); cursor: text; }
-.db-search__field img { flex: 0 0 auto; }
+.db-search__field .db-icon { flex: 0 0 auto; }
 .db-search input { flex: 1 1 0; min-width: 0; height: 100%; padding: 0; border: 0; outline: 0; background: none; color: var(--text-primary); font: var(--text-m); letter-spacing: var(--tracking-text); }
 .db-search input::placeholder { color: var(--text-tertiary); }
 /* the field's border shows focus, so the input itself has no ring */
@@ -1267,14 +1304,14 @@ body:has(.db) { background: #0e0e11; }
 .db-search__clear { flex: 0 0 auto; display: grid; place-items: center; width: 44px; height: 44px; padding: 0; border: 0; border-radius: var(--radius-m); background: none; cursor: pointer; }
 .db-search__clear:hover { background: var(--surface-secondary); }
 .db-search:has(input:placeholder-shown) .db-search__clear { display: none; }
-.db-icon--clear { display: block; width: 20px; height: 20px; background: #f4f4f6; -webkit-mask: url("../assets/ds/close.svg") center / 20px 20px no-repeat; mask: url("../assets/ds/close.svg") center / 20px 20px no-repeat; }
+.db-icon--clear { display: block; width: 20px; height: 20px; background: var(--icon-primary); -webkit-mask: url("../assets/ds/close.svg") center / 20px 20px no-repeat; mask: url("../assets/ds/close.svg") center / 20px 20px no-repeat; }
 /* the day headings — Heading/S, straight onto their first row */
 .db-groups { display: flex; flex-direction: column; gap: var(--spacing-16); }
-.db-group__label { margin-top: 0; margin-bottom: 0; font: var(--heading-s); letter-spacing: 0; color: #fff; }
+.db-group__label { margin-top: 0; margin-bottom: 0; font: var(--heading-s); letter-spacing: 0; color: var(--text-heading); }
 
 /* Phones only: the hamburger button and the sticky Add funds button */
 .db-menu-btn, .db-addfunds { display: none; }
-.db-icon--close { background: #f4f4f6; -webkit-mask: url("../assets/ds/close.svg") center / 24px 24px no-repeat; mask: url("../assets/ds/close.svg") center / 24px 24px no-repeat; }
+.db-icon--close { background: var(--icon-primary); -webkit-mask: url("../assets/ds/close.svg") center / 24px 24px no-repeat; mask: url("../assets/ds/close.svg") center / 24px 24px no-repeat; }
 
 /* Narrower screens: the menu folds to its icons */
 @media (max-width: 1000px) {
@@ -1339,5 +1376,5 @@ body:has(.db) { background: #0e0e11; }
     text-decoration: none;
     pointer-events: auto;
   }
-  .db-addfunds__btn:active { background: #b6c0ff; }
+  .db-addfunds__btn:active { background: var(--action-primary-hover); }
 }
