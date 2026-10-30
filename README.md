@@ -81,11 +81,14 @@ of `styles/ds.css` (`.db-*`, with the dark values of the colour variables).
   US dollars or USDT.
 - Transaction rows use the frame's hover (row 2) and pressed (row 3) colours.
 - **See all** and the menu's **Transactions** open the Transactions page
-  (`#transactions`, Figma node 639:12567): the list grouped by day (Today,
-  Yesterday, 13 September 2026), a search that filters as you type,
-  **Filters** (All / Money in / Money out) and **Export**, which downloads
-  what's shown as a CSV. The frame dates every row 13 Oct 2026; here each
-  row takes its group's date.
+  (`#transactions`, Figma node 1141:4323): the list grouped by day (Today,
+  Yesterday, 20 October, Friday), a search that filters as you type (names,
+  amounts, dates and day headings), the **All / In / Out** badges,
+  **Filters**, which shows and hides those badges, and **Sort by date**, a
+  menu of newest / oldest first and largest / smallest amount (sorting by
+  amount drops the day headings). People's avatars take the frame's four
+  colours in turn. The frame dates every row 13 Oct 2026; here each row
+  takes its group's date.
 - The data is 20 example recipients, 10 people and 10 businesses
   (`RECIPIENT_LIST` in `src/screens/dashboard.js`), and 13 transactions with
   13 of them over the last 60 days: two today, two yesterday ("today" is
@@ -95,8 +98,8 @@ of `styles/ds.css` (`.db-*`, with the dark values of the colour variables).
   everyone else has an initials avatar, grey for businesses.
 - **Recipients** (`#recipients`, not in Figma yet) lists all 20 recipients,
   A–Z under a heading per first letter, with the total of their
-  transactions, last transaction date and transaction count. Its title sits
-  level with the top of the menu. Its search filters as you type; picking
+  transactions, last transaction date and transaction count. Like
+  Transactions, its title sits level with the top of the menu. Its search filters as you type; picking
   someone opens Transactions searched to them.
 - **Cards** and **Settings** aren't designed yet and say so. **Fold menu** collapses the menu to its icons;
   **Log out** returns to the menu of prototypes.

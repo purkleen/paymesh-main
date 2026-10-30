@@ -8,8 +8,8 @@
  *   - the arrows swap which currency the balance leads with (USD ↔ USDT)
  *   - transaction rows have the frame's hover (row 2) and pressed (row 3) states
  *   - "See all" and the menu's Transactions open the Transactions page
- *     (node 639:12567): search, Filters (money in / out) and Export (a CSV
- *     of what's shown), with the list grouped by day
+ *     (node 1141:4323): search, All / In / Out, Filters (shows and hides
+ *     those) and Sort by date (or amount), with the list grouped by day
  *   - Fold menu collapses the menu to its icons (and back)
  *   - Recipients lists everyone in the transactions, A–Z in letter sections,
  *     with a search; picking one opens their transactions
@@ -30,8 +30,11 @@ const BALANCE = 23562.89;
 /**
  * Recipients — 10 people and 10 businesses. Airbnb keeps the logo from the
  * frame; everyone else gets an initials avatar (businesses in grey). `range`
- * is how much a transaction with them tends to be, in dollars.
+ * is how much a transaction with them tends to be, in dollars. People take
+ * turns with the Transactions frame's four avatar colours.
  */
+const AVATAR_COLORS = ["#f6948c", "#9facff", "#81c783", "#cbb251"];
+
 const RECIPIENT_LIST = [
   { party: "Airbnb", kind: "business", logo: `${ICON}db-merchant-airbnb.jpg`, range: [180, 1600] },
   { party: "Aurora Stays", kind: "business", range: [240, 1400] },
@@ -53,8 +56,9 @@ const RECIPIENT_LIST = [
   { party: "Noah Patel", kind: "person", range: [15, 650] },
   { party: "Olivia Bennett", kind: "person", range: [30, 1500] },
   { party: "Sophia Nguyen", kind: "person", range: [20, 900] },
-].map((r) => ({
+].map((r, i) => ({
   ...r,
+  color: r.kind === "person" ? AVATAR_COLORS[i % AVATAR_COLORS.length] : undefined,
   initials: r.party
     .split(/\s+/)
     .filter((w) => /^[a-z]/i.test(w))
@@ -108,13 +112,18 @@ const TRANSACTIONS = (() => {
 /** Home's list — the latest eight, as many rows as the frame has. */
 const RECENT = TRANSACTIONS.slice(0, 8);
 
-/** The Transactions page's groups (node 639:12567): Today, Yesterday, then one per date. */
+/**
+ * The Transactions page's groups (node 1141:4323): Today, Yesterday, then one
+ * per date, written "20 October, Friday".
+ */
 const GROUPS = (() => {
   const label = (at) => {
     const ago = Math.floor((TODAY + DAY - 1 - at) / DAY);
     if (ago <= 0) return "Today";
     if (ago === 1) return "Yesterday";
-    return new Date(at).toLocaleDateString("en-GB", { day: "numeric", month: "long", year: "numeric", timeZone: "UTC" });
+    const d = new Date(at);
+    const opts = { timeZone: "UTC" };
+    return `${d.toLocaleDateString("en-GB", { ...opts, day: "numeric", month: "long" })}, ${d.toLocaleDateString("en-GB", { ...opts, weekday: "long" })}`;
   };
   const groups = [];
   for (const t of TRANSACTIONS) {
@@ -127,8 +136,16 @@ const GROUPS = (() => {
 
 const TYPES = [
   { id: "all", label: "All" },
-  { id: "in", label: "Money in" },
-  { id: "out", label: "Money out" },
+  { id: "in", label: "In" },
+  { id: "out", label: "Out" },
+];
+
+/** Sort by date — sorting by amount drops the day headings. */
+const SORTS = [
+  { id: "newest", label: "Newest first", by: "date" },
+  { id: "oldest", label: "Oldest first", by: "date" },
+  { id: "largest", label: "Largest amount", by: "amount" },
+  { id: "smallest", label: "Smallest amount", by: "amount" },
 ];
 
 const NAV = [
@@ -145,16 +162,20 @@ const sign = (n) => (n < 0 ? "−" : "+");
 
 const icon = (file) => `<img class="db-icon" src="${ICON}${file}" width="24" height="24" alt="" />`;
 
-const avatar = (t) =>
-  t.logo
-    ? `<img class="db-avatar db-avatar--logo" src="${t.logo}" width="32" height="32" alt="" />`
-    : `<span class="db-avatar${t.kind === "business" ? " db-avatar--business" : ""}">${esc(t.initials)}</span>`;
+/** Account avatar or merchant logo; `large` is the Transactions page's 40px one, in the person's colour. */
+const avatar = (t, large = false) => {
+  const size = large ? 40 : 32;
+  const cls = `db-avatar${large ? " db-avatar--l" : ""}`;
+  if (t.logo) return `<img class="${cls} db-avatar--logo" src="${t.logo}" width="${size}" height="${size}" alt="" />`;
+  const color = large && t.color ? ` style="background: ${t.color}"` : "";
+  return `<span class="${cls}${t.kind === "business" ? " db-avatar--business" : ""}"${color}>${esc(t.initials)}</span>`;
+};
 
 /** Transaction — one row of the list. */
-const row = (t) => `
+const row = (t, large = false) => `
   <li>
     <button type="button" class="db-tx">
-      ${avatar(t)}
+      ${avatar(t, large)}
       <span class="db-tx__info">
         <span class="db-tx__line db-tx__line--main">
           <span class="db-tx__party">${esc(t.party)}</span>
@@ -198,52 +219,91 @@ function balance({ hidden, lead }) {
     </section>`;
 }
 
-/** The groups and rows left after the search and the type filter. */
-function filtered({ query, type }) {
+/**
+ * The groups and rows left after the search and the type filter, in the
+ * chosen order. The search also matches the day headings ("Friday",
+ * "20 October").
+ */
+function filtered({ query, type, sort }) {
   const q = query.trim().toLowerCase();
-  const keep = (t) =>
+  const keep = (g) => (t) =>
     (type === "all" || (type === "in" ? t.amount > 0 : t.amount < 0)) &&
-    (!q || [t.party, t.date, `${sign(t.amount)}$${num(t.amount)}`, num(t.amount)].some((v) => v.toLowerCase().includes(q)));
-  return GROUPS.map((g) => ({ ...g, items: g.items.filter(keep) })).filter((g) => g.items.length);
+    (!q || [g.label, t.party, t.date, `${sign(t.amount)}$${num(t.amount)}`, num(t.amount)].some((v) => v.toLowerCase().includes(q)));
+  const groups = GROUPS.map((g) => ({ ...g, items: g.items.filter(keep(g)) })).filter((g) => g.items.length);
+
+  if (sort === "oldest") return groups.reverse().map((g) => ({ ...g, items: [...g.items].reverse() }));
+  if (sort === "largest" || sort === "smallest") {
+    const dir = sort === "largest" ? -1 : 1;
+    const items = groups.flatMap((g) => g.items).sort((a, b) => dir * (Math.abs(a.amount) - Math.abs(b.amount)));
+    return items.length ? [{ label: "", items }] : [];
+  }
+  return groups;
 }
 
 const groupsHTML = (state) => {
   const groups = filtered(state);
   return groups.length
     ? groups
-        .map((g) => `<section class="db-group"><h3 class="db-group__label">${esc(g.label)}</h3><ul class="db-txlist">${g.items.map(row).join("")}</ul></section>`)
+        .map(
+          (g) =>
+            `<section class="db-group">${g.label ? `<h3 class="db-group__label">${esc(g.label)}</h3>` : ""}<ul class="db-txlist">${g.items
+              .map((t) => row(t, true))
+              .join("")}</ul></section>`
+        )
         .join("")
     : `<p class="db-empty">No transactions match.</p>`;
 };
 
-/** Transactions — node 639:12567. */
-function transactionsPage(state) {
+/** Sort by date — Button (secondary, S) and the menu it opens. */
+function sortMenu(state) {
+  const current = SORTS.find((s) => s.id === state.sort);
   return `
-    <section class="db-tx-page" aria-labelledby="db-all">
-      <div class="db-tx-page__head">
-        <h2 id="db-all" class="db-tx-page__title">Transactions</h2>
-        <div class="db-tx-page__actions">
-          <button type="button" class="db-chip db-chip--primary" data-filters aria-expanded="${state.filtersOpen}">
-            <img src="${ICON}db-filters.svg" width="20" height="20" alt="" />Filters${state.type === "all" ? "" : " (1)"}
-          </button>
-          <button type="button" class="db-chip" data-export>
-            <img src="${ICON}db-export.svg" width="20" height="20" alt="" />Export
-          </button>
-        </div>
-      </div>
+    <div class="db-sort" data-sort-wrap>
+      <button type="button" class="db-chip db-chip--trailing" data-sort-toggle aria-haspopup="true" aria-expanded="${state.sortOpen}"
+        aria-label="Sort by ${current.by}: ${current.label.toLowerCase()}">
+        Sort by ${current.by}<span class="db-chevron" aria-hidden="true"></span>
+      </button>
       ${
-        state.filtersOpen
-          ? `<div class="db-filters" role="radiogroup" aria-label="Type">${TYPES.map(
-              (t) => `<button type="button" class="db-filter" role="radio" data-type="${t.id}" aria-checked="${t.id === state.type}">${t.label}</button>`
+        state.sortOpen
+          ? `<div class="db-sort__menu" role="radiogroup" aria-label="Sort">${SORTS.map(
+              (s) => `<button type="button" class="db-sort__item" role="radio" data-sort="${s.id}" aria-checked="${s.id === state.sort}">${s.label}</button>`
             ).join("")}</div>`
           : ""
       }
-      <label class="db-search">
-        <img src="${ICON}db-search.svg" width="24" height="24" alt="" />
-        <input type="search" data-search value="${esc(state.query)}" placeholder="Search transaction, people, businesses, etc."
-          aria-label="Search transactions" autocomplete="off" />
-      </label>
-      <div class="db-groups" data-groups>${groupsHTML(state)}</div>
+    </div>`;
+}
+
+/** Transactions — node 1141:4323. */
+function transactionsPage(state) {
+  return `
+    <section class="db-tx-page" aria-labelledby="db-all">
+      <div class="db-tx-page__top">
+        <div class="db-tx-page__head">
+          <h2 id="db-all" class="db-tx-page__title">Transactions</h2>
+          <div class="db-tx-page__actions">
+            <button type="button" class="db-chip ${state.filtersOpen ? "db-chip--primary" : ""}" data-filters aria-controls="db-types"
+              aria-expanded="${state.filtersOpen}">
+              <span class="db-filters-icon" aria-hidden="true"></span>Filters${!state.filtersOpen && state.type !== "all" ? " (1)" : ""}
+            </button>
+            ${sortMenu(state)}
+          </div>
+        </div>
+        <label class="db-search">
+          <img src="${ICON}db-search.svg" width="24" height="24" alt="" />
+          <input type="search" data-search value="${esc(state.query)}" placeholder="Search recipients, amounts, or transaction dates"
+            aria-label="Search transactions" autocomplete="off" />
+        </label>
+      </div>
+      <div class="db-tx-page__list">
+        ${
+          state.filtersOpen
+            ? `<div class="db-types" id="db-types" role="radiogroup" aria-label="Type">${TYPES.map(
+                (t) => `<button type="button" class="db-type" role="radio" data-type="${t.id}" aria-checked="${t.id === state.type}">${t.label}</button>`
+              ).join("")}</div>`
+            : ""
+        }
+        <div class="db-groups" data-groups>${groupsHTML(state)}</div>
+      </div>
     </section>`;
 }
 
@@ -302,7 +362,7 @@ const recipientsHTML = ({ recipientQuery }) => {
 /** Recipients — laid out like the Transactions page. */
 function recipientsPage(state) {
   return `
-    <section class="db-tx-page db-tx-page--top" aria-labelledby="db-recipients">
+    <section class="db-tx-page" aria-labelledby="db-recipients">
       <div class="db-tx-page__head">
         <h2 id="db-recipients" class="db-tx-page__title">Recipients</h2>
       </div>
@@ -313,18 +373,6 @@ function recipientsPage(state) {
       </label>
       <div class="db-groups" data-recipients>${recipientsHTML(state)}</div>
     </section>`;
-}
-
-/** Downloads what the list shows as a CSV. */
-function exportCSV(state) {
-  const quote = (v) => `"${String(v).replace(/"/g, '""')}"`;
-  const lines = [["Date", "Party", "Amount (USD)", "Amount (USDT)"]];
-  for (const g of filtered(state))
-    for (const t of g.items) lines.push([t.date, t.party, (t.amount).toFixed(2), (t.amount).toFixed(2)]);
-  const blob = new Blob([lines.map((l) => l.map(quote).join(",")).join("\n")], { type: "text/csv" });
-  const a = Object.assign(document.createElement("a"), { href: URL.createObjectURL(blob), download: "paymesh-transactions.csv" });
-  a.click();
-  setTimeout(() => URL.revokeObjectURL(a.href), 0);
 }
 
 function main(state) {
@@ -395,17 +443,26 @@ export default {
       const id = location.hash.slice(1);
       return PAGES.has(id) ? id : "home";
     };
-    const state = { page: pageFromHash(), hidden: false, lead: "usd", folded: false, menuOpen: false, query: "", type: "all", filtersOpen: false, recipientQuery: "" };
+    const state = { page: pageFromHash(), hidden: false, lead: "usd", folded: false, menuOpen: false, query: "", type: "all", filtersOpen: true, sort: "newest", sortOpen: false, recipientQuery: "" };
     const draw = () => (root.innerHTML = render(state));
 
     root.addEventListener("click", (e) => {
+      // A click anywhere outside the sort menu closes it.
+      if (state.sortOpen && !e.target.closest("[data-sort-wrap]")) {
+        state.sortOpen = false;
+        draw();
+      }
       if (e.target.closest("[data-toggle-hide]")) state.hidden = !state.hidden;
       else if (e.target.closest("[data-swap]")) state.lead = state.lead === "usd" ? "usdt" : "usd";
       else if (e.target.closest("[data-fold]")) state.folded = !state.folded;
       else if (e.target.closest("[data-menu]")) state.menuOpen = !state.menuOpen;
       else if (e.target.closest("[data-filters]")) state.filtersOpen = !state.filtersOpen;
       else if (e.target.closest("[data-type]")) state.type = e.target.closest("[data-type]").dataset.type;
-      else if (e.target.closest("[data-export]")) return exportCSV(state);
+      else if (e.target.closest("[data-sort-toggle]")) state.sortOpen = !state.sortOpen;
+      else if (e.target.closest("[data-sort]")) {
+        state.sort = e.target.closest("[data-sort]").dataset.sort;
+        state.sortOpen = false;
+      }
       else if (e.target.closest("[data-recipient]")) {
         // A recipient opens the Transactions page, searched to them.
         state.query = e.target.closest("[data-recipient]").dataset.recipient;
@@ -429,8 +486,8 @@ export default {
     });
 
     addEventListener("keydown", (e) => {
-      if (e.key === "Escape" && state.menuOpen) {
-        state.menuOpen = false;
+      if (e.key === "Escape" && (state.menuOpen || state.sortOpen)) {
+        state.menuOpen = state.sortOpen = false;
         draw();
       }
     });
