@@ -83,7 +83,9 @@ of `styles/ds.css` (`.db-*`, with the dark values of the colour variables).
 - **See all** and the menu's **Transactions** open the Transactions page
   (`#transactions`, Figma node 1141:4323): the list grouped by day (Today,
   Yesterday, 20 October, Friday), a search that filters as you type (names,
-  amounts, dates and day headings), the **All / In / Out** badges,
+  amounts, dates and day headings) — the design system's Search component
+  (*Paymesh Design System* node 1484:15499: a 2px focus border and a close
+  button that clears it, also used on Recipients) — the **All / In / Out** badges,
   **Filters**, which shows and hides those badges, and **Sort by date**, a
   menu of newest / oldest first and largest / smallest amount (sorting by
   amount drops the day headings). People's avatars take the frame's four
