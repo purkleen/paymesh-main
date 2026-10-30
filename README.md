@@ -99,6 +99,17 @@ of `styles/ds.css` (`.db-*`, with the dark values of the colour variables).
   everyone else has an initials avatar in one of eight colours (red,
   orange, yellow, green, teal, blue, purple, pink — `--avatar-*` in
   `styles/ds.css`), taken in turn A–Z.
+- Under Home's transactions sits **Spending**, Bencho's *Stacked bars*
+  (MIT, bencho.dev/licence) ported from React + framer-motion to a plain
+  module in `src/components/stacked-bars.js`, styles under `.stb` at the end
+  of `styles/ds.css`. A bar per day, stacked by Travel, Food & drink, Bills
+  and Transport, with refunds under the line; **Week** shows the last 7 days
+  and **Month** the last 30 (Week is the end of Month, so a day never
+  changes). Run along it for a tooltip with the day's total, its two biggest
+  categories and its refunds. The figures are seeded example data, not the
+  transaction list. Text uses the design system's styles; Bencho's tokens
+  are mapped onto the dashboard's on the card's root, and the colours are
+  the avatar palette, so both themes work.
 - Any transaction, on Home or the Transactions page, opens its **details**
   (`#tx/<id>`): the checkout's "Order complete" receipt (Figma node
   1147:5103) inside the dashboard — "Payment sent" or "Payment received",

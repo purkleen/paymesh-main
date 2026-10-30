@@ -6,6 +6,8 @@
  * frame implies is wired up:
  *   - the eye hides and shows the balance
  *   - the arrows swap which currency the balance leads with (USD ↔ USDT)
+ *   - under Home's transactions, a spending chart (Bencho's Stacked bars,
+ *     src/components/stacked-bars.js) by category, for a week or a month
  *   - transaction rows have the frame's hover (row 2) and pressed (row 3) states
  *   - "See all" and the menu's Transactions open the Transactions page
  *     (node 1141:4323): search, All / In / Out, Filters (shows and hides
@@ -27,6 +29,7 @@
  */
 
 import { esc } from "../ui.js";
+import { StackedBars } from "../components/stacked-bars.js";
 
 const ICON = "assets/ds/";
 const USER = { name: "Arthur Brown", initials: "AB" };
@@ -480,7 +483,8 @@ function main(state) {
             <a href="#transactions" class="db-link">See all</a>
           </div>
           <ul class="db-txlist">${RECENT.map((t) => row(t)).join("")}</ul>
-        </section>`;
+        </section>
+        <div data-spending></div>`;
     case "transactions":
       return transactionsPage(state);
     case "recipients":
@@ -553,7 +557,13 @@ export default {
     Object.assign(state, { page: pageFromHash(), hidden: false, lead: "usd", folded: false, menuOpen: false, query: "", type: "all", filtersOpen: true, sort: "newest", sortOpen: false, recipientQuery: "", light: savedLight() });
     applyTheme(state.light);
     let copyTimer = 0;
-    const draw = () => (root.innerHTML = render(state));
+    // The spending chart (Bencho's Stacked bars) keeps its own state, so it is
+    // made once and put back in its slot after every redraw.
+    const spending = StackedBars();
+    const draw = () => {
+      root.innerHTML = render(state);
+      root.querySelector("[data-spending]")?.replaceWith(spending.el);
+    };
 
     root.addEventListener("click", (e) => {
       // A click anywhere outside the sort menu closes it.
