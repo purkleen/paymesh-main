@@ -79,13 +79,6 @@ of `styles/ds.css` (`.db-*`, with the dark values of the colour variables).
 
 - The eye hides and shows the balance; the arrows swap whether it leads with
   US dollars or USDT.
-- Under the balance sits **Pull to refresh**, from Bencho (MIT,
-  bencho.dev/licence), ported from React to a plain module in
-  `src/components/pull-to-refresh.js`, styles under `.bal` at the end of
-  `styles/ds.css`. A portfolio card with its own example figures: pull it
-  down past the threshold to refresh (or focus it and press Enter), run
-  along the line to read the day back, and pick 1H / 4H / 1D. Bencho's
-  design tokens are mapped onto the dashboard's own on the card's root.
 - Transaction rows use the frame's hover (row 2) and pressed (row 3) colours.
 - **See all** and the menu's **Transactions** open the Transactions page
   (`#transactions`, Figma node 1141:4323): the list grouped by day (Today,
