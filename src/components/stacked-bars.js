@@ -11,9 +11,12 @@
  *     stiffness and damping, integrated per frame
  *   - the card is as wide as its container rather than 300px, so the plot's
  *     width is measured (`CW`) instead of fixed
- *   - it charts SPENDING: four categories stacked per day, refunds under the
- *     baseline where Bencho's alert card puts the escalated few, and Week /
- *     Month (the last 7 or 30 days) where it had Day / Week
+ *   - it charts SPENDING: one bar a day, in one colour, for what was spent
+ *     that day — there are no spending categories yet, so nothing to stack,
+ *     and nothing under the baseline where Bencho's alert card puts the
+ *     escalated few. Week / Month (the last 7 or 30 days) replace Day / Week.
+ *     The stacking is left in place, so categories can come back as more
+ *     entries in CATS and `vals`
  * Where a comment talks about state, refs or effects, it means those.
  *
  *   const chart = StackedBars();
@@ -39,14 +42,15 @@
    seen. */
 
 const CH = 104; // room above the baseline
-const BH = 22; // room below it for the escalated bars
+const BH = 0; // room below it for the escalated bars — none here, nothing goes under the line
 const SEG_GAP = 2;
 const LIFT = 2; // air between the baseline and the bars either side of it
 const TIP_W = 132;
 const SPRING = { stiffness: 380, damping: 34 };
 
-/* what the money went on, bottom of the stack first */
-const CATS = ["Travel", "Food & drink", "Bills", "Transport"];
+/* what the money went on, bottom of the stack first — one entry until
+   there are categories to split it by */
+const CATS = ["Spent"];
 const MONTHS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
 const LAST = Date.UTC(2026, 9, 13); // the last day shown — the dashboard's "today"
 const DAY_MS = 86400000;
@@ -76,8 +80,8 @@ const fmtDay = (ms) => {
    thirty, so switching never changes what a day spent. */
 function makeBars(n) {
   const rnd = mulberry(4396);
-  /* a typical day: travel, food & drink, bills, transport */
-  const base = [48, 26, 14, 9];
+  /* a typical day's spending */
+  const base = [97];
   const out = [];
   for (let i = 0; i < 30; i++) {
     const back = 29 - i; // only the last n are kept, so the data does not reshuffle with the count
@@ -85,10 +89,8 @@ function makeBars(n) {
     const wd = new Date(ms).getUTCDay();
     const quiet = wd === 0 || wd === 6 ? 0.55 : 1;
     const surge = rnd() < 0.12 ? 1.5 : 1;
-    const vals = base.map((b, k) => Math.round(b * quiet * (0.6 + rnd() * 0.8) * (k === 0 ? surge * surge : surge)));
-    /* most days nothing comes back */
-    const esc = rnd() < 0.3 ? Math.round(4 + rnd() * 36) : 0;
-    out.push({ vals, esc, label: fmtDay(ms), short: fmtDay(ms) });
+    const vals = base.map((b) => Math.round(b * quiet * (0.6 + rnd() * 0.8) * surge));
+    out.push({ vals, esc: 0, label: fmtDay(ms), short: fmtDay(ms) });
   }
   return out.slice(30 - n);
 }
@@ -287,13 +289,16 @@ export function StackedBars({ colour = "Colour", gap = 6 } = {}) {
     const cur = at !== null && at < n ? data[at] : null;
     tip.setAttribute("aria-hidden", String(!cur));
     if (cur) {
-      const top2 = cur.vals.map((v, k) => ({ v, k })).sort((a, b) => b.v - a.v).slice(0, 2);
+      /* with one category the breakdown would only repeat the total, and
+         with nothing under the line there is nothing to come back — so
+         until there are categories it is the day and what it spent */
+      const top2 = CATS.length > 1 ? cur.vals.map((v, k) => ({ v, k })).sort((a, b) => b.v - a.v).slice(0, 2) : [];
       tip.innerHTML = `
         <div class="stb-tip-head"><span>${cur.label}</span><b>${fmt(totals[at])}</b></div>
         ${top2
           .map(({ v, k }) => `<div class="stb-tip-row"><i style="--c: var(--stb-c${k + 1})"></i><span>${CATS[k]}</span><b>${fmt(v)}</b></div>`)
           .join("")}
-        <div class="stb-tip-row" data-esc=""><i></i><span>Refunds</span><b>${fmt(cur.esc)}</b></div>`;
+        ${BH ? `<div class="stb-tip-row" data-esc=""><i></i><span>Refunds</span><b>${fmt(cur.esc)}</b></div>` : ""}`;
     }
 
     if (at === null || at >= n) {
@@ -306,7 +311,8 @@ export function StackedBars({ colour = "Colour", gap = 6 } = {}) {
     const up = seen ? L.top : 0;
     const down = seen ? L.esc : 0;
     const y = CH - LIFT - up - 3;
-    const h = up + LIFT + 1 + LIFT + down + 6;
+    /* round the bar, and the room under the line only when there is some */
+    const h = up + 6 + (BH ? LIFT + 1 + LIFT + down : 0);
     /* beside the column: right while it fits there, else left */
     const right = left + bw + 8;
     const tx = right + TIP_W <= CW || left - 8 - TIP_W < 0

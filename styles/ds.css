@@ -1431,8 +1431,9 @@ body:has(.db.is-light) { --db-page: #ffffff; }
    like Home's "Transactions" above it; the figure is Heading/2XL; the rest
    is Text/S, Text/XS and Text/XS Medium.
 
-   COLOUR mode takes the dashboard's own categorical colours — the avatar
-   palette — and refunds, which come back to you, take the rise colour.
+   ONE COLOUR: the bars are a day's spending, not a breakdown, so they all
+   take the brand colour (--action-primary-default), which follows the
+   theme. The rest of the palette is kept for when there are categories.
    ========================================================================== */
 .stb {
   --fill-on: var(--text-primary);
@@ -1472,7 +1473,7 @@ body:has(.db.is-light) { --db-page: #ffffff; }
   -webkit-user-select: none;}
 
 .stb[data-colour="on"] {
-  --stb-c1: var(--avatar-purple); --stb-c2: var(--avatar-blue); --stb-c3: var(--avatar-teal);
+  --stb-c1: var(--action-primary-default); --stb-c2: var(--avatar-blue); --stb-c3: var(--avatar-teal);
   --stb-c4: var(--avatar-yellow); --stb-c5: var(--avatar-green); --stb-c6: var(--avatar-pink);
   --stb-alert: var(--transaction-completed);}
 
