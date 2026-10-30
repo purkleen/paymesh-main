@@ -6,8 +6,6 @@
  * frame implies is wired up:
  *   - the eye hides and shows the balance
  *   - the arrows swap which currency the balance leads with (USD ↔ USDT)
- *   - under the balance, Bencho's Pull to refresh portfolio card
- *     (src/components/pull-to-refresh.js)
  *   - transaction rows have the frame's hover (row 2) and pressed (row 3) states
  *   - "See all" and the menu's Transactions open the Transactions page
  *     (node 1141:4323): search, All / In / Out, Filters (shows and hides
@@ -24,7 +22,6 @@
  */
 
 import { esc } from "../ui.js";
-import { PullToRefresh } from "../components/pull-to-refresh.js";
 
 const ICON = "assets/ds/";
 const USER = { name: "Arthur Brown", initials: "AB" };
@@ -392,7 +389,6 @@ function main(state) {
     case "home":
       return `
         ${balance(state)}
-        <div data-pull-to-refresh></div>
         <section class="db-section" aria-labelledby="db-recent">
           <div class="db-section__head">
             <h2 id="db-recent">Transactions</h2>
@@ -457,13 +453,7 @@ export default {
       return PAGES.has(id) ? id : "home";
     };
     const state = { page: pageFromHash(), hidden: false, lead: "usd", folded: false, menuOpen: false, query: "", type: "all", filtersOpen: true, sort: "newest", sortOpen: false, recipientQuery: "" };
-    // Pull to refresh (Bencho) keeps its own state, so it is made once and
-    // put back in its slot after every redraw rather than rebuilt.
-    const pull = PullToRefresh();
-    const draw = () => {
-      root.innerHTML = render(state);
-      root.querySelector("[data-pull-to-refresh]")?.replaceWith(pull.el);
-    };
+    const draw = () => (root.innerHTML = render(state));
 
     root.addEventListener("click", (e) => {
       // A click anywhere outside the sort menu closes it.
