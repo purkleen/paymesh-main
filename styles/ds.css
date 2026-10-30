@@ -1227,23 +1227,31 @@ body:has(.db) { background: #0e0e11; }
 }
 .db-type:hover { background: var(--action-secondary-pressed); }
 .db-type[aria-checked="true"] { background: var(--action-primary-default); color: var(--text-inverse); }
-/* search — Input */
+/* Search — Paymesh Design System node 1484:15499 */
+.db { --border-focus: #503ff1; }
 .db-search {
   display: flex;
   align-items: center;
-  gap: var(--spacing-8);
   height: 52px;
-  padding: 0 var(--spacing-16);
+  padding-left: var(--spacing-16);
   border: 1px solid var(--border-default);
   border-radius: var(--radius-xl);
   box-shadow: var(--shadow-xs);
-  cursor: text;
+  overflow: hidden;
 }
-.db-search:focus-within { border-color: var(--action-primary-default); }
-.db-search img { flex: 0 0 auto; }
-.db-search input { flex: 1 1 0; min-width: 0; height: 100%; border: 0; outline: 0; background: none; color: var(--text-primary); font: var(--text-m); letter-spacing: var(--tracking-text); }
+/* focused: a 2px border/focus, drawn inside so nothing shifts */
+.db-search:focus-within { border-color: var(--border-focus); box-shadow: inset 0 0 0 1px var(--border-focus), var(--shadow-xs); }
+.db-search__field { flex: 1 1 0; min-width: 0; height: 100%; display: flex; align-items: center; gap: var(--spacing-8); cursor: text; }
+.db-search__field img { flex: 0 0 auto; }
+.db-search input { flex: 1 1 0; min-width: 0; height: 100%; padding: 0; border: 0; outline: 0; background: none; color: var(--text-primary); font: var(--text-m); letter-spacing: var(--tracking-text); }
 .db-search input::placeholder { color: var(--text-tertiary); }
-.db-search input::-webkit-search-cancel-button { filter: invert(1); }
+/* the field's border shows focus, so the input itself has no ring */
+.db .db-search input:focus-visible { outline: 0; }
+.db-search input::-webkit-search-cancel-button { -webkit-appearance: none; appearance: none; }
+.db-search__clear { flex: 0 0 auto; display: grid; place-items: center; width: 44px; height: 44px; padding: 0; border: 0; border-radius: var(--radius-m); background: none; cursor: pointer; }
+.db-search__clear:hover { background: var(--surface-secondary); }
+.db-search:has(input:placeholder-shown) .db-search__clear { display: none; }
+.db-icon--clear { display: block; width: 20px; height: 20px; background: #f4f4f6; -webkit-mask: url("../assets/ds/close.svg") center / 20px 20px no-repeat; mask: url("../assets/ds/close.svg") center / 20px 20px no-repeat; }
 /* the day headings — Heading/S, straight onto their first row */
 .db-groups { display: flex; flex-direction: column; gap: var(--spacing-16); }
 .db-group__label { margin-top: 0; margin-bottom: 0; font: var(--heading-s); letter-spacing: 0; color: #fff; }

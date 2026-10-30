@@ -254,6 +254,21 @@ const groupsHTML = (state) => {
     : `<p class="db-empty">No transactions match.</p>`;
 };
 
+/**
+ * Search — Paymesh Design System node 1484:15499: search icon, the field, and
+ * the close button, which clears it (shown once there's something to clear).
+ */
+const searchField = ({ attr, value, placeholder, label }) => `
+  <div class="db-search">
+    <label class="db-search__field">
+      <img src="${ICON}db-search.svg" width="24" height="24" alt="" />
+      <input type="search" ${attr} value="${esc(value)}" placeholder="${placeholder}" aria-label="${label}" autocomplete="off" />
+    </label>
+    <button type="button" class="db-search__clear" data-clear aria-label="Clear search" title="Clear search">
+      <span class="db-icon--clear" aria-hidden="true"></span>
+    </button>
+  </div>`;
+
 /** Sort by date — Button (secondary, S) and the menu it opens. */
 function sortMenu(state) {
   const current = SORTS.find((s) => s.id === state.sort);
@@ -288,11 +303,7 @@ function transactionsPage(state) {
             ${sortMenu(state)}
           </div>
         </div>
-        <label class="db-search">
-          <img src="${ICON}db-search.svg" width="24" height="24" alt="" />
-          <input type="search" data-search value="${esc(state.query)}" placeholder="Search recipients, amounts, or transaction dates"
-            aria-label="Search transactions" autocomplete="off" />
-        </label>
+        ${searchField({ attr: "data-search", value: state.query, placeholder: "Search recipients, amounts, or transaction dates", label: "Search transactions" })}
       </div>
       <div class="db-tx-page__list">
         ${
@@ -366,11 +377,7 @@ function recipientsPage(state) {
       <div class="db-tx-page__head">
         <h2 id="db-recipients" class="db-tx-page__title">Recipients</h2>
       </div>
-      <label class="db-search">
-        <img src="${ICON}db-search.svg" width="24" height="24" alt="" />
-        <input type="search" data-recipient-search value="${esc(state.recipientQuery)}" placeholder="Search people and businesses"
-          aria-label="Search recipients" autocomplete="off" />
-      </label>
+      ${searchField({ attr: "data-recipient-search", value: state.recipientQuery, placeholder: "Search people and businesses", label: "Search recipients" })}
       <div class="db-groups" data-recipients>${recipientsHTML(state)}</div>
     </section>`;
 }
@@ -462,6 +469,14 @@ export default {
       else if (e.target.closest("[data-sort]")) {
         state.sort = e.target.closest("[data-sort]").dataset.sort;
         state.sortOpen = false;
+      }
+      else if (e.target.closest("[data-clear]")) {
+        // Empty the field and let the input handler redraw the list.
+        const input = e.target.closest(".db-search").querySelector("input");
+        input.value = "";
+        input.dispatchEvent(new Event("input", { bubbles: true }));
+        input.focus();
+        return;
       }
       else if (e.target.closest("[data-recipient]")) {
         // A recipient opens the Transactions page, searched to them.
