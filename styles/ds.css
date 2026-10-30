@@ -1059,6 +1059,7 @@ body:has(.db) { background: #0e0e11; }
   font: var(--label-m);
   letter-spacing: var(--tracking-text);
 }
+.db-avatar--l { width: 40px; height: 40px; font: var(--text-m-semibold); }
 .db-avatar--logo { object-fit: contain; background: none; }
 /* businesses without a logo of their own */
 .db-avatar--business { background: var(--action-secondary-pressed); color: var(--text-primary); }
@@ -1161,16 +1162,15 @@ body:has(.db) { background: #0e0e11; }
 .db-tx__usdt { color: var(--text-secondary); }
 .db-empty { margin: 0; padding: 0 var(--spacing-16); color: var(--text-tertiary); }
 
-/* Transactions page — node 639:12567 */
+/* Transactions page — node 1141:4323. Every row of it sits 16px in. */
 .db { --border-default: #4f4f58; }
-/* the frame starts this page at 160px, 41px below the menu */
-.db-tx-page { display: flex; flex-direction: column; gap: var(--spacing-24); padding-top: 41px; }
-/* pages with no frame of their own start level with the menu */
-.db-tx-page--top { padding-top: 0; }
+.db-tx-page { display: flex; flex-direction: column; gap: var(--spacing-24); }
+.db-tx-page__top, .db-tx-page__list { display: flex; flex-direction: column; gap: var(--spacing-16); }
+.db-tx-page__head, .db-tx-page .db-search, .db-types, .db-group__label, .db-tx-page .db-empty { margin-left: var(--spacing-16); margin-right: var(--spacing-16); }
 .db-tx-page__head { display: flex; align-items: center; justify-content: space-between; gap: var(--spacing-16); }
 .db-tx-page__title { margin: 0; font: var(--heading-2xl); color: #fff; }
-.db-tx-page__actions { display: flex; align-items: center; gap: var(--spacing-16); }
-/* Type filter — Button/S */
+.db-tx-page__actions { display: flex; align-items: center; gap: var(--spacing-8); }
+/* Filters and Sort by date — Button/S, primary and secondary */
 .db-chip {
   display: inline-flex;
   align-items: center;
@@ -1185,12 +1185,48 @@ body:has(.db) { background: #0e0e11; }
   cursor: pointer;
 }
 .db-chip:hover { background: var(--surface-secondary); }
+.db-chip--trailing { padding: 5px 7px 5px 9px; }
 .db-chip--primary { padding: 6px 10px 6px 8px; border: 0; border-radius: 10px; background: var(--action-primary-default); color: var(--text-inverse); }
 .db-chip--primary:hover { background: #b6c0ff; }
-.db-filters { display: flex; flex-wrap: wrap; gap: var(--spacing-8); }
-.db-filter { padding: 6px 12px; border: 1px solid var(--border-default); border-radius: var(--radius-full); background: none; color: var(--text-secondary); font: 600 14px/20px var(--font-family-inter); cursor: pointer; }
-.db-filter:hover { background: var(--surface-secondary); }
-.db-filter[aria-checked="true"] { border-color: var(--text-primary); color: var(--text-primary); }
+.db-filters-icon, .db-chevron { flex: 0 0 auto; width: 20px; height: 20px; background: currentColor; }
+.db-filters-icon { -webkit-mask: url("../assets/ds/db-filters.svg") center / 20px 20px no-repeat; mask: url("../assets/ds/db-filters.svg") center / 20px 20px no-repeat; }
+.db-chevron { -webkit-mask: url("../assets/ds/chevron-down.svg") center / 20px 20px no-repeat; mask: url("../assets/ds/chevron-down.svg") center / 20px 20px no-repeat; transition: transform .15s; }
+[aria-expanded="true"] > .db-chevron { transform: rotate(180deg); }
+.db-sort { position: relative; }
+.db-sort__menu {
+  position: absolute;
+  top: calc(100% + var(--spacing-8));
+  right: 0;
+  z-index: 5;
+  display: flex;
+  flex-direction: column;
+  min-width: 180px;
+  padding: 4px;
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-lg);
+  background: #1a1a1e;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, .4);
+}
+.db-sort__item { padding: 8px 12px; border: 0; border-radius: var(--radius-m); background: none; color: var(--text-primary); font: var(--text-s); letter-spacing: var(--tracking-text); text-align: left; white-space: nowrap; cursor: pointer; }
+.db-sort__item:hover { background: var(--surface-secondary); }
+.db-sort__item[aria-checked="true"] { color: var(--action-primary-default); font-weight: 600; }
+/* All / In / Out — Badge */
+.db-types { display: flex; gap: var(--spacing-8); }
+.db-type {
+  display: grid;
+  place-items: center;
+  width: 75px;
+  height: 32px;
+  padding: 0 var(--spacing-8);
+  border: 0;
+  border-radius: var(--radius-full);
+  background: var(--surface-secondary);
+  color: var(--text-primary);
+  font: 600 16px/24px var(--font-family-inter);
+  cursor: pointer;
+}
+.db-type:hover { background: var(--action-secondary-pressed); }
+.db-type[aria-checked="true"] { background: var(--action-primary-default); color: var(--text-inverse); }
 /* search — Input */
 .db-search {
   display: flex;
@@ -1208,9 +1244,9 @@ body:has(.db) { background: #0e0e11; }
 .db-search input { flex: 1 1 0; min-width: 0; height: 100%; border: 0; outline: 0; background: none; color: var(--text-primary); font: var(--text-m); letter-spacing: var(--tracking-text); }
 .db-search input::placeholder { color: var(--text-tertiary); }
 .db-search input::-webkit-search-cancel-button { filter: invert(1); }
-.db-groups { display: flex; flex-direction: column; gap: var(--spacing-24); }
-.db-group__label { margin: 0 0 var(--spacing-8); font: 600 14px/20px var(--font-family-inter); color: #fff; }
-.db-groups .db-empty { padding: 0; }
+/* the day headings — Heading/S, straight onto their first row */
+.db-groups { display: flex; flex-direction: column; gap: var(--spacing-16); }
+.db-group__label { margin-top: 0; margin-bottom: 0; font: var(--heading-s); letter-spacing: 0; color: #fff; }
 
 /* Phones only: the hamburger button and the sticky Add funds button */
 .db-menu-btn, .db-addfunds { display: none; }
@@ -1233,7 +1269,6 @@ body:has(.db) { background: #0e0e11; }
   .db-main { padding-bottom: 116px; }
   .db-balance__amount { font-size: 44px; line-height: 52px; letter-spacing: -1.76px; }
   .db-balance__cents { font-size: 26px; line-height: 26px; }
-  .db-tx-page { padding: 0 var(--spacing-8); }
   .db-tx-page__title { font-size: 26px; line-height: 32px; }
   .db-tx-page__head { flex-wrap: wrap; row-gap: var(--spacing-12); }
   .db-tx-page__actions { gap: var(--spacing-8); }
