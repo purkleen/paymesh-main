@@ -88,8 +88,7 @@ of `styles/ds.css` (`.db-*`, with the dark values of the colour variables).
   button that clears it, also used on Recipients) — the **All / In / Out** badges,
   **Filters**, which shows and hides those badges, and **Sort by date**, a
   menu of newest / oldest first and largest / smallest amount (sorting by
-  amount drops the day headings). People's avatars take the frame's four
-  colours in turn. The frame dates every row 13 Oct 2026; here each row
+  amount drops the day headings). The frame dates every row 13 Oct 2026; here each row
   takes its group's date.
 - The data is 20 example recipients, 10 people and 10 businesses
   (`RECIPIENT_LIST` in `src/screens/dashboard.js`), and 13 transactions with
@@ -97,7 +96,9 @@ of `styles/ds.css` (`.db-*`, with the dark values of the colour variables).
   13 Oct 2026). The transactions are random but come from a fixed seed, so
   every visit shows the same history. Home shows the latest eight; the
   recipients without a transaction say "No transactions yet". Airbnb keeps its logo;
-  everyone else has an initials avatar, grey for businesses.
+  everyone else has an initials avatar in one of eight colours (red,
+  orange, yellow, green, teal, blue, purple, pink — `--avatar-*` in
+  `styles/ds.css`), taken in turn A–Z.
 - **Recipients** (`#recipients`, not in Figma yet) lists all 20 recipients,
   A–Z under a heading per first letter, with the total of their
   transactions, last transaction date and transaction count. Like

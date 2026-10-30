@@ -1046,7 +1046,17 @@ body:has(.db) { background: #0e0e11; }
 .db-user { position: fixed; top: 32px; right: var(--spacing-16); display: flex; align-items: center; gap: 6px; }
 .db-user__name { font: var(--text-s); letter-spacing: var(--tracking-text); color: #fff; }
 
-/* Account avatar / merchant logo */
+/* Account avatar / merchant logo. Avatars without a logo use only these. */
+.db {
+  --avatar-red: #f6948c;
+  --avatar-orange: #ee9e66;
+  --avatar-yellow: #cbb251;
+  --avatar-green: #81c783;
+  --avatar-teal: #39cbc4;
+  --avatar-blue: #9facff;
+  --avatar-purple: #bfa1f4;
+  --avatar-pink: #e993c5;
+}
 .db-avatar {
   flex: 0 0 auto;
   display: grid;
@@ -1054,15 +1064,21 @@ body:has(.db) { background: #0e0e11; }
   width: 32px;
   height: 32px;
   border-radius: var(--radius-full);
-  background: var(--action-primary-default);
+  background: var(--avatar-blue);
   color: var(--text-inverse);
   font: var(--label-m);
   letter-spacing: var(--tracking-text);
 }
 .db-avatar--l { width: 40px; height: 40px; font: var(--text-m-semibold); }
 .db-avatar--logo { object-fit: contain; background: none; }
-/* businesses without a logo of their own */
-.db-avatar--business { background: var(--action-secondary-pressed); color: var(--text-primary); }
+.db-avatar--red { background: var(--avatar-red); }
+.db-avatar--orange { background: var(--avatar-orange); }
+.db-avatar--yellow { background: var(--avatar-yellow); }
+.db-avatar--green { background: var(--avatar-green); }
+.db-avatar--teal { background: var(--avatar-teal); }
+.db-avatar--blue { background: var(--avatar-blue); }
+.db-avatar--purple { background: var(--avatar-purple); }
+.db-avatar--pink { background: var(--avatar-pink); }
 
 /* Side menu — Button (ghost, L) */
 .db-nav {
