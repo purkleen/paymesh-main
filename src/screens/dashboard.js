@@ -6,9 +6,10 @@
  * frame implies is wired up:
  *   - the eye hides and shows the balance
  *   - the arrows swap which currency the balance leads with (USD ↔ USDT)
- *   - Home: the balance, a row of payees (everyone you've paid, latest
- *     first; See all opens Recipients), the five latest transactions, and
- *     at the bottom what was spent each day over a week or a month
+ *   - Home: Paymesh balance, the five latest transactions, a row of payees
+ *     (everyone you've paid, latest first, four on phones; See all opens
+ *     Recipients), and at the bottom Analysis: what was spent each day over
+ *     a week or a month
  *     (Bencho's Stacked bars, src/components/stacked-bars.js)
  *   - transaction rows have the frame's hover (row 2) and pressed (row 3) states
  *   - "See all" and the menu's Transactions open the Transactions page
@@ -254,8 +255,8 @@ function balance({ hidden, lead }) {
   const small = hidden ? (usd ? "•••••• USDT" : "$••••••") : usd ? `${num(BALANCE)} USDT` : `$${num(BALANCE)}`;
 
   return `
-    <section class="db-balance" aria-label="Balance">
-      <h2 class="db-balance__label">Balance</h2>
+    <section class="db-balance" aria-label="Paymesh balance">
+      <h2 class="db-balance__label">Paymesh balance</h2>
       <div class="db-balance__row">
         <p class="db-balance__amount">${big}</p>
         <button type="button" class="db-iconbtn" data-toggle-hide aria-pressed="${hidden}"
@@ -491,13 +492,6 @@ function main(state) {
     case "home":
       return `
         ${balance(state)}
-        <section class="db-section" aria-labelledby="db-payees">
-          <div class="db-section__head">
-            <h2 id="db-payees">Payees</h2>
-            <a href="#recipients" class="db-link">See all</a>
-          </div>
-          <ul class="db-payees">${PAYEES.map(payee).join("")}</ul>
-        </section>
         <section class="db-section" aria-labelledby="db-recent">
           <div class="db-section__head">
             <h2 id="db-recent">Transactions</h2>
@@ -505,8 +499,15 @@ function main(state) {
           </div>
           <ul class="db-txlist">${RECENT.map((t) => row(t)).join("")}</ul>
         </section>
+        <section class="db-section" aria-labelledby="db-payees">
+          <div class="db-section__head">
+            <h2 id="db-payees">Payees</h2>
+            <a href="#recipients" class="db-link">See all</a>
+          </div>
+          <ul class="db-payees">${PAYEES.map(payee).join("")}</ul>
+        </section>
         <section class="db-section" aria-labelledby="db-spending">
-          <div class="db-section__head"><h2 id="db-spending">Spending</h2></div>
+          <div class="db-section__head"><h2 id="db-spending">Analysis</h2></div>
           <div data-spending></div>
         </section>`;
     case "transactions":
