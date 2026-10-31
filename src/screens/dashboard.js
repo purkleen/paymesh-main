@@ -260,6 +260,8 @@ const navButton = ({ id, label, icon: file }, current) => `
 
 /** The eye: "show" while the balance is hidden, "hide" while it is shown. */
 const eye = (hidden) => (hidden ? `<span class="db-icon db-icon--eye" aria-hidden="true"></span>` : icon("db-eye-off.svg"));
+/** Stealth Mode's stars are the balance typeface's asterisk: Rebond Grotesque Bold. */
+const STAR_GLYPH = { family: '"Rebond Grotesque"', weight: 700 };
 const balanceLabel = (hidden) => (hidden ? "Balance hidden" : `Paymesh balance, ${num(BALANCE)} dollars`);
 
 /**
@@ -631,7 +633,7 @@ export default {
     const attachStars = () => {
       stars.forEach((s) => s.destroy());
       stars = [...root.querySelectorAll(".db-stars")].map((canvas) => {
-        const s = privacyStars(canvas, { large: canvas.classList.contains("db-stars--l"), dark: () => !state.light });
+        const s = privacyStars(canvas, { large: canvas.classList.contains("db-stars--l"), dark: () => !state.light, glyph: STAR_GLYPH });
         s.set(state.hidden);
         return s;
       });

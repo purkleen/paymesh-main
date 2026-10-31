@@ -167,7 +167,9 @@ sweep), the number scaling to 0.96, the change folding from 49px to 0, and a
 The wallet dashboard's balance uses the same stars (`privacyStars` from that
 module) and the same timing to hide its figures, with the snippet's greys
 mirrored in dark mode so the stars stay as quiet against black as they are
-against white.
+against white. There the stars are drawn as Rebond Grotesque Bold's asterisk —
+the balance's own typeface — rather than the snippet's rounded spokes, in
+the same places, at the same size, with the same greys and sweep.
 
 ## Running it locally
 
