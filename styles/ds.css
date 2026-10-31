@@ -1175,29 +1175,28 @@ body:has(.db.is-light) { --db-page: #ffffff; }
 .db-balance h2 { margin: 0; }
 .db-balance__label { font: var(--heading-l); color: var(--text-tertiary); }
 .db-balance__row { display: flex; align-items: center; gap: var(--spacing-16); }
-.db-balance__amount { margin: 0; font: 700 56px/64px var(--font-family-rebond); letter-spacing: -2.24px; white-space: nowrap; }
+.db-balance__amount, .db-balance__stealth .db-stars { margin: 0; font: 700 56px/64px var(--font-family-rebond); letter-spacing: -2.24px; white-space: nowrap; }
 .db-balance__cents { font-size: 32px; line-height: 32px; }
 /* Stealth Mode — the 60fps "Hide Sensitive Number": the figures fade (the
    balance also easing down to 0.96) while five stars fade in over them, on
    the snippet's .easeInOut(0.15), or 100ms linear and no scale under Reduce
-   Motion. The stars keep fixed sizes, so hiding never shifts the row. */
+   Motion. The stars are "*****" in the hidden figure's own text style, and
+   share its cell, so hiding never shifts the row. */
 .db { --hsn-duration: 150ms; --hsn-ease: cubic-bezier(0.42, 0, 0.58, 1); }
 .db-balance__stealth { display: grid; align-items: center; padding: 0; border: 0; border-radius: var(--radius-m); background: none; color: inherit; font: inherit; text-align: left; cursor: pointer; -webkit-tap-highlight-color: transparent; }
 .db-balance__mask { display: grid; align-items: center; }
 .db-balance__stealth > *, .db-balance__mask > * { grid-area: 1 / 1; }
 .db-balance__amount { display: block; transition: opacity var(--hsn-duration) var(--hsn-ease), scale var(--hsn-duration) var(--hsn-ease); }
 .db-balance__other { transition: opacity var(--hsn-duration) var(--hsn-ease); }
-.db-stars { display: block; opacity: 0; transition: opacity var(--hsn-duration) var(--hsn-ease); }
-.db-stars--l { width: 232px; height: 46px; }
-/* the snippet's small stars (1.7pt spokes), sized to the 20px line */
-.db-stars--s { width: 80px; height: 16px; }
-/* and every amount: the snippet's small stars over it, right-aligned at a
-   fixed width, so a list never shifts as its amounts hide */
+.db-stars { display: block; white-space: nowrap; opacity: 0; transition: opacity var(--hsn-duration) var(--hsn-ease); }
+/* an asterisk sits up by the cap height; drop it to the middle of the line,
+   where the figures' bulk is, as the "••••••" sat before */
+.db-stars > span { display: inline-block; transform: translateY(0.3em); }
+/* and every amount: its stars over it, right-aligned, in the amount's own
+   font and colour (they inherit it), so a list never shifts as it hides */
 .db-mask { display: inline-grid; align-items: center; justify-items: end; vertical-align: top; }
 .db-mask > * { grid-area: 1 / 1; }
 .db-mask__value { transition: opacity var(--hsn-duration) var(--hsn-ease); }
-.db-stars--row { width: 64px; height: 14px; }
-.db-stars--row-s { width: 56px; height: 12px; }
 .db[data-stealth] .db-balance__amount { opacity: 0; scale: 0.96; }
 .db[data-stealth] .db-balance__other,
 .db[data-stealth] .db-mask__value { opacity: 0; }
@@ -1206,7 +1205,7 @@ body:has(.db.is-light) { --db-page: #ffffff; }
   .db { --hsn-duration: 100ms; --hsn-ease: linear; }
   .db[data-stealth] .db-balance__amount { scale: 1; }
 }
-.db-balance__other { margin: 0; font: var(--heading-m); color: var(--text-tertiary); white-space: nowrap; }
+.db-balance__other, .db-balance__mask .db-stars { margin: 0; font: var(--heading-m); color: var(--text-tertiary); white-space: nowrap; }
 .db-iconbtn { display: grid; place-items: center; width: 32px; height: 32px; margin: -4px; padding: 0; border: 0; border-radius: var(--radius-m); background: none; cursor: pointer; }
 .db-iconbtn:hover { background: var(--surface-secondary); }
 
@@ -1442,11 +1441,8 @@ body:has(.db.is-light) { --db-page: #ffffff; }
   .db-nav__item[aria-current="page"] { background: var(--surface-secondary); }
   .db-user__name { display: none; }
   .db-balance__add { display: flex; width: 100%; }
-  .db-balance__amount { font-size: 44px; line-height: 52px; letter-spacing: -1.76px; }
+  .db-balance__amount, .db-balance__stealth .db-stars { font-size: 44px; line-height: 52px; letter-spacing: -1.76px; }
   .db-balance__cents { font-size: 26px; line-height: 26px; }
-  /* the stars shrink with the balance (44px here, not 56), or they hold the
-     eye well clear of the figure */
-  .db-stars--l { width: 182px; height: 36px; }
   .db-tx-page__title { font-size: 26px; line-height: 32px; }
   /* the four most recent payees, side by side, no scrolling */
   .db-payees { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); overflow: visible; }

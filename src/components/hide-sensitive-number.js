@@ -30,7 +30,7 @@
  * dashboard's balance uses them):
  *
  *   const stars = privacyStars(canvas, { large: true, dark: () => false });
- *   // or as a typeface's asterisks: { glyph: { family: '"Rebond Grotesque"', weight: 700 } }
+ *   // or five "*" spans set in the hidden text's own style: privacyStars(span)
  *   stars.set(true);   // shown: the sweep restarts and runs
  *   stars.destroy();
  *
@@ -53,13 +53,8 @@ const grey = (white) => {
  * -1 for none). `dark` mirrors the snippet's greys for a dark background, so
  * the stars stay as quiet against it and the highlight still sweeps toward
  * the background rather than away from it.
- *
- * `glyph` ({ family, weight }) draws each star as a typeface's asterisk
- * instead of the snippet's three rounded spokes — so the stars can match the
- * figures they hide. Same places, same size (the glyph is scaled so its ink
- * is as tall as the spokes would be) and the same greys and sweep.
  */
-function drawStars(canvas, phase, large, dark = false, glyph = null) {
+function drawStars(canvas, phase, large, dark = false) {
   const ratio = window.devicePixelRatio || 1;
   const width = canvas.clientWidth;
   const height = canvas.clientHeight;
@@ -73,28 +68,6 @@ function drawStars(canvas, phase, large, dark = false, glyph = null) {
 
   const step = width / 5;
   const radius = Math.min(height * 0.4, step * 0.38);
-
-  if (glyph) {
-    const font = (size) => `${glyph.weight} ${size}px ${glyph.family}`;
-    context.font = font(100);
-    const probe = context.measureText("*");
-    const ink = probe.actualBoundingBoxAscent + probe.actualBoundingBoxDescent || 40;
-    context.font = font((2 * radius * 100) / ink);
-    const m = context.measureText("*");
-    context.textAlign = "center";
-    context.textBaseline = "alphabetic";
-    // an asterisk sits high on its line: centre its ink, not its line
-    const baseline = height / 2 + (m.actualBoundingBoxAscent - m.actualBoundingBoxDescent) / 2;
-    const nudge = (m.actualBoundingBoxLeft - m.actualBoundingBoxRight) / 2;
-    for (let index = 0; index < 5; index++) {
-      const x = step * (index + 0.5);
-      const distance = index / 4 - (phase * 1.8 - 0.4);
-      const white = phase < 0 ? 0.77 : 0.76 + 0.07 * Math.exp((-distance * distance) / 0.065);
-      context.fillStyle = grey(dark ? 1 - white : white);
-      context.fillText("*", x + nudge, baseline);
-    }
-    return;
-  }
 
   context.lineWidth = large ? 8.4 : 1.7;
   context.lineCap = "round";
@@ -123,7 +96,28 @@ function drawStars(canvas, phase, large, dark = false, glyph = null) {
  * last shown, and nothing while they are hidden, Reduce Motion is on or the
  * page is in the background.
  */
-export function privacyStars(canvas, { large = true, dark = () => false, glyph = null } = {}) {
+/**
+ * The sweep on text: five "*" spans in the style of the figure they hide,
+ * each one lifted toward the background by as much as the snippet lightens
+ * that star — 0.76 grey is the star at rest, white the background, so a
+ * star at 0.83 has come 29% of the way and is drawn at 71% opacity.
+ */
+function shimmerText(spans, phase) {
+  spans.forEach((span, index) => {
+    const distance = index / 4 - (phase * 1.8 - 0.4);
+    const white = phase < 0 ? 0.77 : 0.76 + 0.07 * Math.exp((-distance * distance) / 0.065);
+    span.style.opacity = (1 - (white - 0.76) / (1 - 0.76)).toFixed(3);
+  });
+}
+
+/**
+ * `target` is either a canvas, for the snippet's drawn stars, or an element
+ * holding five "*" spans, for stars in a figure's own text style.
+ */
+export function privacyStars(target, { large = true, dark = () => false } = {}) {
+  const canvas = target;
+  const spans = target instanceof HTMLCanvasElement ? null : [...target.children];
+  const paint = (phase) => (spans ? shimmerText(spans, phase) : drawStars(canvas, phase, large, dark()));
   let on = false;
   let shimmerStart = performance.now();
   let raf = 0;
@@ -137,7 +131,7 @@ export function privacyStars(canvas, { large = true, dark = () => false, glyph =
     if (paused()) return;
     if (now - lastFrame >= 1000 / 60 - 1) {
       lastFrame = now;
-      drawStars(canvas, phaseAt(now), large, dark(), glyph);
+      paint(phaseAt(now));
     }
     raf = requestAnimationFrame(tick);
   };
@@ -146,7 +140,7 @@ export function privacyStars(canvas, { large = true, dark = () => false, glyph =
       cancelAnimationFrame(raf);
       raf = 0;
       // the still frame: no highlight under Reduce Motion
-      drawStars(canvas, phaseAt(performance.now()), large, dark(), glyph);
+      paint(phaseAt(performance.now()));
       return;
     }
     if (!raf) raf = requestAnimationFrame(tick);
@@ -157,8 +151,6 @@ export function privacyStars(canvas, { large = true, dark = () => false, glyph =
   /* the canvas is sized by CSS; redraw when it is (and on first layout) */
   const ro = new ResizeObserver(run);
   ro.observe(canvas);
-  /* a typeface draws as a fallback until it has loaded; draw again once it has */
-  if (glyph) document.fonts?.load(`${glyph.weight} 40px ${glyph.family}`).then(run, () => {});
 
   return {
     /** Shows or hides; showing restarts the sweep, as the snippet's tap does. */
