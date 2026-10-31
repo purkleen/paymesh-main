@@ -22,6 +22,10 @@
  *   const chart = StackedBars();
  *   container.append(chart.el);   // and chart.destroy() when done with it
  *
+ * `inline: true` drops the card and its title, for a chart that belongs to
+ * something else on the page — the dashboard's balance — and puts the
+ * figure where the title was.
+ *
  * Styles are the `.stb` block in styles/ds.css.
  */
 
@@ -141,7 +145,7 @@ function glide(onFrame) {
   };
 }
 
-export function StackedBars({ colour = "Colour", gap = 6 } = {}) {
+export function StackedBars({ colour = "Colour", gap = 6, inline = false } = {}) {
   let mode = "Week";
   let at = null;
   let seen = false;
@@ -152,7 +156,7 @@ export function StackedBars({ colour = "Colour", gap = 6 } = {}) {
   let CW = 0;
 
   const el = document.createElement("div");
-  el.className = "stb";
+  el.className = inline ? "stb stb--inline" : "stb";
   el.dataset.colour = colour === "Colour" ? "on" : "off";
   el.innerHTML = `
     <div class="stb-head">
@@ -177,6 +181,8 @@ export function StackedBars({ colour = "Colour", gap = 6 } = {}) {
     <div class="stb-axis"><span></span><span></span></div>`;
 
   const q = (s) => el.querySelector(s);
+  /* inline: the figure takes the title's place, above the "Last n days" */
+  if (inline) q(".stb-title").replaceWith(q(".stb-figure"));
   const sub = q(".stb-sub");
   const ctl = q(".stb-seg-ctl");
   const tabs = [...el.querySelectorAll(".stb-tab")];
