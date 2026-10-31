@@ -77,7 +77,10 @@ Vercel login first, depending on the project's Deployment Protection setting.
 and recent transactions. Code in `src/screens/dashboard.js`, styles at the end
 of `styles/ds.css` (`.db-*`, with the dark values of the colour variables).
 
-- The eye hides and shows the balance; the arrows swap whether it leads with
+- **Stealth Mode**: tapping the balance (or the eye) hides it the way the
+  60fps *Hide Sensitive Number* does — the figures dissolve into five
+  shimmering stars (thin small ones over the other currency) and come back
+  on the next tap; see *Hide sensitive number* below; the arrows swap whether it leads with
   US dollars or USDT.
 - Transaction rows use the frame's hover (row 2) and pressed (row 3) colours.
 - **See all** and the menu's **Transactions** open the Transactions page
@@ -140,6 +143,28 @@ of `styles/ds.css` (`.db-*`, with the dark values of the colour variables).
   sheet under the header (links and Escape close it), and a sticky
   **Add funds** button runs along the bottom. Its page (`#add-funds`) isn't
   designed yet and says so.
+
+## Hide sensitive number (Stealth Mode)
+
+`stealth.html` (also in the menu of prototypes) is the 60fps snippet *Hide
+Sensitive Number Interaction*, from the shot
+[family-stealth-mode-shimmer-effect-interaction](https://60fps.design/shots/family-stealth-mode-shimmer-effect-interaction),
+ported from SwiftUI: a $588.04 balance that, when tapped, dissolves into five
+rounded stars with a soft highlight sweeping across them, while the dollar
+change folds away and only the percentage stays. Tap again to bring it back.
+
+The motion is the snippet's: SwiftUI's `.easeInOut(duration: 0.15)` as
+`cubic-bezier(0.42, 0, 0.58, 1)` over 150ms (100ms linear under Reduce
+Motion, which also drops the scale, the change row's animation and the
+sweep), the number scaling to 0.96, the change folding from 49px to 0, and a
+1.6s sweep drawn at up to 60fps from the moment of the tap. Component in
+`src/components/hide-sensitive-number.js`, styles under `.hsn` in
+`styles/ds.css`.
+
+The wallet dashboard's balance uses the same stars (`privacyStars` from that
+module) and the same timing to hide its figures, with the snippet's greys
+mirrored in dark mode so the stars stay as quiet against black as they are
+against white.
 
 ## Running it locally
 

@@ -1177,6 +1177,27 @@ body:has(.db.is-light) { --db-page: #ffffff; }
 .db-balance__row { display: flex; align-items: center; gap: var(--spacing-16); }
 .db-balance__amount { margin: 0; font: 700 56px/64px var(--font-family-rebond); letter-spacing: -2.24px; white-space: nowrap; }
 .db-balance__cents { font-size: 32px; line-height: 32px; }
+/* Stealth Mode — the 60fps "Hide Sensitive Number": the figures fade (the
+   balance also easing down to 0.96) while five stars fade in over them, on
+   the snippet's .easeInOut(0.15), or 100ms linear and no scale under Reduce
+   Motion. The stars keep fixed sizes, so hiding never shifts the row. */
+.db-balance { --hsn-duration: 150ms; --hsn-ease: cubic-bezier(0.42, 0, 0.58, 1); }
+.db-balance__stealth { display: grid; align-items: center; padding: 0; border: 0; border-radius: var(--radius-m); background: none; color: inherit; font: inherit; text-align: left; cursor: pointer; -webkit-tap-highlight-color: transparent; }
+.db-balance__mask { display: grid; align-items: center; }
+.db-balance__stealth > *, .db-balance__mask > * { grid-area: 1 / 1; }
+.db-balance__amount { display: block; transition: opacity var(--hsn-duration) var(--hsn-ease), scale var(--hsn-duration) var(--hsn-ease); }
+.db-balance__other { transition: opacity var(--hsn-duration) var(--hsn-ease); }
+.db-stars { display: block; opacity: 0; transition: opacity var(--hsn-duration) var(--hsn-ease); }
+.db-stars--l { width: 232px; height: 46px; }
+/* the snippet's small stars (1.7pt spokes), sized to the 20px line */
+.db-stars--s { width: 80px; height: 16px; }
+.db-balance[data-stealth] .db-balance__amount { opacity: 0; scale: 0.96; }
+.db-balance[data-stealth] .db-balance__other { opacity: 0; }
+.db-balance[data-stealth] .db-stars { opacity: 1; }
+@media (prefers-reduced-motion: reduce) {
+  .db-balance { --hsn-duration: 100ms; --hsn-ease: linear; }
+  .db-balance[data-stealth] .db-balance__amount { scale: 1; }
+}
 .db-balance__other { margin: 0; font: var(--heading-m); color: var(--text-tertiary); white-space: nowrap; }
 .db-iconbtn { display: grid; place-items: center; width: 32px; height: 32px; margin: -4px; padding: 0; border: 0; border-radius: var(--radius-m); background: none; cursor: pointer; }
 .db-iconbtn:hover { background: var(--surface-secondary); }
@@ -1726,3 +1747,78 @@ body:has(.db.is-light) { --db-page: #ffffff; }
 @keyframes stb-pop {
   from { transform: translateY(0.18em); opacity: 0; filter: blur(2px); }
   to { transform: none; opacity: 1; filter: blur(0); }}
+
+/* ==========================================================================
+   HideSensitiveNumber — 60fps snippet "Hide Sensitive Number Interaction"
+   (60fps.design/shots/family-stealth-mode-shimmer-effect-interaction).
+   Component in src/components/hide-sensitive-number.js, shown on its own in
+   stealth.html. Sizes, greys and timings are the SwiftUI snippet's; the
+   component sets --hsn-duration and --hsn-ease (150ms ease-in-out, or 100ms
+   linear under Reduce Motion).
+   ========================================================================== */
+.hsn-page { min-height: 100vh; min-height: 100dvh; display: grid; place-items: center; background: #fff; color-scheme: light; }
+
+/* Button(.plain), full width, its whole frame tappable */
+.hsn {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 7px;
+  width: 100%;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: #000;
+  /* .system: San Francisco where there is one */
+  font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", system-ui, "Inter", sans-serif;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* the ZStack: the number and the stars in one 68pt-high cell */
+.hsn-amount { display: grid; place-items: center; height: 68px; }
+.hsn-number, .hsn-stars { grid-area: 1 / 1; }
+.hsn-number {
+  display: flex;
+  align-items: baseline;
+  gap: 2px;
+  font-size: 56px;
+  font-weight: 700;
+  line-height: normal;
+  transition: opacity var(--hsn-duration) var(--hsn-ease), scale var(--hsn-duration) var(--hsn-ease);
+}
+/* .baselineOffset(9): the $ sits 9pt above the figure's baseline */
+.hsn-currency { position: relative; top: -9px; font-size: 36px; }
+.hsn[data-stealth] .hsn-number { opacity: 0; scale: 0.96; }
+.hsn[data-stealth][data-still] .hsn-number { scale: 1; }
+
+/* the five stars, at a fixed size so hiding never shifts anything */
+.hsn-stars { width: 232px; height: 46px; opacity: 0; transition: opacity var(--hsn-duration) var(--hsn-ease); }
+.hsn[data-stealth] .hsn-stars { opacity: 1; }
+
+/* the change: the dollars fold away (49 → 0, from the leading edge, clipped)
+   and the gap closes, so only the percentage stays */
+.hsn-change {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 16px;
+  font-weight: 500;
+  color: rgb(186, 186, 186); /* Color(white: 0.73) */
+  transition: gap var(--hsn-duration) var(--hsn-ease);
+}
+.hsn-dollars {
+  display: flex;
+  justify-content: flex-end;
+  width: 49px;
+  overflow: hidden;
+  white-space: nowrap;
+  transition: width var(--hsn-duration) var(--hsn-ease), opacity var(--hsn-duration) var(--hsn-ease);
+}
+.hsn-dollars > span { flex: 0 0 auto; }
+.hsn-percent { padding: 2px 5px; border-radius: 5px; background: rgb(251, 251, 251); /* Color(white: 0.985) */ }
+.hsn[data-stealth] .hsn-change { gap: 0; }
+.hsn[data-stealth] .hsn-dollars { width: 0; opacity: 0; }
+/* Reduce Motion: the change row switches without animating */
+.hsn[data-still] .hsn-change,
+.hsn[data-still] .hsn-dollars { transition: none; }
