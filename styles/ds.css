@@ -1311,6 +1311,37 @@ body:has(.db.is-light) { --db-page: #ffffff; }
 
 /* Transaction details — the checkout receipt, node 1147:5103 ("order
    complete"): a 422px column, centred in the content column */
+/* Home's payees: a row of avatars and names, scrolling sideways when there
+   are more than fit */
+.db-avatar--xl { width: 56px; height: 56px; font: var(--heading-xs); letter-spacing: 0; }
+.db-payees {
+  display: flex;
+  gap: var(--spacing-8);
+  margin: 0;
+  padding: 0 var(--spacing-8);
+  list-style: none;
+  overflow-x: auto;
+  scroll-snap-type: x proximity;
+  scrollbar-width: none;
+}
+.db-payees::-webkit-scrollbar { display: none; }
+.db-payees li { flex: 0 0 auto; scroll-snap-align: start; }
+.db-payee {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--spacing-8);
+  width: 80px;
+  padding: var(--spacing-8) 0;
+  border: 0;
+  border-radius: var(--radius-lg);
+  background: none;
+  color: var(--text-primary);
+  cursor: pointer;
+}
+.db-payee:hover { background: var(--surface-secondary); }
+.db-payee:active { background: var(--action-secondary-pressed); }
+.db-payee__name { max-width: 72px; font: var(--text-xs-medium); letter-spacing: var(--tracking-text); text-align: center; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .db-avatar--s { width: 24px; height: 24px; font: 600 10px/1 var(--font-family-inter); letter-spacing: 0; }
 .db-detail { display: flex; flex-direction: column; align-items: center; gap: var(--spacing-24); width: 100%; max-width: 422px; margin: 0 auto; padding: 0 var(--spacing-16); box-sizing: content-box; }
 .db-detail__art { display: block; width: 120px; height: 120px; object-fit: contain; }
@@ -1441,14 +1472,15 @@ body:has(.db.is-light) { --db-page: #ffffff; }
   --font-ui: var(--font-family-inter);
 }
 
-/* On Home it is part of the balance: no card of its own, so the "slab" the
-   chart mixes toward, and fills its tooltip and Week / Month thumb with, is
-   the page itself. The spend figure sits where the title was, a step below
-   the balance in size. Doubled class, because Bencho's own .stb rule comes
-   later in this file and would put the card's padding back. */
+/* On Home it sits in the Spending section with no card of its own, so the
+   "slab" the chart mixes toward, and fills its tooltip and Week / Month
+   thumb with, is the page itself. The spend figure sits where the title
+   was. 16px in, like the section's heading. Doubled class, because
+   Bencho's own .stb rule comes later in this file and would put the card's
+   padding back. */
 .stb.stb--inline {
   --fill-slab: var(--background-canvas);
-  margin-top: var(--spacing-32);
+  margin: 0 var(--spacing-16);
   padding: 0;
   border-radius: 0;
   background: none;

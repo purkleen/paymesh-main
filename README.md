@@ -94,22 +94,24 @@ of `styles/ds.css` (`.db-*`, with the dark values of the colour variables).
   (`RECIPIENT_LIST` in `src/screens/dashboard.js`), and 13 transactions with
   13 of them over the last 60 days: two today, two yesterday ("today" is
   13 Oct 2026). The transactions are random but come from a fixed seed, so
-  every visit shows the same history. Home shows the latest eight; the
+  every visit shows the same history. Home shows the latest five, under a row of **payees** (everyone you've
+  paid, most recently paid first; **See all** opens Recipients, and a payee
+  opens their transactions); the
   recipients without a transaction say "No transactions yet". Airbnb keeps its logo;
   everyone else has an initials avatar in one of eight colours (red,
   orange, yellow, green, teal, blue, purple, pink — `--avatar-*` in
   `styles/ds.css`), taken in turn A–Z.
-- The balance carries **what was spent**, Bencho's *Stacked bars* (MIT,
-  bencho.dev/licence) ported from React + framer-motion to a plain module in
-  `src/components/stacked-bars.js`, styles under `.stb` at the end of
-  `styles/ds.css`. Under the balance figures: the total spent, **Week** /
-  **Month**, and one bar per day in the brand colour for what was spent that
-  day (there are no spending categories yet, so nothing is stacked). Week is
-  the last 7 days and Month the last 30, so a day never changes; run along
-  it for the day and its total. It is part of the balance rather than a card
-  of its own (`inline` in the component). The figures are seeded example
-  data, not the transaction list. Text uses the design system's styles, and
-  Bencho's tokens are mapped onto the dashboard's, so both themes work.
+- At the bottom of Home, **Spending** shows what was spent: Bencho's
+  *Stacked bars* (MIT, bencho.dev/licence) ported from React + framer-motion
+  to a plain module in `src/components/stacked-bars.js`, styles under `.stb`
+  at the end of `styles/ds.css`. The total spent, **Week** / **Month**, and
+  one bar per day in the brand colour for what was spent that day (there are
+  no spending categories yet, so nothing is stacked). Week is the last 7
+  days and Month the last 30, so a day never changes; run along it for the
+  day and its total. It has no card of its own (`inline` in the component).
+  The figures are seeded example data, not the transaction list. Text uses
+  the design system's styles, and Bencho's tokens are mapped onto the
+  dashboard's, so both themes work.
 - Any transaction, on Home or the Transactions page, opens its **details**
   (`#tx/<id>`): the checkout's "Order complete" receipt (Figma node
   1147:5103) inside the dashboard — "Payment sent" or "Payment received",
