@@ -80,7 +80,10 @@ of `styles/ds.css` (`.db-*`, with the dark values of the colour variables).
 - **Stealth Mode**: tapping the balance (or the eye) hides it the way the
   60fps *Hide Sensitive Number* does — the figures dissolve into five
   shimmering stars (thin small ones over the other currency) and come back
-  on the next tap; see *Hide sensitive number* below; the arrows swap whether it leads with
+  on the next tap. It hides every transaction amount too — Home, the
+  Transactions page, Recipients' totals and the details page — with the
+  snippet's small stars at a fixed width, so lists don't shift, and stays on
+  between pages; see *Hide sensitive number* below; the arrows swap whether it leads with
   US dollars or USDT.
 - Transaction rows use the frame's hover (row 2) and pressed (row 3) colours.
 - **See all** and the menu's **Transactions** open the Transactions page
@@ -140,9 +143,9 @@ of `styles/ds.css` (`.db-*`, with the dark values of the colour variables).
   **Log out** returns to the menu of prototypes.
 - Under 1000px the menu is icons only. On phones (640px and under) it moves
   behind a hamburger button next to the avatar, opening as a full-screen
-  sheet under the header (links and Escape close it), and a sticky
-  **Add funds** button runs along the bottom. Its page (`#add-funds`) isn't
-  designed yet and says so.
+  sheet under the header (links and Escape close it).
+- **Add funds** sits under the balance, on every screen size (across the
+  column on phones). Its page (`#add-funds`) isn't designed yet and says so.
 
 ## Hide sensitive number (Stealth Mode)
 
@@ -164,7 +167,9 @@ sweep), the number scaling to 0.96, the change folding from 49px to 0, and a
 The wallet dashboard's balance uses the same stars (`privacyStars` from that
 module) and the same timing to hide its figures, with the snippet's greys
 mirrored in dark mode so the stars stay as quiet against black as they are
-against white.
+against white. There the stars are drawn as Rebond Grotesque Bold's asterisk —
+the balance's own typeface — rather than the snippet's rounded spokes, in
+the same places, at the same size, with the same greys and sweep.
 
 ## Running it locally
 
