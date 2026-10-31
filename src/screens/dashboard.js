@@ -6,7 +6,9 @@
  * frame implies is wired up:
  *   - the eye hides and shows the balance
  *   - the arrows swap which currency the balance leads with (USD ↔ USDT)
- *   - under the balance, what was spent each day over a week or a month
+ *   - Home: the balance, a row of payees (everyone you've paid, latest
+ *     first; See all opens Recipients), the five latest transactions, and
+ *     at the bottom what was spent each day over a week or a month
  *     (Bencho's Stacked bars, src/components/stacked-bars.js)
  *   - transaction rows have the frame's hover (row 2) and pressed (row 3) states
  *   - "See all" and the menu's Transactions open the Transactions page
@@ -138,8 +140,12 @@ const txId = (t) => {
 for (const t of TRANSACTIONS) t.id = txId(t);
 const BY_ID = new Map(TRANSACTIONS.map((t) => [t.id, t]));
 
-/** Home's list — the latest eight, as many rows as the frame has. */
-const RECENT = TRANSACTIONS.slice(0, 8);
+/** Home's list — the latest five. */
+const RECENT = TRANSACTIONS.slice(0, 5);
+
+/** Home's payees: everyone you have paid, most recently paid first. */
+const PAYEES = [...new Map(TRANSACTIONS.filter((t) => t.amount < 0).map((t) => [t.party, t])).values()]
+  .sort((a, b) => b.at - a.at);
 
 /**
  * The Transactions page's groups (node 1141:4323): Today, Yesterday, then one
@@ -210,9 +216,9 @@ const applyTheme = (light) => {
   document.querySelector('meta[name="theme-color"]')?.setAttribute("content", light ? "#ffffff" : "#0e0e11");
 };
 
-/** Account avatar or merchant logo: 32px, 40 on the Transactions page, 24 on the details page. */
+/** Account avatar or merchant logo: 32px, 40 on the Transactions page, 24 on the details page, 56 for Home's payees. */
 const avatar = (t, size = 32) => {
-  const cls = `db-avatar${size === 40 ? " db-avatar--l" : size === 24 ? " db-avatar--s" : ""}`;
+  const cls = `db-avatar${{ 24: " db-avatar--s", 40: " db-avatar--l", 56: " db-avatar--xl" }[size] || ""}`;
   if (t.logo) return `<img class="${cls} db-avatar--logo" src="${t.logo}" width="${size}" height="${size}" alt="" />`;
   return `<span class="${cls} db-avatar--${t.color}">${esc(t.initials)}</span>`;
 };
@@ -262,7 +268,6 @@ function balance({ hidden, lead }) {
         <button type="button" class="db-iconbtn" data-swap aria-label="Show balance in ${usd ? "USDT" : "US dollars"} first"
           title="Swap currency">${icon("db-swap.svg", "muted")}</button>
       </div>
-      <div data-spending></div>
     </section>`;
 }
 
@@ -473,17 +478,36 @@ function detailPage(t, back) {
     </section>`;
 }
 
+/** One of Home's payees: avatar and name; it opens their transactions, as Recipients does. */
+const payee = (t) => `
+  <li>
+    <button type="button" class="db-payee" data-recipient="${esc(t.party)}" title="${esc(t.party)}">
+      ${avatar(t, 56)}<span class="db-payee__name">${esc(t.party)}</span>
+    </button>
+  </li>`;
+
 function main(state) {
   switch (state.page) {
     case "home":
       return `
         ${balance(state)}
+        <section class="db-section" aria-labelledby="db-payees">
+          <div class="db-section__head">
+            <h2 id="db-payees">Payees</h2>
+            <a href="#recipients" class="db-link">See all</a>
+          </div>
+          <ul class="db-payees">${PAYEES.map(payee).join("")}</ul>
+        </section>
         <section class="db-section" aria-labelledby="db-recent">
           <div class="db-section__head">
             <h2 id="db-recent">Transactions</h2>
             <a href="#transactions" class="db-link">See all</a>
           </div>
           <ul class="db-txlist">${RECENT.map((t) => row(t)).join("")}</ul>
+        </section>
+        <section class="db-section" aria-labelledby="db-spending">
+          <div class="db-section__head"><h2 id="db-spending">Spending</h2></div>
+          <div data-spending></div>
         </section>`;
     case "transactions":
       return transactionsPage(state);
