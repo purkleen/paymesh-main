@@ -1441,8 +1441,20 @@ body:has(.db.is-light) { --db-page: #ffffff; }
   --font-ui: var(--font-family-inter);
 }
 
-/* On Home: across the column, 16px in, like the sections around it */
-.db-main > .stb { margin: 0 var(--spacing-16); }
+/* On Home it is part of the balance: no card of its own, so the "slab" the
+   chart mixes toward, and fills its tooltip and Week / Month thumb with, is
+   the page itself. The spend figure sits where the title was, a step below
+   the balance in size. Doubled class, because Bencho's own .stb rule comes
+   later in this file and would put the card's padding back. */
+.stb.stb--inline {
+  --fill-slab: var(--background-canvas);
+  margin-top: var(--spacing-32);
+  padding: 0;
+  border-radius: 0;
+  background: none;
+}
+.stb.stb--inline .stb-figure { margin: 0; }
+.stb.stb--inline .stb-num { font: var(--heading-m-bold); letter-spacing: 0; }
 
 /* ══ Stacked bars (lab/StackedBars.tsx) ═══ */
 .stb {
