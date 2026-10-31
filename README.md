@@ -143,9 +143,9 @@ of `styles/ds.css` (`.db-*`, with the dark values of the colour variables).
   **Log out** returns to the menu of prototypes.
 - Under 1000px the menu is icons only. On phones (640px and under) it moves
   behind a hamburger button next to the avatar, opening as a full-screen
-  sheet under the header (links and Escape close it), and a sticky
-  **Add funds** button runs along the bottom. Its page (`#add-funds`) isn't
-  designed yet and says so.
+  sheet under the header (links and Escape close it).
+- **Add funds** sits under the balance, on every screen size (across the
+  column on phones). Its page (`#add-funds`) isn't designed yet and says so.
 
 ## Hide sensitive number (Stealth Mode)
 

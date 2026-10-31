@@ -25,9 +25,9 @@
  *     with a search; picking one opens their transactions
  *   - Cards and Settings aren't designed yet, so they say so
  *   - Log out goes back to the prototype menu
- *   - on phones the menu sits behind a hamburger button next to the avatar,
- *     and a sticky "Add funds" button runs along the bottom (its page isn't
- *     designed yet, so it says so)
+ *   - under the balance, an Add funds button (its page isn't designed yet,
+ *     so it says so)
+ *   - on phones the menu sits behind a hamburger button next to the avatar
  * The page is in the URL hash (#home, #transactions, …), so Back works.
  */
 
@@ -302,6 +302,7 @@ function balance({ hidden, lead }) {
         <button type="button" class="db-iconbtn" data-swap aria-label="Show balance in ${usd ? "USDT" : "US dollars"} first"
           title="Swap currency">${icon("db-swap.svg", "muted")}</button>
       </div>
+      <a href="#add-funds" class="db-btn db-balance__add">${icon("add.svg", "current")}Add funds</a>
     </section>`;
 }
 
@@ -591,10 +592,6 @@ function render(state) {
     </nav>
 
     <main class="db-main">${main(state)}</main>
-
-    <div class="db-addfunds">
-      <a href="#add-funds" class="db-addfunds__btn">${icon("add.svg", "current")}Add funds</a>
-    </div>
   </div>`;
 }
 

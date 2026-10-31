@@ -1418,8 +1418,13 @@ body:has(.db.is-light) { --db-page: #ffffff; }
 }
 .db-btn:hover { background: var(--action-primary-hover); }
 
-/* Phones only: the hamburger button and the sticky Add funds button */
-.db-menu-btn, .db-addfunds { display: none; }
+/* Add funds — Button (primary, L) under the balance: as wide as its label,
+   and across the column on phones */
+.db-balance__add { display: inline-flex; gap: var(--spacing-8); margin-top: var(--spacing-24); padding: var(--spacing-12) var(--spacing-24) var(--spacing-12) var(--spacing-16); }
+.db-balance__add:active { background: var(--action-primary-hover); }
+
+/* Phones only: the hamburger button */
+.db-menu-btn { display: none; }
 .db-icon--close { background: var(--icon-primary); -webkit-mask: url("../assets/ds/close.svg") center / 24px 24px no-repeat; mask: url("../assets/ds/close.svg") center / 24px 24px no-repeat; }
 
 /* Narrower screens: the menu folds to its icons */
@@ -1436,9 +1441,12 @@ body:has(.db.is-light) { --db-page: #ffffff; }
   .db-user { position: static; }
   .db-nav__item[aria-current="page"] { background: var(--surface-secondary); }
   .db-user__name { display: none; }
-  .db-main { padding-bottom: 116px; }
+  .db-balance__add { display: flex; width: 100%; }
   .db-balance__amount { font-size: 44px; line-height: 52px; letter-spacing: -1.76px; }
   .db-balance__cents { font-size: 26px; line-height: 26px; }
+  /* the stars shrink with the balance (44px here, not 56), or they hold the
+     eye well clear of the figure */
+  .db-stars--l { width: 182px; height: 36px; }
   .db-tx-page__title { font-size: 26px; line-height: 32px; }
   /* the four most recent payees, side by side, no scrolling */
   .db-payees { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); overflow: visible; }
@@ -1465,31 +1473,6 @@ body:has(.db.is-light) { --db-page: #ffffff; }
   .db .db-nav__label { display: inline; }
   .db .db-nav__fold { display: none; }
   body:has(.is-menu-open) { overflow: hidden; }
-  /* Add funds — Button (primary, L), stuck to the bottom */
-  .db-addfunds {
-    display: block;
-    position: fixed;
-    inset: auto 0 0 0;
-    z-index: 10;
-    padding: var(--spacing-24) var(--spacing-16) calc(var(--spacing-16) + env(safe-area-inset-bottom));
-    background: linear-gradient(to bottom, transparent, var(--background-canvas) 40%);
-    pointer-events: none;
-  }
-  .is-menu-open .db-addfunds { display: none; }
-  .db-addfunds__btn {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: var(--spacing-8);
-    height: 52px;
-    border-radius: var(--radius-xl);
-    background: var(--action-primary-default);
-    color: var(--text-inverse) !important;
-    font: var(--button-l);
-    text-decoration: none;
-    pointer-events: auto;
-  }
-  .db-addfunds__btn:active { background: var(--action-primary-hover); }
 }
 
 /* ==========================================================================
