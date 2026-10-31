@@ -33,6 +33,7 @@
 
 import { esc } from "../ui.js";
 import { StackedBars } from "../components/stacked-bars.js";
+import { privacyStars } from "../components/hide-sensitive-number.js";
 
 const ICON = "assets/ds/";
 const USER = { name: "Arthur Brown", initials: "AB" };
@@ -247,25 +248,43 @@ const navButton = ({ id, label, icon: file }, current) => `
     ${icon(file)}<span class="db-nav__label">${label}</span>
   </a>`;
 
-/** The balance block: big figure, eye, and the other currency with the swap arrows. */
+/** The eye: "show" while the balance is hidden, "hide" while it is shown. */
+const eye = (hidden) => (hidden ? `<span class="db-icon db-icon--eye" aria-hidden="true"></span>` : icon("db-eye-off.svg"));
+const balanceLabel = (hidden) => (hidden ? "Balance hidden" : `Paymesh balance, ${num(BALANCE)} dollars`);
+
+/**
+ * The balance block: big figure, eye, and the other currency with the swap
+ * arrows. Hiding it is Stealth Mode — the 60fps "Hide Sensitive Number"
+ * (src/components/hide-sensitive-number.js): tap the balance or the eye and
+ * the figures dissolve into five shimmering stars, the big ones over the
+ * balance and the snippet's thin small ones over the other currency. Both
+ * figures are always there under their stars, so nothing shifts.
+ */
 function balance({ hidden, lead }) {
   const [whole, cents] = num(BALANCE).split(".");
   const usd = lead === "usd";
-  const big = `${usd ? "$" : ""}${hidden ? "••••••" : whole}<span class="db-balance__cents">${hidden ? "" : `.${cents}`}${usd ? "" : " USDT"}</span>`;
-  const small = hidden ? (usd ? "•••••• USDT" : "$••••••") : usd ? `${num(BALANCE)} USDT` : `$${num(BALANCE)}`;
+  const big = `${usd ? "$" : ""}${whole}<span class="db-balance__cents">.${cents}${usd ? "" : " USDT"}</span>`;
+  const small = usd ? `${num(BALANCE)} USDT` : `$${num(BALANCE)}`;
 
   return `
-    <section class="db-balance" aria-label="Paymesh balance">
+    <section class="db-balance" aria-label="Paymesh balance"${hidden ? " data-stealth" : ""}>
       <h2 class="db-balance__label">Paymesh balance</h2>
       <div class="db-balance__row">
-        <p class="db-balance__amount">${big}</p>
-        <button type="button" class="db-iconbtn" data-toggle-hide aria-pressed="${hidden}"
+        <button type="button" class="db-balance__stealth" data-toggle-hide aria-pressed="${hidden}" aria-label="${balanceLabel(hidden)}"
+          aria-description="Stealth Mode ${hidden ? "on" : "off"}. Activate to ${hidden ? "reveal" : "hide"} the balance">
+          <span class="db-balance__amount">${big}</span>
+          <canvas class="db-stars db-stars--l" aria-hidden="true"></canvas>
+        </button>
+        <button type="button" class="db-iconbtn" data-toggle-hide data-eye aria-pressed="${hidden}"
           aria-label="${hidden ? "Show balance" : "Hide balance"}" title="${hidden ? "Show balance" : "Hide balance"}">
-          ${hidden ? `<span class="db-icon db-icon--eye" aria-hidden="true"></span>` : icon("db-eye-off.svg")}
+          ${eye(hidden)}
         </button>
       </div>
       <div class="db-balance__row db-balance__row--sub">
-        <p class="db-balance__other">${small}</p>
+        <span class="db-balance__mask">
+          <p class="db-balance__other">${small}</p>
+          <canvas class="db-stars db-stars--s" aria-hidden="true"></canvas>
+        </span>
         <button type="button" class="db-iconbtn" data-swap aria-label="Show balance in ${usd ? "USDT" : "US dollars"} first"
           title="Swap currency">${icon("db-swap.svg", "muted")}</button>
       </div>
@@ -585,9 +604,39 @@ export default {
     // The spending chart (Bencho's Stacked bars) keeps its own state, so it is
     // made once and put back in its slot after every redraw.
     const spending = StackedBars({ inline: true });
+    // The balance's privacy stars, one per hidden figure; made again on each
+    // redraw, since the canvases are new.
+    let stars = [];
     const draw = () => {
       root.innerHTML = render(state);
       root.querySelector("[data-spending]")?.replaceWith(spending.el);
+      stars.forEach((s) => s.destroy());
+      stars = [...root.querySelectorAll(".db-stars")].map((canvas) => {
+        const s = privacyStars(canvas, { large: canvas.classList.contains("db-stars--l"), dark: () => !state.light });
+        s.set(state.hidden);
+        return s;
+      });
+    };
+
+    // Stealth Mode: flipped on the elements already there rather than by a
+    // redraw, so the snippet's cross-fade plays (a redrawn element has no
+    // "before" to transition from).
+    const toggleStealth = () => {
+      navigator.vibrate?.(10);
+      state.hidden = !state.hidden;
+      const section = root.querySelector(".db-balance");
+      if (!section) return draw();
+      section.toggleAttribute("data-stealth", state.hidden);
+      const toggle = section.querySelector(".db-balance__stealth");
+      toggle.setAttribute("aria-pressed", String(state.hidden));
+      toggle.setAttribute("aria-label", balanceLabel(state.hidden));
+      toggle.setAttribute("aria-description", `Stealth Mode ${state.hidden ? "on" : "off"}. Activate to ${state.hidden ? "reveal" : "hide"} the balance`);
+      const eyeBtn = section.querySelector("[data-eye]");
+      eyeBtn.setAttribute("aria-pressed", String(state.hidden));
+      eyeBtn.setAttribute("aria-label", state.hidden ? "Show balance" : "Hide balance");
+      eyeBtn.title = state.hidden ? "Show balance" : "Hide balance";
+      eyeBtn.innerHTML = eye(state.hidden);
+      stars.forEach((s) => s.set(state.hidden));
     };
 
     root.addEventListener("click", (e) => {
@@ -596,7 +645,7 @@ export default {
         state.sortOpen = false;
         draw();
       }
-      if (e.target.closest("[data-toggle-hide]")) state.hidden = !state.hidden;
+      if (e.target.closest("[data-toggle-hide]")) return toggleStealth();
       else if (e.target.closest("[data-swap]")) state.lead = state.lead === "usd" ? "usdt" : "usd";
       else if (e.target.closest("[data-fold]")) state.folded = !state.folded;
       else if (e.target.closest("[data-theme-toggle]")) applyTheme((state.light = !state.light));

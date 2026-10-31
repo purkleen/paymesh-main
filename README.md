@@ -77,7 +77,10 @@ Vercel login first, depending on the project's Deployment Protection setting.
 and recent transactions. Code in `src/screens/dashboard.js`, styles at the end
 of `styles/ds.css` (`.db-*`, with the dark values of the colour variables).
 
-- The eye hides and shows the balance; the arrows swap whether it leads with
+- **Stealth Mode**: tapping the balance (or the eye) hides it the way the
+  60fps *Hide Sensitive Number* does — the figures dissolve into five
+  shimmering stars (thin small ones over the other currency) and come back
+  on the next tap; see *Hide sensitive number* below; the arrows swap whether it leads with
   US dollars or USDT.
 - Transaction rows use the frame's hover (row 2) and pressed (row 3) colours.
 - **See all** and the menu's **Transactions** open the Transactions page
@@ -157,6 +160,11 @@ sweep), the number scaling to 0.96, the change folding from 49px to 0, and a
 1.6s sweep drawn at up to 60fps from the moment of the tap. Component in
 `src/components/hide-sensitive-number.js`, styles under `.hsn` in
 `styles/ds.css`.
+
+The wallet dashboard's balance uses the same stars (`privacyStars` from that
+module) and the same timing to hide its figures, with the snippet's greys
+mirrored in dark mode so the stars stay as quiet against black as they are
+against white.
 
 ## Running it locally
 

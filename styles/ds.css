@@ -1177,6 +1177,27 @@ body:has(.db.is-light) { --db-page: #ffffff; }
 .db-balance__row { display: flex; align-items: center; gap: var(--spacing-16); }
 .db-balance__amount { margin: 0; font: 700 56px/64px var(--font-family-rebond); letter-spacing: -2.24px; white-space: nowrap; }
 .db-balance__cents { font-size: 32px; line-height: 32px; }
+/* Stealth Mode — the 60fps "Hide Sensitive Number": the figures fade (the
+   balance also easing down to 0.96) while five stars fade in over them, on
+   the snippet's .easeInOut(0.15), or 100ms linear and no scale under Reduce
+   Motion. The stars keep fixed sizes, so hiding never shifts the row. */
+.db-balance { --hsn-duration: 150ms; --hsn-ease: cubic-bezier(0.42, 0, 0.58, 1); }
+.db-balance__stealth { display: grid; align-items: center; padding: 0; border: 0; border-radius: var(--radius-m); background: none; color: inherit; font: inherit; text-align: left; cursor: pointer; -webkit-tap-highlight-color: transparent; }
+.db-balance__mask { display: grid; align-items: center; }
+.db-balance__stealth > *, .db-balance__mask > * { grid-area: 1 / 1; }
+.db-balance__amount { display: block; transition: opacity var(--hsn-duration) var(--hsn-ease), scale var(--hsn-duration) var(--hsn-ease); }
+.db-balance__other { transition: opacity var(--hsn-duration) var(--hsn-ease); }
+.db-stars { display: block; opacity: 0; transition: opacity var(--hsn-duration) var(--hsn-ease); }
+.db-stars--l { width: 232px; height: 46px; }
+/* the snippet's small stars (1.7pt spokes), sized to the 20px line */
+.db-stars--s { width: 80px; height: 16px; }
+.db-balance[data-stealth] .db-balance__amount { opacity: 0; scale: 0.96; }
+.db-balance[data-stealth] .db-balance__other { opacity: 0; }
+.db-balance[data-stealth] .db-stars { opacity: 1; }
+@media (prefers-reduced-motion: reduce) {
+  .db-balance { --hsn-duration: 100ms; --hsn-ease: linear; }
+  .db-balance[data-stealth] .db-balance__amount { scale: 1; }
+}
 .db-balance__other { margin: 0; font: var(--heading-m); color: var(--text-tertiary); white-space: nowrap; }
 .db-iconbtn { display: grid; place-items: center; width: 32px; height: 32px; margin: -4px; padding: 0; border: 0; border-radius: var(--radius-m); background: none; cursor: pointer; }
 .db-iconbtn:hover { background: var(--surface-secondary); }

@@ -26,6 +26,13 @@
  *   const balance = HideSensitiveNumber();
  *   container.append(balance.el);   // and balance.destroy() when done with it
  *
+ * The stars on their own, for hiding numbers somewhere else (the wallet
+ * dashboard's balance uses them):
+ *
+ *   const stars = privacyStars(canvas, { large: true, dark: () => false });
+ *   stars.set(true);   // shown: the sweep restarts and runs
+ *   stars.destroy();
+ *
  * Styles are the `.hsn` block in styles/ds.css.
  */
 
@@ -40,8 +47,13 @@ const grey = (white) => {
   return `rgb(${v}, ${v}, ${v})`;
 };
 
-/** The five stars, drawn into `canvas` at `phase` (0..1 through the sweep, or -1 for none). */
-function drawStars(canvas, phase, large) {
+/**
+ * The five stars, drawn into `canvas` at `phase` (0..1 through the sweep, or
+ * -1 for none). `dark` mirrors the snippet's greys for a dark background, so
+ * the stars stay as quiet against it and the highlight still sweeps toward
+ * the background rather than away from it.
+ */
+function drawStars(canvas, phase, large, dark = false) {
   const ratio = window.devicePixelRatio || 1;
   const width = canvas.clientWidth;
   const height = canvas.clientHeight;
@@ -70,16 +82,75 @@ function drawStars(canvas, phase, large) {
       context.moveTo(x - dx, height / 2 - dy);
       context.lineTo(x + dx, height / 2 + dy);
     }
-    context.strokeStyle = grey(white);
+    context.strokeStyle = grey(dark ? 1 - white : white);
     context.stroke();
   }
 }
 
-export function HideSensitiveNumber() {
-  let stealth = false;
+/**
+ * The stars' clock: TimelineView(.animation(minimumInterval: 1 / 60, paused:
+ * !stealth || reduceMotion || scenePhase != .active)) — a frame at most every
+ * sixtieth of a second, the sweep's phase from the time since the stars were
+ * last shown, and nothing while they are hidden, Reduce Motion is on or the
+ * page is in the background.
+ */
+export function privacyStars(canvas, { large = true, dark = () => false } = {}) {
+  let on = false;
   let shimmerStart = performance.now();
   let raf = 0;
   let lastFrame = 0;
+
+  const phaseAt = (now) => (reduceMotion() ? -1 : ((Math.max(0, now - shimmerStart) / 1000) % 1.6) / 1.6);
+  const paused = () => !on || reduceMotion() || document.visibilityState !== "visible";
+
+  const tick = (now) => {
+    raf = 0;
+    if (paused()) return;
+    if (now - lastFrame >= 1000 / 60 - 1) {
+      lastFrame = now;
+      drawStars(canvas, phaseAt(now), large, dark());
+    }
+    raf = requestAnimationFrame(tick);
+  };
+  const run = () => {
+    if (paused()) {
+      cancelAnimationFrame(raf);
+      raf = 0;
+      // the still frame: no highlight under Reduce Motion
+      drawStars(canvas, phaseAt(performance.now()), large, dark());
+      return;
+    }
+    if (!raf) raf = requestAnimationFrame(tick);
+  };
+
+  document.addEventListener("visibilitychange", run);
+  reduceMotionQuery?.addEventListener?.("change", run);
+  /* the canvas is sized by CSS; redraw when it is (and on first layout) */
+  const ro = new ResizeObserver(run);
+  ro.observe(canvas);
+
+  return {
+    /** Shows or hides; showing restarts the sweep, as the snippet's tap does. */
+    set(next, { restart = true } = {}) {
+      if (restart) shimmerStart = performance.now();
+      on = next;
+      run();
+    },
+    destroy() {
+      cancelAnimationFrame(raf);
+      ro.disconnect();
+      document.removeEventListener("visibilitychange", run);
+      reduceMotionQuery?.removeEventListener?.("change", run);
+    },
+  };
+}
+
+/** The transition's duration and curve, for --hsn-duration and --hsn-ease. */
+export const stealthTiming = () =>
+  reduceMotion() ? { duration: "100ms", ease: "linear" } : { duration: "150ms", ease: EASE_IN_OUT };
+
+export function HideSensitiveNumber() {
+  let stealth = false;
 
   const el = document.createElement("button");
   el.type = "button";
@@ -94,70 +165,37 @@ export function HideSensitiveNumber() {
       <span class="hsn-dollars"><span>−$1.91</span></span>
       <span class="hsn-percent">−0.32%</span>
     </span>`;
-  const canvas = el.querySelector(".hsn-stars");
-
-  const paused = () => !stealth || reduceMotion() || document.visibilityState !== "visible";
-
-  /* TimelineView(.animation(minimumInterval: 1 / 60)): a frame at most
-     every sixtieth of a second, the sweep's phase from the time since the
-     last tap */
-  const tick = (now) => {
-    raf = 0;
-    if (paused()) return;
-    if (now - lastFrame >= 1000 / 60 - 1) {
-      lastFrame = now;
-      const elapsed = Math.max(0, now - shimmerStart) / 1000;
-      drawStars(canvas, (elapsed % 1.6) / 1.6, true);
-    }
-    raf = requestAnimationFrame(tick);
-  };
-  const run = () => {
-    if (paused()) {
-      cancelAnimationFrame(raf);
-      raf = 0;
-      // the still frame: no highlight under Reduce Motion
-      drawStars(canvas, reduceMotion() ? -1 : (Math.max(0, performance.now() - shimmerStart) / 1000 % 1.6) / 1.6, true);
-      return;
-    }
-    if (!raf) raf = requestAnimationFrame(tick);
-  };
+  const stars = privacyStars(el.querySelector(".hsn-stars"), { large: true });
 
   const sync = () => {
-    const still = reduceMotion();
-    el.style.setProperty("--hsn-ease", still ? "linear" : EASE_IN_OUT);
-    el.style.setProperty("--hsn-duration", still ? "100ms" : "150ms");
+    const { duration, ease } = stealthTiming();
+    el.style.setProperty("--hsn-ease", ease);
+    el.style.setProperty("--hsn-duration", duration);
     el.toggleAttribute("data-stealth", stealth);
-    el.toggleAttribute("data-still", still);
+    el.toggleAttribute("data-still", reduceMotion());
     el.setAttribute("aria-pressed", String(stealth));
     el.setAttribute("aria-label", stealth ? "Balance hidden" : "Portfolio balance, 588 dollars and 4 cents");
     el.setAttribute("aria-description", `Stealth Mode ${stealth ? "on" : "off"}. Activate to ${stealth ? "reveal" : "hide"} wallet amounts`);
-    run();
   };
 
   const toggleStealth = () => {
     navigator.vibrate?.(10);
-    shimmerStart = performance.now();
     // Reference frames 56 to 64 and 258 to 264 show a quick overlapping replacement.
     // Reduce Motion removes travel; the short dissolve still communicates the change.
     stealth = !stealth;
     sync();
+    stars.set(stealth);
   };
 
   el.addEventListener("click", toggleStealth);
-  document.addEventListener("visibilitychange", run);
   reduceMotionQuery?.addEventListener?.("change", sync);
-  /* the canvas is sized by CSS; redraw when it is (and on first layout) */
-  const ro = new ResizeObserver(run);
-  ro.observe(canvas);
-
   sync();
+  stars.set(false);
 
   return {
     el,
     destroy() {
-      cancelAnimationFrame(raf);
-      ro.disconnect();
-      document.removeEventListener("visibilitychange", run);
+      stars.destroy();
       reduceMotionQuery?.removeEventListener?.("change", sync);
     },
   };
