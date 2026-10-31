@@ -639,10 +639,25 @@ export default {
       });
       labels();
     };
+    // The balance's two figures are as wide as what they show — the number,
+    // or its asterisks — so the eye and the swap arrows beside them move
+    // with them. The width eases on the same curve as the fade (see
+    // .db-balance__stealth); from auto, on a fresh draw, it just lands.
+    const fitBalance = () => {
+      root.querySelectorAll(".db-balance__stealth, .db-balance__mask").forEach((cell) => {
+        const shown = state.hidden ? cell.querySelector(".db-stars") : cell.querySelector(".db-balance__amount, .db-balance__other");
+        if (shown) cell.style.width = `${shown.offsetWidth}px`;
+      });
+    };
+    addEventListener("resize", fitBalance);
+    document.fonts?.ready.then(fitBalance);
+    document.fonts?.addEventListener?.("loadingdone", fitBalance);
+
     const draw = () => {
       root.innerHTML = render(state);
       root.querySelector("[data-spending]")?.replaceWith(spending.el);
       attachStars();
+      fitBalance();
     };
 
     // Stealth Mode: flipped on the elements already there rather than by a
@@ -665,6 +680,7 @@ export default {
       eyeBtn.setAttribute("aria-label", state.hidden ? "Show balance" : "Hide balance");
       eyeBtn.title = state.hidden ? "Show balance" : "Hide balance";
       eyeBtn.innerHTML = eye(state.hidden);
+      fitBalance();
     };
 
     root.addEventListener("click", (e) => {

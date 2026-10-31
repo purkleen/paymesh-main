@@ -1175,16 +1175,23 @@ body:has(.db.is-light) { --db-page: #ffffff; }
 .db-balance h2 { margin: 0; }
 .db-balance__label { font: var(--heading-l); color: var(--text-tertiary); }
 .db-balance__row { display: flex; align-items: center; gap: var(--spacing-16); }
-.db-balance__amount, .db-balance__stealth .db-stars { margin: 0; font: 700 56px/64px var(--font-family-rebond); letter-spacing: -2.24px; white-space: nowrap; }
+.db-balance__amount { margin: 0; font: 700 56px/64px var(--font-family-rebond); letter-spacing: -2.24px; white-space: nowrap; }
+/* the balance's asterisks: Rebond Grotesque Bold, 40px, 100% line height,
+   -2% tracking */
+.db-balance__stealth .db-stars { margin: 0; font: 700 40px/100% var(--font-family-rebond); letter-spacing: -0.02em; white-space: nowrap; }
 .db-balance__cents { font-size: 32px; line-height: 32px; }
 /* Stealth Mode — the 60fps "Hide Sensitive Number": the figures fade (the
    balance also easing down to 0.96) while five stars fade in over them, on
    the snippet's .easeInOut(0.15), or 100ms linear and no scale under Reduce
-   Motion. The stars are "*****" in the hidden figure's own text style, and
-   share its cell, so hiding never shifts the row. */
+   Motion. The stars are "*****" in the hidden figure's own text style (the
+   balance's set at 40px), sharing its cell; the cell's width follows what
+   is shown, so the icons beside it move with it. */
 .db { --hsn-duration: 150ms; --hsn-ease: cubic-bezier(0.42, 0, 0.58, 1); }
-.db-balance__stealth { display: grid; align-items: center; padding: 0; border: 0; border-radius: var(--radius-m); background: none; color: inherit; font: inherit; text-align: left; cursor: pointer; -webkit-tap-highlight-color: transparent; }
-.db-balance__mask { display: grid; align-items: center; }
+.db-balance__stealth { display: grid; align-items: center; justify-items: start; padding: 0; border: 0; border-radius: var(--radius-m); background: none; color: inherit; font: inherit; text-align: left; cursor: pointer; -webkit-tap-highlight-color: transparent; }
+.db-balance__mask { display: grid; align-items: center; justify-items: start; }
+/* each as wide as what it shows (set from the dashboard), easing between the
+   number and its asterisks so the icons beside them move with them */
+.db-balance__stealth, .db-balance__mask { transition: width var(--hsn-duration) var(--hsn-ease); }
 .db-balance__stealth > *, .db-balance__mask > * { grid-area: 1 / 1; }
 .db-balance__amount { display: block; transition: opacity var(--hsn-duration) var(--hsn-ease), scale var(--hsn-duration) var(--hsn-ease); }
 .db-balance__other { transition: opacity var(--hsn-duration) var(--hsn-ease); }
@@ -1441,7 +1448,7 @@ body:has(.db.is-light) { --db-page: #ffffff; }
   .db-nav__item[aria-current="page"] { background: var(--surface-secondary); }
   .db-user__name { display: none; }
   .db-balance__add { display: flex; width: 100%; }
-  .db-balance__amount, .db-balance__stealth .db-stars { font-size: 44px; line-height: 52px; letter-spacing: -1.76px; }
+  .db-balance__amount { font-size: 44px; line-height: 52px; letter-spacing: -1.76px; }
   .db-balance__cents { font-size: 26px; line-height: 26px; }
   .db-tx-page__title { font-size: 26px; line-height: 32px; }
   /* the four most recent payees, side by side, no scrolling */
