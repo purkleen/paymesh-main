@@ -94,14 +94,15 @@ of `styles/ds.css` (`.db-*`, with the dark values of the colour variables).
   (`RECIPIENT_LIST` in `src/screens/dashboard.js`), and 13 transactions with
   13 of them over the last 60 days: two today, two yesterday ("today" is
   13 Oct 2026). The transactions are random but come from a fixed seed, so
-  every visit shows the same history. Home shows the latest five, under a row of **payees** (everyone you've
-  paid, most recently paid first; **See all** opens Recipients, and a payee
-  opens their transactions); the
+  every visit shows the same history. Home runs **Paymesh balance**, the latest five transactions, a row of
+  **payees** (everyone you've paid, most recently paid first, names on up to
+  two lines; the four most recent on phones; **See all** opens Recipients,
+  and a payee opens their transactions) and **Analysis**; the
   recipients without a transaction say "No transactions yet". Airbnb keeps its logo;
   everyone else has an initials avatar in one of eight colours (red,
   orange, yellow, green, teal, blue, purple, pink — `--avatar-*` in
   `styles/ds.css`), taken in turn A–Z.
-- At the bottom of Home, **Spending** shows what was spent: Bencho's
+- At the bottom of Home, **Analysis** shows what was spent: Bencho's
   *Stacked bars* (MIT, bencho.dev/licence) ported from React + framer-motion
   to a plain module in `src/components/stacked-bars.js`, styles under `.stb`
   at the end of `styles/ds.css`. The total spent, **Week** / **Month**, and

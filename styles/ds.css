@@ -1311,17 +1311,21 @@ body:has(.db.is-light) { --db-page: #ffffff; }
 
 /* Transaction details — the checkout receipt, node 1147:5103 ("order
    complete"): a 422px column, centred in the content column */
-/* Home's payees: a row of avatars and names, scrolling sideways when there
-   are more than fit */
+/* Home's payees: a row of avatars and names, at least 16px in, scrolling
+   sideways when there are more than fit; on phones the four most recent,
+   spread across the width */
 .db-avatar--xl { width: 56px; height: 56px; font: var(--heading-xs); letter-spacing: 0; }
 .db-payees {
   display: flex;
-  gap: var(--spacing-8);
+  gap: var(--spacing-16);
   margin: 0;
-  padding: 0 var(--spacing-8);
+  padding: 0 var(--spacing-16);
   list-style: none;
   overflow-x: auto;
   scroll-snap-type: x proximity;
+  /* snap to the padding's edge, not the box's, or the first payee is
+     scrolled flush against it */
+  scroll-padding-inline: var(--spacing-16);
   scrollbar-width: none;
 }
 .db-payees::-webkit-scrollbar { display: none; }
@@ -1341,7 +1345,20 @@ body:has(.db.is-light) { --db-page: #ffffff; }
 }
 .db-payee:hover { background: var(--surface-secondary); }
 .db-payee:active { background: var(--action-secondary-pressed); }
-.db-payee__name { max-width: 72px; font: var(--text-xs-medium); letter-spacing: var(--tracking-text); text-align: center; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+/* the name on up to two lines, then an ellipsis */
+.db-payee__name {
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
+  max-width: 72px;
+  min-height: 32px;
+  font: var(--text-xs-medium);
+  letter-spacing: var(--tracking-text);
+  text-align: center;
+  overflow: hidden;
+  overflow-wrap: anywhere;
+}
 .db-avatar--s { width: 24px; height: 24px; font: 600 10px/1 var(--font-family-inter); letter-spacing: 0; }
 .db-detail { display: flex; flex-direction: column; align-items: center; gap: var(--spacing-24); width: 100%; max-width: 422px; margin: 0 auto; padding: 0 var(--spacing-16); box-sizing: content-box; }
 .db-detail__art { display: block; width: 120px; height: 120px; object-fit: contain; }
@@ -1394,6 +1411,10 @@ body:has(.db.is-light) { --db-page: #ffffff; }
   .db-balance__amount { font-size: 44px; line-height: 52px; letter-spacing: -1.76px; }
   .db-balance__cents { font-size: 26px; line-height: 26px; }
   .db-tx-page__title { font-size: 26px; line-height: 32px; }
+  /* the four most recent payees, side by side, no scrolling */
+  .db-payees { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); overflow: visible; }
+  .db-payees li:nth-child(n + 5) { display: none; }
+  .db-payee { width: 100%; }
   .db-tx-page__head { flex-wrap: wrap; row-gap: var(--spacing-12); }
   .db-tx-page__actions { gap: var(--spacing-8); }
   /* the header stays put, with the hamburger next to the avatar */
