@@ -81,6 +81,7 @@ function pageLinks(base, files = null) {
         </ul>
       </li>` : ""}
       ${has("dashboard.html") ? `<li><a href="${at("dashboard.html")}">Wallet dashboard</a></li>` : ""}
+      ${has("stealth.html") ? `<li><a href="${at("stealth.html")}">Hide sensitive number (Stealth Mode)</a></li>` : ""}
     </ul>`;
 }
 
