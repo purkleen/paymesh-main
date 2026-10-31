@@ -79,10 +79,10 @@ of `styles/ds.css` (`.db-*`, with the dark values of the colour variables).
 
 - **Stealth Mode**: tapping the balance (or the eye) hides it the way the
   60fps *Hide Sensitive Number* does — the figures dissolve into five
-  shimmering stars (thin small ones over the other currency) and come back
+  shimmering asterisks in the figures' own text style and come back
   on the next tap. It hides every transaction amount too — Home, the
-  Transactions page, Recipients' totals and the details page — with the
-  snippet's small stars at a fixed width, so lists don't shift, and stays on
+  Transactions page, Recipients' totals and the details page — each in that
+  amount's own text style, over it in the same spot so lists don't shift, and stays on
   between pages; see *Hide sensitive number* below; the arrows swap whether it leads with
   US dollars or USDT.
 - Transaction rows use the frame's hover (row 2) and pressed (row 3) colours.
@@ -167,9 +167,10 @@ sweep), the number scaling to 0.96, the change folding from 49px to 0, and a
 The wallet dashboard's balance uses the same stars (`privacyStars` from that
 module) and the same timing to hide its figures, with the snippet's greys
 mirrored in dark mode so the stars stay as quiet against black as they are
-against white. There the stars are drawn as Rebond Grotesque Bold's asterisk —
-the balance's own typeface — rather than the snippet's rounded spokes, in
-the same places, at the same size, with the same greys and sweep.
+against white. There the stars are "*****" set in the hidden figure's own text style —
+its font, size, weight and colour, as the "••••••" was before — rather than
+the snippet's drawn spokes; the sweep lifts each one toward the background
+by as much as the snippet lightens it, on the same 1.6s cycle.
 
 ## Running it locally
 

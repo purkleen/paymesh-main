@@ -226,13 +226,13 @@ const avatar = (t, size = 32) => {
 };
 
 /**
- * An amount Stealth Mode can hide: the figure, and the snippet's small
- * stars over it at a fixed width (`size`: "row" for a 16px line, "row-s"
- * for a 14px one), so hiding amounts never shifts the list. The figure is
- * marked private, so it is also taken out of what a screen reader reads.
+ * An amount Stealth Mode can hide: the figure, and its stars over it in the
+ * same text style. Both share one cell, so hiding amounts never shifts the
+ * list. The figure is marked private, so it is also taken out of what a
+ * screen reader reads.
  */
-const masked = (value, size = "row") =>
-  `<span class="db-mask"><span class="db-mask__value" data-private>${value}</span><canvas class="db-stars db-stars--${size}" aria-hidden="true"></canvas></span>`;
+const masked = (value) =>
+  `<span class="db-mask"><span class="db-mask__value" data-private>${value}</span>${STARS}</span>`;
 
 /** Transaction — one row of the list. */
 const row = (t, large = false) => `
@@ -247,7 +247,7 @@ const row = (t, large = false) => `
         </span>
         <span class="db-tx__line db-tx__line--sub">
           <span class="db-tx__date">${esc(t.date)}</span>
-          <span class="db-tx__usdt">${masked(`${sign(t.amount)}${num(t.amount)} USDT`, "row-s")}</span>
+          <span class="db-tx__usdt">${masked(`${sign(t.amount)}${num(t.amount)} USDT`)}</span>
         </span>
       </span>
     </button>
@@ -260,17 +260,20 @@ const navButton = ({ id, label, icon: file }, current) => `
 
 /** The eye: "show" while the balance is hidden, "hide" while it is shown. */
 const eye = (hidden) => (hidden ? `<span class="db-icon db-icon--eye" aria-hidden="true"></span>` : icon("db-eye-off.svg"));
-/** Stealth Mode's stars are the balance typeface's asterisk: Rebond Grotesque Bold. */
-const STAR_GLYPH = { family: '"Rebond Grotesque"', weight: 700 };
+/**
+ * Stealth Mode's stars: "*****" set in the very text style of the figure
+ * they hide — its font, size, weight and colour — as "••••••" was before.
+ */
+const STARS = `<span class="db-stars" aria-hidden="true">${"<span>*</span>".repeat(5)}</span>`;
 const balanceLabel = (hidden) => (hidden ? "Balance hidden" : `Paymesh balance, ${num(BALANCE)} dollars`);
 
 /**
  * The balance block: big figure, eye, and the other currency with the swap
  * arrows. Hiding it is Stealth Mode — the 60fps "Hide Sensitive Number"
  * (src/components/hide-sensitive-number.js): tap the balance or the eye and
- * the figures dissolve into five shimmering stars, the big ones over the
- * balance and the snippet's thin small ones over the other currency. Both
- * figures are always there under their stars, so nothing shifts. Stealth
+ * the figures dissolve into five shimmering asterisks, each set in the text
+ * style of the figure it hides (see STARS). Both figures are always there
+ * under their stars, so nothing shifts. Stealth
  * Mode covers every amount on the page too (see `masked`), and stays on as
  * you move between pages.
  */
@@ -287,7 +290,7 @@ function balance({ hidden, lead }) {
         <button type="button" class="db-balance__stealth" data-toggle-hide aria-pressed="${hidden}" aria-label="${balanceLabel(hidden)}"
           aria-description="Stealth Mode ${hidden ? "on" : "off"}. Activate to ${hidden ? "reveal" : "hide"} the balance">
           <span class="db-balance__amount">${big}</span>
-          <canvas class="db-stars db-stars--l" aria-hidden="true"></canvas>
+          ${STARS}
         </button>
         <button type="button" class="db-iconbtn" data-toggle-hide data-eye aria-pressed="${hidden}"
           aria-label="${hidden ? "Show balance" : "Hide balance"}" title="${hidden ? "Show balance" : "Hide balance"}">
@@ -297,7 +300,7 @@ function balance({ hidden, lead }) {
       <div class="db-balance__row db-balance__row--sub">
         <span class="db-balance__mask">
           <p class="db-balance__other" data-private>${small}</p>
-          <canvas class="db-stars db-stars--s" aria-hidden="true"></canvas>
+          ${STARS}
         </span>
         <button type="button" class="db-iconbtn" data-swap aria-label="Show balance in ${usd ? "USDT" : "US dollars"} first"
           title="Swap currency">${icon("db-swap.svg", "muted")}</button>
@@ -615,9 +618,9 @@ export default {
     // The spending chart (Bencho's Stacked bars) keeps its own state, so it is
     // made once and put back in its slot after every redraw.
     const spending = StackedBars({ inline: true });
-    // Stealth Mode's privacy stars, one per hidden figure — the balance and
-    // every amount on the page. Made again whenever the page or a list is
-    // redrawn, since the canvases are new; `labels` brings what a screen
+    // Stealth Mode's stars, one set per hidden figure — the balance and
+    // every amount on the page — each with the snippet's shimmer. Made again
+    // whenever the page or a list is redrawn, since the elements are new; `labels` brings what a screen
     // reader hears into line with what is shown.
     let stars = [];
     const labels = () => {
@@ -629,8 +632,8 @@ export default {
     };
     const attachStars = () => {
       stars.forEach((s) => s.destroy());
-      stars = [...root.querySelectorAll(".db-stars")].map((canvas) => {
-        const s = privacyStars(canvas, { large: canvas.classList.contains("db-stars--l"), dark: () => !state.light, glyph: STAR_GLYPH });
+      stars = [...root.querySelectorAll(".db-stars")].map((el) => {
+        const s = privacyStars(el);
         s.set(state.hidden);
         return s;
       });
