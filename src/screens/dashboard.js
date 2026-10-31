@@ -225,19 +225,29 @@ const avatar = (t, size = 32) => {
   return `<span class="${cls} db-avatar--${t.color}">${esc(t.initials)}</span>`;
 };
 
+/**
+ * An amount Stealth Mode can hide: the figure, and the snippet's small
+ * stars over it at a fixed width (`size`: "row" for a 16px line, "row-s"
+ * for a 14px one), so hiding amounts never shifts the list. The figure is
+ * marked private, so it is also taken out of what a screen reader reads.
+ */
+const masked = (value, size = "row") =>
+  `<span class="db-mask"><span class="db-mask__value" data-private>${value}</span><canvas class="db-stars db-stars--${size}" aria-hidden="true"></canvas></span>`;
+
 /** Transaction — one row of the list. */
 const row = (t, large = false) => `
   <li>
-    <button type="button" class="db-tx" data-tx="${t.id}" aria-label="${esc(t.party)}, ${sign(t.amount)}$${num(t.amount)}, ${esc(t.date)}">
+    <button type="button" class="db-tx" data-tx="${t.id}" aria-label="${esc(t.party)}, ${sign(t.amount)}$${num(t.amount)}, ${esc(t.date)}"
+      data-label-hidden="${esc(t.party)}, amount hidden, ${esc(t.date)}">
       ${avatar(t, large ? 40 : 32)}
       <span class="db-tx__info">
         <span class="db-tx__line db-tx__line--main">
           <span class="db-tx__party">${esc(t.party)}</span>
-          <span class="db-tx__amount ${t.amount < 0 ? "is-expense" : "is-income"}">${sign(t.amount)}$${num(t.amount)}</span>
+          <span class="db-tx__amount ${t.amount < 0 ? "is-expense" : "is-income"}">${masked(`${sign(t.amount)}$${num(t.amount)}`)}</span>
         </span>
         <span class="db-tx__line db-tx__line--sub">
           <span class="db-tx__date">${esc(t.date)}</span>
-          <span class="db-tx__usdt">${sign(t.amount)}${num(t.amount)} USDT</span>
+          <span class="db-tx__usdt">${masked(`${sign(t.amount)}${num(t.amount)} USDT`, "row-s")}</span>
         </span>
       </span>
     </button>
@@ -258,7 +268,9 @@ const balanceLabel = (hidden) => (hidden ? "Balance hidden" : `Paymesh balance, 
  * (src/components/hide-sensitive-number.js): tap the balance or the eye and
  * the figures dissolve into five shimmering stars, the big ones over the
  * balance and the snippet's thin small ones over the other currency. Both
- * figures are always there under their stars, so nothing shifts.
+ * figures are always there under their stars, so nothing shifts. Stealth
+ * Mode covers every amount on the page too (see `masked`), and stays on as
+ * you move between pages.
  */
 function balance({ hidden, lead }) {
   const [whole, cents] = num(BALANCE).split(".");
@@ -267,7 +279,7 @@ function balance({ hidden, lead }) {
   const small = usd ? `${num(BALANCE)} USDT` : `$${num(BALANCE)}`;
 
   return `
-    <section class="db-balance" aria-label="Paymesh balance"${hidden ? " data-stealth" : ""}>
+    <section class="db-balance" aria-label="Paymesh balance">
       <h2 class="db-balance__label">Paymesh balance</h2>
       <div class="db-balance__row">
         <button type="button" class="db-balance__stealth" data-toggle-hide aria-pressed="${hidden}" aria-label="${balanceLabel(hidden)}"
@@ -282,7 +294,7 @@ function balance({ hidden, lead }) {
       </div>
       <div class="db-balance__row db-balance__row--sub">
         <span class="db-balance__mask">
-          <p class="db-balance__other">${small}</p>
+          <p class="db-balance__other" data-private>${small}</p>
           <canvas class="db-stars db-stars--s" aria-hidden="true"></canvas>
         </span>
         <button type="button" class="db-iconbtn" data-swap aria-label="Show balance in ${usd ? "USDT" : "US dollars"} first"
@@ -413,7 +425,7 @@ const recipientRow = (r) => `
       <span class="db-tx__info">
         <span class="db-tx__line db-tx__line--main">
           <span class="db-tx__party">${esc(r.party)}</span>
-          ${r.count ? `<span class="db-tx__amount ${r.amount < 0 ? "is-expense" : "is-income"}">${sign(r.amount)}$${num(r.amount)}</span>` : ""}
+          ${r.count ? `<span class="db-tx__amount ${r.amount < 0 ? "is-expense" : "is-income"}">${masked(`${sign(r.amount)}$${num(r.amount)}`)}</span>` : ""}
         </span>
         <span class="db-tx__line db-tx__line--sub">
           <span class="db-tx__date">${r.count ? `Last transaction ${esc(r.date.split(" · ")[0])}` : "No transactions yet"}</span>
@@ -483,8 +495,8 @@ function detailPage(t, back) {
       <img class="db-detail__art" src="${ICON}success-check.png" width="120" height="120" alt="" />
       <h2 id="db-detail-title" class="db-detail__title">${out ? "Payment sent" : "Payment received"}</h2>
       <dl class="db-detail__rows">
-        ${detailRow(verb, `$${num(t.amount)}`)}
-        ${detailRow(`${verb} (USDT)`, `${num(t.amount)} USDT`)}
+        ${detailRow(verb, masked(`$${num(t.amount)}`))}
+        ${detailRow(`${verb} (USDT)`, masked(`${num(t.amount)} USDT`))}
         ${detailRow("From", out ? wallet : party)}
         ${detailRow("To", out ? party : wallet)}
         ${detailRow("Timestamp", `${longWhen(t.at)}<span class="db-badge">UTC</span>`)}
@@ -548,7 +560,7 @@ function main(state) {
 
 function render(state) {
   return `
-  <div class="db ${state.folded ? "is-folded" : ""} ${state.menuOpen ? "is-menu-open" : ""} ${state.light ? "is-light" : ""}">
+  <div class="db ${state.folded ? "is-folded" : ""} ${state.menuOpen ? "is-menu-open" : ""} ${state.light ? "is-light" : ""}"${state.hidden ? " data-stealth" : ""}>
     <header class="db-header">
       <a href="#home" class="db-logo">Paymesh</a>
       <div class="db-user">
@@ -604,18 +616,31 @@ export default {
     // The spending chart (Bencho's Stacked bars) keeps its own state, so it is
     // made once and put back in its slot after every redraw.
     const spending = StackedBars({ inline: true });
-    // The balance's privacy stars, one per hidden figure; made again on each
-    // redraw, since the canvases are new.
+    // Stealth Mode's privacy stars, one per hidden figure — the balance and
+    // every amount on the page. Made again whenever the page or a list is
+    // redrawn, since the canvases are new; `labels` brings what a screen
+    // reader hears into line with what is shown.
     let stars = [];
-    const draw = () => {
-      root.innerHTML = render(state);
-      root.querySelector("[data-spending]")?.replaceWith(spending.el);
+    const labels = () => {
+      root.querySelectorAll("[data-private]").forEach((el) => el.toggleAttribute("aria-hidden", state.hidden));
+      root.querySelectorAll("[data-label-hidden]").forEach((el) => {
+        el.dataset.labelShown ??= el.getAttribute("aria-label");
+        el.setAttribute("aria-label", state.hidden ? el.dataset.labelHidden : el.dataset.labelShown);
+      });
+    };
+    const attachStars = () => {
       stars.forEach((s) => s.destroy());
       stars = [...root.querySelectorAll(".db-stars")].map((canvas) => {
         const s = privacyStars(canvas, { large: canvas.classList.contains("db-stars--l"), dark: () => !state.light });
         s.set(state.hidden);
         return s;
       });
+      labels();
+    };
+    const draw = () => {
+      root.innerHTML = render(state);
+      root.querySelector("[data-spending]")?.replaceWith(spending.el);
+      attachStars();
     };
 
     // Stealth Mode: flipped on the elements already there rather than by a
@@ -624,9 +649,11 @@ export default {
     const toggleStealth = () => {
       navigator.vibrate?.(10);
       state.hidden = !state.hidden;
+      root.querySelector(".db").toggleAttribute("data-stealth", state.hidden);
+      stars.forEach((s) => s.set(state.hidden));
+      labels();
       const section = root.querySelector(".db-balance");
-      if (!section) return draw();
-      section.toggleAttribute("data-stealth", state.hidden);
+      if (!section) return;
       const toggle = section.querySelector(".db-balance__stealth");
       toggle.setAttribute("aria-pressed", String(state.hidden));
       toggle.setAttribute("aria-label", balanceLabel(state.hidden));
@@ -636,7 +663,6 @@ export default {
       eyeBtn.setAttribute("aria-label", state.hidden ? "Show balance" : "Hide balance");
       eyeBtn.title = state.hidden ? "Show balance" : "Hide balance";
       eyeBtn.innerHTML = eye(state.hidden);
-      stars.forEach((s) => s.set(state.hidden));
     };
 
     root.addEventListener("click", (e) => {
@@ -698,9 +724,11 @@ export default {
       if (e.target.matches("[data-search]")) {
         state.query = e.target.value;
         root.querySelector("[data-groups]").innerHTML = groupsHTML(state);
+        attachStars();
       } else if (e.target.matches("[data-recipient-search]")) {
         state.recipientQuery = e.target.value;
         root.querySelector("[data-recipients]").innerHTML = recipientsHTML(state);
+        attachStars();
       }
     });
 

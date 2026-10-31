@@ -80,7 +80,10 @@ of `styles/ds.css` (`.db-*`, with the dark values of the colour variables).
 - **Stealth Mode**: tapping the balance (or the eye) hides it the way the
   60fps *Hide Sensitive Number* does — the figures dissolve into five
   shimmering stars (thin small ones over the other currency) and come back
-  on the next tap; see *Hide sensitive number* below; the arrows swap whether it leads with
+  on the next tap. It hides every transaction amount too — Home, the
+  Transactions page, Recipients' totals and the details page — with the
+  snippet's small stars at a fixed width, so lists don't shift, and stays on
+  between pages; see *Hide sensitive number* below; the arrows swap whether it leads with
   US dollars or USDT.
 - Transaction rows use the frame's hover (row 2) and pressed (row 3) colours.
 - **See all** and the menu's **Transactions** open the Transactions page
