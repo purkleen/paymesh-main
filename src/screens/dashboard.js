@@ -529,26 +529,45 @@ const payee = (t) => `
     </button>
   </li>`;
 
-/** One card to pay with: its logo, name and expiry, and a radio. */
-const cardOption = (c, chosen) => `
-  <li>
-    <label class="db-cardopt">
-      <input type="radio" name="card" value="${c.id}" data-card ${c.id === chosen ? "checked" : ""} />
-      <span class="db-cardopt__logo${c.scheme === "visa" ? " db-cardopt__logo--full" : ""}">
-        <img src="${ICON}${c.scheme}.svg" alt="" />
-      </span>
-      <span class="db-cardopt__text">
-        <span class="db-cardopt__label">${esc(c.label)}</span>
-        <span class="db-cardopt__sub">${esc(c.expiry)}</span>
-      </span>
-      <span class="db-cardopt__radio" aria-hidden="true"></span>
-    </label>
-  </li>`;
+/** A card: its logo, name and expiry. */
+const cardFace = (c) => `
+  <span class="db-cardopt__logo${c.scheme === "visa" ? " db-cardopt__logo--full" : ""}">
+    <img src="${ICON}${c.scheme}.svg" alt="" />
+  </span>
+  <span class="db-cardopt__text">
+    <span class="db-cardopt__label">${esc(c.label)}</span>
+    <span class="db-cardopt__sub">${esc(c.expiry)}</span>
+  </span>`;
+
+/**
+ * Pay with: a dropdown — the chosen card, and, open, a list of all of them
+ * with a tick by the chosen one. Arrow keys move through the list, Enter
+ * picks, Escape or a click elsewhere closes it.
+ */
+function cardSelect(state) {
+  const chosen = CARDS.find((c) => c.id === state.card) || CARDS[0];
+  return `
+    <div class="db-select" data-card-select>
+      <button type="button" class="db-select__button" data-card-toggle aria-haspopup="listbox" aria-expanded="${state.cardOpen}"
+        aria-labelledby="db-paywith db-card-chosen">
+        <span id="db-card-chosen" style="display: contents">${cardFace(chosen)}</span>
+        <span class="db-select__chevron" aria-hidden="true"></span>
+      </button>
+      ${
+        state.cardOpen
+          ? `<ul class="db-select__menu" role="listbox" aria-labelledby="db-paywith">${CARDS.map(
+              (c) => `<li><button type="button" class="db-select__option" role="option" data-card="${c.id}"
+                aria-selected="${c.id === chosen.id}">${cardFace(c)}<span class="db-select__check" aria-hidden="true"></span></button></li>`
+            ).join("")}</ul>`
+          : ""
+      }
+    </div>`;
+}
 
 /**
  * Add funds — the amount (the 60fps "Comma Jump Number Input", typed on the
- * system keyboard: dollars, with USDT under it), the card to charge, and the
- * button. The amount field is made once (see mount) and dropped into
+ * system keyboard, in dollars or USDT with the other under it), the card to
+ * charge, and the button. The amount field is made once (see mount) and dropped into
  * [data-amount].
  */
 function addFundsPage(state) {
@@ -558,10 +577,7 @@ function addFundsPage(state) {
       <div data-amount></div>
       <section class="db-section" aria-labelledby="db-paywith">
         <div class="db-section__head"><h2 id="db-paywith">Pay with</h2></div>
-        <fieldset class="db-card" style="border: 0; margin: 0; min-width: 0">
-          <legend class="sr-only">Card to pay with</legend>
-          <ul class="db-cards">${CARDS.map((c) => cardOption(c, state.card)).join("")}</ul>
-        </fieldset>
+        ${cardSelect(state)}
       </section>
       <p class="db-addfunds__error" data-add-error role="alert"></p>
       <button type="button" class="db-btn" data-add-confirm>Add funds</button>
@@ -670,12 +686,21 @@ export default {
     // Add funds' amount field keeps its own state and motion, so it too is
     // made once and put back after each redraw.
     const amount = AmountInput({
+      icon: icon("db-swap.svg", "current"),
       onChange: () => {
         const error = root.querySelector("[data-add-error]");
         if (error) error.textContent = "";
       },
     });
     state.card = CARDS[0].id;
+    state.cardOpen = false;
+    // after the card dropdown redraws, focus lands where the keyboard expects
+    const focusCards = (open) => {
+      const target = open
+        ? root.querySelector('.db-select__option[aria-selected="true"]')
+        : root.querySelector("[data-card-toggle]");
+      target?.focus();
+    };
     // Stealth Mode's stars, one set per hidden figure — the balance and
     // every amount on the page — each with the snippet's shimmer. Made again
     // whenever the page or a list is redrawn, since the elements are new; `labels` brings what a screen
@@ -730,6 +755,22 @@ export default {
       if (state.sortOpen && !e.target.closest("[data-sort-wrap]")) {
         state.sortOpen = false;
         draw();
+      }
+      // ...and outside the card dropdown, that.
+      if (state.cardOpen && !e.target.closest("[data-card-select]")) {
+        state.cardOpen = false;
+        draw();
+      }
+      if (e.target.closest("[data-card-toggle]")) {
+        state.cardOpen = !state.cardOpen;
+        draw();
+        return focusCards(state.cardOpen);
+      }
+      if (e.target.closest("[data-card]")) {
+        state.card = e.target.closest("[data-card]").dataset.card;
+        state.cardOpen = false;
+        draw();
+        return focusCards(false);
       }
       if (e.target.closest("[data-toggle-hide]")) return toggleStealth();
       else if (e.target.closest("[data-swap]")) state.lead = state.lead === "usd" ? "usdt" : "usd";
@@ -789,9 +830,13 @@ export default {
       draw();
     });
 
-    // Picking a card is remembered for the next redraw.
-    root.addEventListener("change", (e) => {
-      if (e.target.matches("[data-card]")) state.card = e.target.value;
+    // The card list's keys: up and down move through it.
+    root.addEventListener("keydown", (e) => {
+      const option = e.target.closest?.(".db-select__option");
+      if (!option || (e.key !== "ArrowDown" && e.key !== "ArrowUp")) return;
+      e.preventDefault();
+      const all = [...root.querySelectorAll(".db-select__option")];
+      all[(all.indexOf(option) + (e.key === "ArrowDown" ? 1 : all.length - 1)) % all.length].focus();
     });
 
     // Typing only redraws the list, so the field keeps its focus.
@@ -808,9 +853,11 @@ export default {
     });
 
     addEventListener("keydown", (e) => {
-      if (e.key === "Escape" && (state.menuOpen || state.sortOpen)) {
-        state.menuOpen = state.sortOpen = false;
+      if (e.key === "Escape" && (state.menuOpen || state.sortOpen || state.cardOpen)) {
+        const wasCards = state.cardOpen;
+        state.menuOpen = state.sortOpen = state.cardOpen = false;
         draw();
+        if (wasCards) focusCards(false);
       }
     });
 
@@ -818,6 +865,7 @@ export default {
       state.page = pageFromHash();
       state.menuOpen = false;
       // Add funds starts from $0 each visit, with the keyboard up
+      state.cardOpen = false;
       if (state.page === "add-funds") amount.reset();
       draw();
       scrollTo(0, 0);
