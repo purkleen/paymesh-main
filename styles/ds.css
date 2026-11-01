@@ -1832,8 +1832,9 @@ body:has(.db.is-light) { --db-page: #ffffff; }
    AmountInput — 60fps snippet "Comma Jump Number Input Interaction"
    (60fps.design/shots/family-number-input-commas-shift-place-interaction).
    Component in src/components/amount-input.js, on the dashboard's Add funds
-   page. Sizes and timings are the snippet's: 76pt semibold digits and a
-   44pt "$" lifted 10pt, a 100pt row that clips what rises into it, and the
+   page. Sizes and timings are the snippet's: 76pt digits and a 44pt "$"
+   lifted 10pt — set in Rebond Grotesque Bold, like the balance, rather than
+   the system face — a 100pt row that clips what rises into it, and the
    spring (response 0.22, damping 0.88) the component writes into
    --ai-spring as a CSS linear() curve.
    ========================================================================== */
@@ -1866,7 +1867,7 @@ body:has(.db.is-light) { --db-page: #ffffff; }
   align-items: center;
   justify-content: center;
   height: 100px;
-  font: 600 76px/1 var(--ai-font);
+  font: 700 76px/1 var(--font-family-rebond);
   white-space: pre;
   transition: transform var(--ai-spring-ms) var(--ai-spring), opacity var(--ai-spring-ms) var(--ai-spring);
 }
@@ -1876,7 +1877,7 @@ body:has(.db.is-light) { --db-page: #ffffff; }
 /* the comma dip: down 20pt on .easeIn(0.08), back on .easeOut(0.14) */
 .ai-glyph.is-comma > span { transition: transform 140ms cubic-bezier(0, 0, 0.58, 1); }
 .ai[data-dip] .ai-glyph.is-comma > span { transform: translateY(20px); transition: transform 80ms cubic-bezier(0.42, 0, 1, 1); }
-.ai-measure { position: absolute; visibility: hidden; white-space: pre; font: 600 76px/1 var(--ai-font); pointer-events: none; }
+.ai-measure { position: absolute; visibility: hidden; white-space: pre; font: 700 76px/1 var(--font-family-rebond); pointer-events: none; }
 .ai-measure.is-small { font-size: 44px; }
 /* the system keyboard's field: over the amount, invisible; 16px so iOS
    doesn't zoom into it */
@@ -1894,24 +1895,18 @@ body:has(.db.is-light) { --db-page: #ffffff; }
   opacity: 0;
   cursor: text;
 }
-/* the line below: the amount in USDT, or the limit in red — 30pt, clipped,
-   3pt closer than its frame would put it */
-.ai-sub { position: relative; width: 100%; max-width: 330px; height: 30px; margin-top: -3px; overflow: hidden; font: 500 15px/30px var(--ai-font); }
-.ai-usdt, .ai-warn {
-  position: absolute;
-  inset: 0;
-  text-align: center;
-  white-space: nowrap;
-  transition: opacity var(--ai-spring-ms) var(--ai-spring), transform var(--ai-spring-ms) var(--ai-spring);
-}
-.ai-warn { color: rgb(191, 26, 56); opacity: 0; transform: translateY(10px); }
-.ai-sub[data-over] .ai-usdt { opacity: 0; transform: translateY(-10px); }
-.ai-sub[data-over] .ai-warn { opacity: 1; transform: none; }
+/* the line below: the amount in the other currency, "= 1,234.00 USDT", and
+   the snippet's up-and-down arrows (here they swap which currency leads),
+   7pt apart — 30pt, 3pt closer than its frame would put it */
+.ai-sub { display: flex; align-items: center; justify-content: center; gap: 7px; width: 100%; max-width: 330px; height: 30px; margin-top: -3px; font: 500 15px/30px var(--ai-font); }
+.ai-other { white-space: nowrap; }
+.ai-swap { display: grid; place-items: center; width: 28px; height: 28px; margin: 0 -6px; padding: 0; border: 0; border-radius: var(--radius-m); background: none; color: var(--text-primary); cursor: pointer; }
+.ai-swap:hover { background: var(--surface-card-hover); }
+.ai-swap .db-icon { width: 16px; height: 16px; -webkit-mask-size: 16px 16px; mask-size: 16px 16px; }
 /* first paint and Reduce Motion: values change, nothing moves */
-.ai[data-still] .ai-glyphs, .ai[data-still] .ai-glyph, .ai[data-still] .ai-glyph > span,
-.ai[data-still] .ai-usdt, .ai[data-still] .ai-warn { transition: none; }
+.ai[data-still] .ai-glyphs, .ai[data-still] .ai-glyph, .ai[data-still] .ai-glyph > span { transition: none; }
 @media (prefers-reduced-motion: reduce) {
-  .ai-glyphs, .ai-glyph, .ai-glyph > span, .ai-usdt, .ai-warn { transition: none !important; }
+  .ai-glyphs, .ai-glyph, .ai-glyph > span { transition: none !important; }
 }
 
 /* Add funds page: the amount, then the cards to pay with, then the button —
@@ -1919,17 +1914,60 @@ body:has(.db.is-light) { --db-page: #ffffff; }
 .db-addfunds { display: flex; flex-direction: column; gap: var(--spacing-24); width: 100%; max-width: calc(422px + 2 * var(--spacing-16)); margin: 0 auto; padding: 0 var(--spacing-16); box-sizing: border-box; }
 .db-addfunds__title { margin: 0; font: var(--heading-2xl); color: var(--text-heading); }
 .db-addfunds .db-section { padding: 0; }
-.db-cards { margin: 0; padding: var(--spacing-4) 0; list-style: none; }
-.db-cardopt {
+/* Pay with — a dropdown: the chosen card in a 52px field like the design
+   system's select, opening a list of all of them under it */
+.db-select { position: relative; }
+.db-select__button {
   display: flex;
   align-items: center;
   gap: var(--spacing-12);
-  padding: var(--spacing-12);
-  border-radius: var(--radius-lg);
+  width: 100%;
+  min-height: 52px;
+  padding: var(--spacing-8) var(--spacing-16);
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-xl);
+  background: none;
+  color: var(--text-primary);
+  font: inherit;
+  text-align: left;
   cursor: pointer;
 }
-.db-cardopt:hover { background: var(--surface-card-hover); }
-.db-cardopt input { position: absolute; opacity: 0; pointer-events: none; }
+.db-select__button:hover { background: var(--surface-card-hover); }
+.db-select__button[aria-expanded="true"] { border-color: var(--border-focus); box-shadow: inset 0 0 0 1px var(--border-focus); }
+.db-select__chevron { flex: 0 0 auto; width: 20px; height: 20px; background: currentColor; -webkit-mask: url("../assets/ds/chevron-down.svg") center / 20px 20px no-repeat; mask: url("../assets/ds/chevron-down.svg") center / 20px 20px no-repeat; transition: transform .2s; }
+.db-select__button[aria-expanded="true"] .db-select__chevron { transform: rotate(180deg); }
+.db-select__menu {
+  position: absolute;
+  top: calc(100% + var(--spacing-8));
+  left: 0;
+  right: 0;
+  z-index: 5;
+  margin: 0;
+  padding: 4px;
+  list-style: none;
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-xl);
+  background: var(--surface-raised);
+  box-shadow: var(--shadow-raised);
+}
+.db-select__option {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-12);
+  width: 100%;
+  padding: var(--spacing-8) var(--spacing-12);
+  border: 0;
+  border-radius: var(--radius-lg);
+  background: none;
+  color: var(--text-primary);
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+.db-select__option:hover, .db-select__option:focus-visible { background: var(--surface-card-hover); outline: none; }
+.db-select__check { flex: 0 0 auto; width: 20px; height: 20px; }
+.db-select__option[aria-selected="true"] .db-select__check { background: var(--action-primary-default); -webkit-mask: url("../assets/ds/check-brand.svg") center / 14px 14px no-repeat; mask: url("../assets/ds/check-brand.svg") center / 14px 14px no-repeat; }
+/* a card: its logo, name and expiry */
 .db-cardopt__logo { display: grid; place-items: center; flex: 0 0 auto; width: 34px; height: 24px; border: 1px solid #e5e5e5; border-radius: 4px; background: #fff; box-sizing: border-box; }
 .db-cardopt__logo img { display: block; max-width: 24px; max-height: 15px; }
 .db-cardopt__logo--full { border: 0; background: none; }
@@ -1937,9 +1975,5 @@ body:has(.db.is-light) { --db-page: #ffffff; }
 .db-cardopt__text { flex: 1 1 0; min-width: 0; display: flex; flex-direction: column; }
 .db-cardopt__label { font: var(--text-m-semibold); letter-spacing: var(--tracking-text); color: var(--text-primary); }
 .db-cardopt__sub { font: var(--text-s); letter-spacing: var(--tracking-text); color: var(--text-tertiary); }
-/* the radio: a ring, filled with the brand colour when chosen */
-.db-cardopt__radio { flex: 0 0 auto; width: 20px; height: 20px; border: 2px solid var(--border-default); border-radius: 50%; box-sizing: border-box; transition: border-color .15s, border-width .15s; }
-.db-cardopt input:checked ~ .db-cardopt__radio { border: 6px solid var(--action-primary-default); }
-.db-cardopt:has(input:focus-visible) { outline: 2px solid var(--action-primary-default); outline-offset: -2px; }
 .db-addfunds__error { margin: calc(-1 * var(--spacing-12)) 0 0; font: var(--text-s); color: rgb(191, 26, 56); text-align: center; }
 .db-addfunds__error:empty { display: none; }

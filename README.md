@@ -156,20 +156,20 @@ of `styles/ds.css` (`.db-*`, with the dark values of the colour variables).
 
 ## Add funds
 
-**Add funds**, under the balance, opens `#add-funds`: an amount in dollars
-with the same amount in USDT under it, the card to charge (the Visa the
-wallet is funded from and the two saved cards, from `src/config.js`), and an
-**Add funds** button that is never disabled. With nothing entered it asks
-for an amount, and over the limit it says so. Otherwise it goes back to
-Home, since the payment itself isn't designed yet.
+**Add funds**, under the balance, opens `#add-funds`: the amount, with the same
+amount in the other currency under it; **Pay with**, a dropdown of the cards
+to charge (the Visa the wallet is funded from and the two saved cards, from
+`src/config.js`, each with its logo and expiry); and an **Add funds** button
+that is never disabled. With nothing entered it asks for an amount, and over
+$10,000 it names the limit. Otherwise it goes back to Home, since the payment
+itself isn't designed yet. The dropdown works from the keyboard too: up and
+down move through it, Enter picks, Escape closes.
 
 The amount is the 60fps snippet *Comma Jump Number Input Interaction*
 ([family-number-input-commas-shift-place-interaction](https://60fps.design/shots/family-number-input-commas-shift-place-interaction)),
 ported from SwiftUI. Each digit rises in from below at the end of the
 number, and when the number gains a group of three the commas dip for a
-moment and slide to their new places. Past $10,000 the USDT line gives way
-to a red *Over the $10,000 top-up limit*, and deleting walks it all back to
-$0.
+moment and slide to their new places. Deleting walks it all back to $0.
 
 The motion is the snippet's: `.spring(response: 0.22, dampingFraction:
 0.88)` as a CSS `linear()` curve sampled from that spring, glyphs rising 75pt,
@@ -178,8 +178,12 @@ Motion turns it off. What changed for Paymesh:
 - it is typed on the phone's or computer's own keyboard, not an on-screen
   keypad, through an invisible field over the amount that opens the decimal
   keyboard
-- the line below is USDT, not ETH
-- the red line is a top-up limit, not "Not enough ETH"
+- it is set in Rebond Grotesque Bold, like the balance
+- the line under it is the other currency, "= 1,234.00 USDT", with the
+  snippet's up-and-down arrows beside it. Here they swap which currency
+  leads: the "$" sinks away and "USDT" rises in after the digits, on the
+  same spring
+- there is no red "Not enough ETH" line
 
 Component in `src/components/amount-input.js`, styles under `.ai` in
 `styles/ds.css`.

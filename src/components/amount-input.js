@@ -6,8 +6,7 @@
  * A large dollar amount starts at zero, with a small converted amount below
  * it. Each digit you type rises in from below at the end of the number. When
  * the number gains a group, the commas drop down for a moment and move to
- * their new spots. Past a certain size, the line below turns red. Deleting
- * walks it back the same way, down to zero.
+ * their new spots. Deleting walks it back the same way, down to zero.
  *
  * The motion is the snippet's:
  *   - every glyph, the row's width and its fit-to-width scale move on
@@ -17,14 +16,15 @@
  *     back the same way; the row clips them at its edge
  *   - on every change the commas dip 20pt (.easeIn, 0.08s) and come back up
  *     (.easeOut, 0.14s) while they slide to their new places
- *   - the line below swaps for the warning with an opacity + 10pt offset,
- *     the line leaving upward and the warning arriving from below
  *   - Reduce Motion: no movement at all, the values just change
  * Changes for Paymesh: the amount is typed on the phone's (or computer's)
- * own keyboard rather than an on-screen keypad; the line below is the amount
- * in USDT (1 USDT to the dollar) rather than ETH; and the red line is a
- * top-up limit, "Over the $10,000 top-up limit", rather than "Not enough
- * ETH". The selection haptic is a 5ms vibration where there is one.
+ * own keyboard rather than an on-screen keypad; it is set in Rebond
+ * Grotesque, like the balance; the line below is the other currency,
+ * "= 1,234.00 USDT", with the snippet's up-and-down arrows beside it, which
+ * here swap which currency leads (the "$" sinks away and a " USDT" rises in
+ * after the digits, on the same spring); and there is no red line — the
+ * page's button names any limit. The selection haptic is a 5ms vibration
+ * where there is one.
  *
  *   const input = AmountInput({ onChange: (value) => … });
  *   container.append(input.el);
@@ -54,8 +54,8 @@ const SPRING = (() => {
   return { easing: `linear(${points.join(", ")})`, ms: Math.round(duration * 1000) };
 })();
 
-const LIMIT = 10000;
 const USDT_PER_USD = 1;
+const money = (n) => n.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 
 /** "1234567.8" → "1,234,567.8" — the snippet's formattedAmount */
 const group = (amount) => {
@@ -64,8 +64,10 @@ const group = (amount) => {
   return fraction === undefined ? out : `${out}.${fraction}`;
 };
 
-export function AmountInput({ onChange = () => {} } = {}) {
+export function AmountInput({ onChange = () => {}, icon = "" } = {}) {
   let amount = "0";
+  /* which currency the big figure is in; the line below is the other */
+  let lead = "usd";
   let dipTimer = 0;
 
   const el = document.createElement("div");
@@ -76,17 +78,17 @@ export function AmountInput({ onChange = () => {} } = {}) {
       <input class="ai-field" type="text" inputmode="decimal" autocomplete="off" autocorrect="off" spellcheck="false"
         enterkeyhint="done" aria-label="Amount in US dollars" />
     </label>
-    <div class="ai-sub" aria-live="polite">
-      <span class="ai-usdt"></span>
-      <span class="ai-warn">Over the $${LIMIT.toLocaleString("en-US")} top-up limit</span>
+    <div class="ai-sub">
+      <span class="ai-other" aria-live="polite"></span>
+      <button type="button" class="ai-swap" data-ai-swap>${icon}</button>
     </div>
     <span class="ai-measure" aria-hidden="true"></span>`;
 
   const frame = el.querySelector(".ai-frame");
   const row = el.querySelector(".ai-glyphs");
   const field = el.querySelector(".ai-field");
-  const usdt = el.querySelector(".ai-usdt");
-  const sub = el.querySelector(".ai-sub");
+  const other = el.querySelector(".ai-other");
+  const swap = el.querySelector(".ai-swap");
   const measurer = el.querySelector(".ai-measure");
   const glyphEls = new Map();
 
@@ -97,14 +99,15 @@ export function AmountInput({ onChange = () => {} } = {}) {
 
   /* the snippet's glyphs: "$", then each character, with a comma before
      every group of three in the whole part — ids keyed by place, so a comma
-     is the same comma as it moves */
+     is the same comma as it moves. In USDT the small mark comes after. */
   const glyphs = () => {
-    const out = [{ id: "dollar", text: "$", small: true }];
+    const out = lead === "usd" ? [{ id: "dollar", text: "$", small: true }] : [];
     const whole = amount.indexOf(".") === -1 ? amount.length : amount.indexOf(".");
     [...amount].forEach((ch, i) => {
       if (i > 0 && i < whole && (whole - i) % 3 === 0) out.push({ id: `comma${(whole - i) / 3}`, text: ",", small: false });
       out.push({ id: `digit${i}`, text: ch, small: false });
     });
+    if (lead === "usdt") out.push({ id: "usdt", text: "\u2009USDT", small: true });
     let x = 0;
     for (const g of out) {
       measurer.className = `ai-measure${g.small ? " is-small" : ""}`;
@@ -171,11 +174,14 @@ export function AmountInput({ onChange = () => {} } = {}) {
     row.style.width = `${width}px`;
     row.style.transform = `scale(${Math.min(1, room / width)})`;
 
-    // the line below: USDT, or the limit
-    const over = value() > LIMIT;
-    sub.toggleAttribute("data-over", over);
-    usdt.textContent = `${group((value() * USDT_PER_USD).toFixed(2))} USDT`;
-    field.setAttribute("aria-valuetext", `$${group(amount)}`);
+    // the line below: the same amount in the other currency
+    const converted = lead === "usd" ? value() * USDT_PER_USD : value() / USDT_PER_USD;
+    other.textContent = lead === "usd" ? `= ${money(converted)} USDT` : `= $${money(converted)}`;
+    const name = lead === "usd" ? "US dollars" : "USDT";
+    field.setAttribute("aria-label", `Amount in ${name}`);
+    field.setAttribute("aria-valuetext", lead === "usd" ? `$${group(amount)}` : `${group(amount)} USDT`);
+    swap.setAttribute("aria-label", `Enter the amount in ${lead === "usd" ? "USDT" : "US dollars"}`);
+    swap.title = "Swap currency";
   };
 
   /** The snippet's comma dip: down 20pt over 0.08s, back over 0.14s. */
@@ -242,9 +248,21 @@ export function AmountInput({ onChange = () => {} } = {}) {
   field.addEventListener("focus", reset);
   reset();
 
-  // laid out once the element is in the page and its fonts are in
+  /* the arrows: swap which currency leads, the figure carrying over (they
+     are worth the same, a dollar to a USDT); the keyboard stays up */
+  swap.addEventListener("click", () => {
+    navigator.vibrate?.(5);
+    lead = lead === "usd" ? "usdt" : "usd";
+    layout(true);
+    onChange(value());
+    field.focus({ preventScroll: true });
+  });
+
+  // laid out once the element is in the page and its fonts are in — Rebond
+  // loads only when first asked for, so ask
   requestAnimationFrame(() => layout(false));
   document.fonts?.ready.then(() => layout(false));
+  document.fonts?.load('700 76px "Rebond Grotesque"').then(() => layout(false), () => {});
 
   return {
     el,
@@ -258,6 +276,8 @@ export function AmountInput({ onChange = () => {} } = {}) {
       onChange(0);
     },
     value,
+    /** Which currency the amount is typed in: "usd" or "usdt". */
+    currency: () => lead,
     /** The amount as typed, grouped: "1,234.5" */
     text: () => group(amount),
     destroy: () => clearTimeout(dipTimer),
