@@ -1916,9 +1916,8 @@ body:has(.db.is-light) { --db-page: #ffffff; }
 .db-addfunds { display: flex; flex-direction: column; gap: var(--spacing-24); width: 100%; max-width: calc(422px + 2 * var(--spacing-16)); margin: 0 auto; padding: 0 var(--spacing-16); box-sizing: border-box; }
 .db-addfunds__title { margin: 0; font: var(--heading-2xl); color: var(--text-heading); }
 .db-addfunds .db-section { padding: 0; }
-/* Pay with — a dropdown: the chosen card in a 52px field like the design
-   system's select, opening a list of all of them under it */
-.db-select { position: relative; }
+/* Pay with — on Add funds, the chosen card in a 52px field like the design
+   system's select, with a chevron that says it opens the Pay with screen */
 .db-select__button {
   display: flex;
   align-items: center;
@@ -1932,26 +1931,19 @@ body:has(.db.is-light) { --db-page: #ffffff; }
   color: var(--text-primary);
   font: inherit;
   text-align: left;
+  text-decoration: none;
   cursor: pointer;
+  box-sizing: border-box;
 }
 .db-select__button:hover { background: var(--surface-card-hover); }
-.db-select__button[aria-expanded="true"] { border-color: var(--border-focus); box-shadow: inset 0 0 0 1px var(--border-focus); }
-.db-select__chevron { flex: 0 0 auto; width: 20px; height: 20px; background: currentColor; -webkit-mask: url("../assets/ds/chevron-down.svg") center / 20px 20px no-repeat; mask: url("../assets/ds/chevron-down.svg") center / 20px 20px no-repeat; transition: transform .2s; }
-.db-select__button[aria-expanded="true"] .db-select__chevron { transform: rotate(180deg); }
-.db-select__menu {
-  position: absolute;
-  top: calc(100% + var(--spacing-8));
-  left: 0;
-  right: 0;
-  z-index: 5;
-  margin: 0;
-  padding: 4px;
-  list-style: none;
-  border: 1px solid var(--border-default);
-  border-radius: var(--radius-xl);
-  background: var(--surface-raised);
-  box-shadow: var(--shadow-raised);
-}
+.db-select__chevron { flex: 0 0 auto; width: 20px; height: 20px; background: currentColor; -webkit-mask: url("../assets/ds/chevron-down.svg") center / 20px 20px no-repeat; mask: url("../assets/ds/chevron-down.svg") center / 20px 20px no-repeat; }
+.db-select__chevron--next { transform: rotate(-90deg); color: var(--text-tertiary); }
+/* the Pay with screen: the cards in a card, the chosen one ticked */
+.db-cardlist { margin: 0; padding: 4px; list-style: none; }
+/* back to Add funds: the chevron turned to point back */
+.db-back { display: inline-flex; align-items: center; gap: 4px; align-self: flex-start; margin-bottom: calc(-1 * var(--spacing-12)); color: var(--text-tertiary) !important; font: var(--text-s); letter-spacing: var(--tracking-text); text-decoration: none; }
+.db-back:hover { color: var(--text-primary) !important; }
+.db-back .db-icon { width: 20px; height: 20px; background: currentColor; -webkit-mask-size: 20px 20px; mask-size: 20px 20px; transform: rotate(90deg); }
 .db-select__option {
   display: flex;
   align-items: center;
@@ -1968,12 +1960,12 @@ body:has(.db.is-light) { --db-page: #ffffff; }
 }
 .db-select__option:hover, .db-select__option:focus-visible { background: var(--surface-card-hover); outline: none; }
 .db-select__check { flex: 0 0 auto; width: 20px; height: 20px; }
-/* the last option: add a card — a "+" where a logo would be, set off from the cards by a hairline */
-.db-select__menu li:has(.db-select__option--add) { margin-top: 4px; padding-top: 4px; border-top: 1px solid var(--border-default); }
+/* the last row: add a card — a "+" where a logo would be, set off from the cards by a hairline */
+.db-cardlist li:has(.db-select__option--add) { margin-top: 4px; padding-top: 4px; border-top: 1px solid var(--border-default); }
 .db-select__add-icon { display: grid; place-items: center; flex: 0 0 auto; width: 34px; height: 24px; }
 .db-select__option--add { text-decoration: none; }
 .db-select__option--add .db-cardopt__label { flex: 1 1 0; }
-.db-select__option[aria-selected="true"] .db-select__check { background: var(--action-primary-default); -webkit-mask: url("../assets/ds/check-brand.svg") center / 14px 14px no-repeat; mask: url("../assets/ds/check-brand.svg") center / 14px 14px no-repeat; }
+.db-select__option[aria-pressed="true"] .db-select__check { background: var(--action-primary-default); -webkit-mask: url("../assets/ds/check-brand.svg") center / 14px 14px no-repeat; mask: url("../assets/ds/check-brand.svg") center / 14px 14px no-repeat; }
 /* a card: its logo, name and expiry */
 .db-cardopt__logo { display: grid; place-items: center; flex: 0 0 auto; width: 34px; height: 24px; border: 1px solid #e5e5e5; border-radius: 4px; background: #fff; box-sizing: border-box; }
 .db-cardopt__logo img { display: block; max-width: 24px; max-height: 15px; }
