@@ -31,7 +31,7 @@
  *     limit named as you type, then the card to charge
  *   - on phones, Add funds, Pay with and a transaction are full screens
  *     with a back arrow and no header
- *   - on phones the menu sits behind a hamburger button next to the avatar
+ *   - on phones the menu opens from your avatar (40px) in the header
  * The page is in the URL hash (#home, #transactions, …), so Back works.
  */
 
@@ -89,12 +89,12 @@ const RECIPIENT_LIST = [
 }));
 
 /**
- * The transaction history: 13 transactions, random but from a fixed seed, so
+ * The transaction history: 13 payments, random but from a fixed seed, so
  * every visit shows the same ones. Two are today and two yesterday; the rest
  * are spread over the last 60 days, weighted towards recent days. Each is
  * with a different recipient, so 7 of the 20 have none yet. Businesses are
  * payments out (now and then a refund); with people, money goes both ways.
- * "Today" is 13 Oct 2026.
+ * "Today" is 13 Oct 2026. Then one top-up, added below.
  */
 const TODAY = Date.UTC(2026, 9, 13);
 const DAY = 24 * 60 * 60 * 1000;
@@ -126,6 +126,17 @@ const TRANSACTIONS = (() => {
     const d = new Date(at);
     return `${d.getUTCDate()} ${MONTHS[d.getUTCMonth()]} ${d.getUTCFullYear()}`;
   };
+  // and one top-up (node 1202:7506): funds added from the Visa this
+  // morning, with your own avatar and name
+  list.push({
+    party: USER.name,
+    initials: USER.initials,
+    color: "me",
+    topUp: true,
+    card: "Visa ending **** 4567",
+    amount: 500,
+    at: TODAY + (9 * 60 + 41) * 60 * 1000,
+  });
   const time = (at) => new Date(at).toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit", timeZone: "UTC" });
   return list.sort((a, b) => b.at - a.at).map((t) => ({ ...t, date: `${day(t.at)} · ${time(t.at)} UTC` }));
 })();
@@ -433,6 +444,7 @@ const RECIPIENTS = (() => {
   for (const g of GROUPS)
     for (const t of g.items) {
       const r = byParty.get(t.party);
+      if (!r) continue; // a top-up is not a recipient
       if (!r.count) r.date = t.date;
       r.count += 1;
       r.amount += t.amount;
@@ -525,7 +537,8 @@ const copyValue = (full, short, what) => `
   <span data-copy-label>${short}</span>`;
 
 /**
- * Transaction details (node 1197:7059): the party's avatar, name and the
+ * Transaction details (node 1197:7059; a top-up, node 1202:7506, comes
+ * from the card and its amount is green): the party's avatar, name and the
  * amount (in both currencies, hidden in Stealth Mode), then a card of
  * details — status, from, to, date, the transaction ID and hash, each of
  * the two copying — Export PDF (the browser's print, to save as PDF), and
@@ -533,7 +546,8 @@ const copyValue = (full, short, what) => `
  */
 function detailPage(t, back) {
   const out = t.amount < 0;
-  const party = `${avatar(t, 24)}${esc(t.party)}`;
+  // a top-up (node 1202:7506) comes from the card, with no avatar
+  const party = t.topUp ? esc(t.card) : `${avatar(t, 24)}${esc(t.party)}`;
   const wallet = "Your Paymesh wallet";
   const hash = txHash(t.id);
   return `
@@ -542,7 +556,7 @@ function detailPage(t, back) {
       ${avatar(t, 64)}
       <div class="db-detail__value">
         <h2 id="db-detail-title" class="db-detail__party">${esc(t.party)}</h2>
-        <p class="db-detail__amount">${masked(`${sign(t.amount)}$${num(t.amount)}`)}</p>
+        <p class="db-detail__amount${out ? "" : " is-income"}">${masked(`${sign(t.amount)}$${num(t.amount)}`)}</p>
         <p class="db-detail__usdt">${masked(`${sign(t.amount)}${num(t.amount)} USDT`)}</p>
       </div>
       <section class="db-card db-detail__card" aria-labelledby="db-detail-card">
@@ -696,12 +710,9 @@ function render(state, value) {
     <header class="db-header">
       <a href="#home" class="db-logo">Paymesh</a>
       <div class="db-user">
-        <span class="db-avatar">${USER.initials}</span>
         <span class="db-user__name">${esc(USER.name)}</span>
-        <button type="button" class="db-iconbtn db-menu-btn" data-menu aria-controls="db-nav" aria-expanded="${state.menuOpen}"
-          aria-label="${state.menuOpen ? "Close menu" : "Open menu"}">
-          ${state.menuOpen ? `<span class="db-icon db-icon--close" aria-hidden="true"></span>` : icon("db-menu.svg")}
-        </button>
+        <button type="button" class="db-avatar db-avatar--l db-avatar--me db-user__avatar" data-menu aria-controls="db-nav" aria-expanded="${state.menuOpen}"
+          aria-label="${state.menuOpen ? "Close menu" : "Open menu"}">${USER.initials}</button>
       </div>
     </header>
 
