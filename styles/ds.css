@@ -1897,10 +1897,12 @@ body:has(.db.is-light) { --db-page: #ffffff; }
 }
 /* the line below: the amount in the other currency, "= 1,234.00 USDT", and
    the snippet's up-and-down arrows (here they swap which currency leads),
-   7pt apart — 30pt, 3pt closer than its frame would put it */
-.ai-sub { display: flex; align-items: center; justify-content: center; gap: 7px; width: 100%; max-width: 330px; height: 30px; margin-top: -3px; font: 500 15px/30px var(--ai-font); }
+   7pt apart, in the tertiary grey (#97979d in the dark theme). Pulled up so
+   24px of air sits between the digits and its text — measured on the ink,
+   a comma's tail aside */
+.ai-sub { display: flex; align-items: center; justify-content: center; gap: 7px; width: 100%; max-width: 330px; height: 30px; margin-top: -13px; font: 500 15px/30px var(--ai-font); color: var(--text-tertiary); }
 .ai-other { white-space: nowrap; }
-.ai-swap { display: grid; place-items: center; width: 28px; height: 28px; margin: 0 -6px; padding: 0; border: 0; border-radius: var(--radius-m); background: none; color: var(--text-primary); cursor: pointer; }
+.ai-swap { display: grid; place-items: center; width: 28px; height: 28px; margin: 0 -6px; padding: 0; border: 0; border-radius: var(--radius-m); background: none; color: inherit; cursor: pointer; }
 .ai-swap:hover { background: var(--surface-card-hover); }
 .ai-swap .db-icon { width: 16px; height: 16px; -webkit-mask-size: 16px 16px; mask-size: 16px 16px; }
 /* first paint and Reduce Motion: values change, nothing moves */
@@ -1966,6 +1968,11 @@ body:has(.db.is-light) { --db-page: #ffffff; }
 }
 .db-select__option:hover, .db-select__option:focus-visible { background: var(--surface-card-hover); outline: none; }
 .db-select__check { flex: 0 0 auto; width: 20px; height: 20px; }
+/* the last option: add a card — a "+" where a logo would be, set off from the cards by a hairline */
+.db-select__menu li:has(.db-select__option--add) { margin-top: 4px; padding-top: 4px; border-top: 1px solid var(--border-default); }
+.db-select__add-icon { display: grid; place-items: center; flex: 0 0 auto; width: 34px; height: 24px; }
+.db-select__option--add { text-decoration: none; }
+.db-select__option--add .db-cardopt__label { flex: 1 1 0; }
 .db-select__option[aria-selected="true"] .db-select__check { background: var(--action-primary-default); -webkit-mask: url("../assets/ds/check-brand.svg") center / 14px 14px no-repeat; mask: url("../assets/ds/check-brand.svg") center / 14px 14px no-repeat; }
 /* a card: its logo, name and expiry */
 .db-cardopt__logo { display: grid; place-items: center; flex: 0 0 auto; width: 34px; height: 24px; border: 1px solid #e5e5e5; border-radius: 4px; background: #fff; box-sizing: border-box; }

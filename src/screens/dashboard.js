@@ -194,8 +194,8 @@ const NAV = [
   { id: "recipients", label: "Recipients", icon: "db-recipients.svg" },
   { id: "cards", label: "Cards", icon: "db-card.svg" },
 ];
-const PAGES = new Set([...NAV.map((n) => n.id), "settings", "add-funds", "analysis"]);
-const PAGE_TITLES = { "add-funds": "Add funds" };
+const PAGES = new Set([...NAV.map((n) => n.id), "settings", "add-funds", "add-card", "analysis"]);
+const PAGE_TITLES = { "add-funds": "Add funds", "add-card": "Add card" };
 
 /**
  * The cards Add funds can charge: the Visa the wallet is funded from, then
@@ -541,7 +541,8 @@ const cardFace = (c) => `
 
 /**
  * Pay with: a dropdown — the chosen card, and, open, a list of all of them
- * with a tick by the chosen one. Arrow keys move through the list, Enter
+ * with a tick by the chosen one, then "Add card" (its page isn't designed
+ * yet, so it says so). Arrow keys move through the list, Enter
  * picks, Escape or a click elsewhere closes it.
  */
 function cardSelect(state) {
@@ -558,7 +559,10 @@ function cardSelect(state) {
           ? `<ul class="db-select__menu" role="listbox" aria-labelledby="db-paywith">${CARDS.map(
               (c) => `<li><button type="button" class="db-select__option" role="option" data-card="${c.id}"
                 aria-selected="${c.id === chosen.id}">${cardFace(c)}<span class="db-select__check" aria-hidden="true"></span></button></li>`
-            ).join("")}</ul>`
+            ).join("")}
+            <li><a href="#add-card" class="db-select__option db-select__option--add" role="option" aria-selected="false">
+              <span class="db-select__add-icon">${icon("add.svg")}</span><span class="db-cardopt__label">Add card</span>
+            </a></li></ul>`
           : ""
       }
     </div>`;
