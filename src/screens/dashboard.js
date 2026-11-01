@@ -8,8 +8,8 @@
  *     tap it for Stealth Mode, tap the line under it to swap which currency
  *     leads — and Add funds; the five latest transactions in a card; recent
  *     payees (everyone you've paid, latest first, four on phones; See all
- *     opens Recipients); and Analysis, a card with what was spent each day
- *     over a week or a month
+ *     opens Recipients); and a card with what was spent each day over a
+ *     week or a month
  *     (Bencho's Stacked bars, src/components/stacked-bars.js)
  *   - transaction rows have the frame's hover (row 2) and pressed (row 3) states
  *   - "See all" and the menu's Transactions open the Transactions page
@@ -18,16 +18,19 @@
  *   - Fold menu collapses the menu to its icons (and back)
  *   - Light mode / Dark mode in the menu switches the theme; the browser
  *     remembers it
- *   - any transaction opens its details (#tx/<id>), the checkout's receipt
- *     (node 1147:5103) in the dashboard's frame: amount, from, to, time and
- *     an ID that copies
+ *   - any transaction opens its details (#tx/<id>, node 1197:7059): the
+ *     party and amount, then status, from, to, date, an ID and a hash that
+ *     copy, Export PDF and where to get help
  *   - Recipients lists everyone in the transactions, A–Z in letter sections,
  *     with a search; picking one opens their transactions
  *   - Cards and Settings aren't designed yet, so they say so
  *   - Log out goes back to the prototype menu
  *   - under the balance, Add funds: an amount in dollars with USDT under it,
  *     typed on the system keyboard with the 60fps "Comma Jump Number Input"
- *     motion (src/components/amount-input.js), then the card to charge
+ *     motion (src/components/amount-input.js), preset amounts, a $1,000
+ *     limit named as you type, then the card to charge
+ *   - on phones, Add funds, Pay with and a transaction are full screens
+ *     with a back arrow and no header
  *   - on phones the menu sits behind a hamburger button next to the avatar
  * The page is in the URL hash (#home, #transactions, …), so Back works.
  */
@@ -194,8 +197,13 @@ const NAV = [
   { id: "recipients", label: "Recipients", icon: "db-recipients.svg" },
   { id: "cards", label: "Cards", icon: "db-card.svg" },
 ];
-const PAGES = new Set([...NAV.map((n) => n.id), "settings", "add-funds", "pay-with", "add-card", "analysis"]);
-const PAGE_TITLES = { "add-funds": "Add funds", "add-card": "Add card" };
+const PAGES = new Set([...NAV.map((n) => n.id), "settings", "add-funds", "pay-with", "add-card", "analysis", "refund", "support"]);
+const PAGE_TITLES = { "add-funds": "Add funds", "add-card": "Add card", refund: "Request refund", support: "Support" };
+/**
+ * Pages that are a step away from Home, drawn (nodes 1197:6932 – 1197:7059)
+ * as full screens with a back arrow: on phones they drop the app's header.
+ */
+const SUBPAGES = new Set(["add-funds", "pay-with", "tx"]);
 
 /**
  * The cards Add funds can charge: the Visa the wallet is funded from, then
@@ -205,7 +213,10 @@ const CARDS = [
   { id: "visa-4567", scheme: "visa", label: RETURNING_USER.fundingCard.label.replace("with", "in"), expiry: "Expiry 03/2028" },
   ...SAVED_CARDS,
 ];
-const TOP_UP_LIMIT = 10000;
+/** The most one top-up can add (node 1197:7021: "Your limit is $1,000"). */
+const TOP_UP_LIMIT = 1000;
+/** Add funds' preset amounts (node 1197:7161). */
+const PRESETS = [25, 50, 100, 500];
 
 const num = (n) => Math.abs(n).toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 const sign = (n) => (n < 0 ? "−" : "+");
@@ -231,9 +242,9 @@ const applyTheme = (light) => {
   document.querySelector('meta[name="theme-color"]')?.setAttribute("content", light ? "#ffffff" : "#0e0e11");
 };
 
-/** Account avatar or merchant logo: 32px, 40 in Home's and the Transactions page's rows, 24 on the details page, 48 for Home's payees. */
+/** Account avatar or merchant logo: 32px, 40 in Home's and the Transactions page's rows, 24 in the details' rows, 48 for Home's payees, 64 atop the details. */
 const avatar = (t, size = 32) => {
-  const cls = `db-avatar${{ 24: " db-avatar--s", 40: " db-avatar--l", 48: " db-avatar--xl" }[size] || ""}`;
+  const cls = `db-avatar${{ 24: " db-avatar--s", 40: " db-avatar--l", 48: " db-avatar--xl", 64: " db-avatar--xxl" }[size] || ""}`;
   if (t.logo) return `<img class="${cls} db-avatar--logo" src="${t.logo}" width="${size}" height="${size}" alt="" />`;
   return `<span class="${cls} db-avatar--${t.color}">${esc(t.initials)}</span>`;
 };
@@ -478,46 +489,78 @@ function recipientsPage(state) {
 }
 
 /** "13 October 2026, 4:28pm", as the receipt writes it — in UTC, like the rows. */
+/** "Oct 13, 2026 at 4.28 pm UTC" — the date as node 1197:7059 writes it. */
 const longWhen = (at) => {
   const d = new Date(at);
   const h = d.getUTCHours();
-  const month = d.toLocaleDateString("en-GB", { month: "long", timeZone: "UTC" });
-  return `${d.getUTCDate()} ${month} ${d.getUTCFullYear()}, ${h % 12 || 12}:${String(d.getUTCMinutes()).padStart(2, "0")}${h < 12 ? "am" : "pm"}`;
+  const month = d.toLocaleDateString("en-US", { month: "short", timeZone: "UTC" });
+  return `${month} ${d.getUTCDate()}, ${d.getUTCFullYear()} at ${h % 12 || 12}.${String(d.getUTCMinutes()).padStart(2, "0")} ${h < 12 ? "am" : "pm"} UTC`;
 };
-
 const shortId = (id) => `${id.slice(0, 5)}...${id.slice(-6)}`;
+/**
+ * The transaction's on-chain hash: 64 hex digits, worked out from its ID so
+ * it is the same on every visit.
+ */
+const txHash = (id) => {
+  let h = 0x811c9dc5;
+  let out = "0x";
+  for (let i = 0; out.length < 66; i++) {
+    h = Math.imul(h ^ id.charCodeAt(i % id.length) ^ i, 16777619) >>> 0;
+    out += (h >>> 24).toString(16).padStart(2, "0");
+  }
+  return out;
+};
+const shortHash = (hash) => `${hash.slice(0, 5)}...${hash.slice(-5)}`;
+
+/** The back arrow at the top of a full-screen step (nodes 1197:6932 – 1197:7059). */
+const backArrow = (href, label, attr = "data-back") => `
+  <a href="${href}" class="db-backarrow" ${attr} aria-label="${label}" title="${label}">${icon("arrow-right.svg")}</a>`;
 
 const detailRow = (label, value) => `
   <div class="db-detail__row"><dt>${label}</dt><dd>${value}</dd></div>`;
 
+/** A value that copies: the copy icon, then the value shortened. */
+const copyValue = (full, short, what) => `
+  <button type="button" class="db-copy" data-copy="${full}" data-copy-short="${short}" aria-label="Copy ${what}" title="Copy ${what}">${icon("copy.svg")}</button>
+  <span data-copy-label>${short}</span>`;
+
 /**
- * Transaction details — the checkout's "Order complete" receipt (node
- * 1147:5103) inside the dashboard. Its merchant bar and legal footer are the
- * checkout's, so the dashboard's own header and menu stand in for them, and
- * its "Go back to [merchant]" goes back to the list the transaction came from.
+ * Transaction details (node 1197:7059): the party's avatar, name and the
+ * amount (in both currencies, hidden in Stealth Mode), then a card of
+ * details — status, from, to, date, the transaction ID and hash, each of
+ * the two copying — Export PDF (the browser's print, to save as PDF), and
+ * where to go if something is wrong.
  */
 function detailPage(t, back) {
   const out = t.amount < 0;
-  const verb = out ? "Paid" : "Received";
   const party = `${avatar(t, 24)}${esc(t.party)}`;
   const wallet = "Your Paymesh wallet";
+  const hash = txHash(t.id);
   return `
     <section class="db-detail" aria-labelledby="db-detail-title">
-      <img class="db-detail__art" src="${ICON}success-check.png" width="120" height="120" alt="" />
-      <h2 id="db-detail-title" class="db-detail__title">${out ? "Payment sent" : "Payment received"}</h2>
-      <dl class="db-detail__rows">
-        ${detailRow(verb, masked(`$${num(t.amount)}`))}
-        ${detailRow(`${verb} (USDT)`, masked(`${num(t.amount)} USDT`))}
-        ${detailRow("From", out ? wallet : party)}
-        ${detailRow("To", out ? party : wallet)}
-        ${detailRow("Timestamp", `${longWhen(t.at)}<span class="db-badge">UTC</span>`)}
-        ${detailRow(
-          "Transaction ID",
-          `<button type="button" class="db-copy" data-copy="${t.id}" aria-label="Copy transaction ID" title="Copy transaction ID">${icon("copy.svg")}</button>
-           <span data-copy-label>${shortId(t.id)}</span>`
-        )}
-      </dl>
-      <a href="#${back.id}" class="db-btn">Back to ${back.label}</a>
+      ${backArrow(`#${back.id}`, `Back to ${back.label}`)}
+      ${avatar(t, 64)}
+      <div class="db-detail__value">
+        <h2 id="db-detail-title" class="db-detail__party">${esc(t.party)}</h2>
+        <p class="db-detail__amount">${masked(`${sign(t.amount)}$${num(t.amount)}`)}</p>
+        <p class="db-detail__usdt">${masked(`${sign(t.amount)}${num(t.amount)} USDT`)}</p>
+      </div>
+      <section class="db-card db-detail__card" aria-labelledby="db-detail-card">
+        <h3 id="db-detail-card" class="db-detail__heading">Transaction details</h3>
+        <dl class="db-detail__rows">
+          ${detailRow("Status", `<span class="db-status">${icon("check-brand.svg", "current")}Complete</span>`)}
+          ${detailRow("From", out ? wallet : party)}
+          ${detailRow("To", out ? party : wallet)}
+          ${detailRow("Date", longWhen(t.at))}
+          ${detailRow("Transaction ID", copyValue(t.id, shortId(t.id), "transaction ID"))}
+          ${detailRow("Hash", copyValue(hash, shortHash(hash), "hash"))}
+        </dl>
+      </section>
+      <div class="db-detail__foot">
+        <button type="button" class="db-btn db-btn--outline" data-export>${icon("db-export.svg", "current")}Export PDF</button>
+        <p class="db-detail__help">Something wrong with this transaction?<br />
+          <a href="#refund" class="db-link">Request refund</a> or <a href="#support" class="db-link">contact our support</a>.</p>
+      </div>
     </section>`;
 }
 
@@ -551,7 +594,7 @@ function cardRow(state) {
 }
 
 /**
- * Pay with — a screen of its own: every card, with a tick by the chosen
+ * Pay with — a screen of its own (node 1197:6932, "Add funds with"): every card, with a tick by the chosen
  * one, then Add card (its page isn't designed yet, so it says so). Picking a
  * card takes you back to Add funds with it chosen, and the amount you typed
  * still there.
@@ -559,8 +602,11 @@ function cardRow(state) {
 function payWithPage(state) {
   return `
     <section class="db-addfunds" aria-labelledby="db-paywith-title">
-      <a href="#add-funds" class="db-back" data-to-funds>${icon("chevron-down.svg", "back")}Add funds</a>
-      <h2 id="db-paywith-title" class="db-addfunds__title">Pay with</h2>
+      ${backArrow("#add-funds", "Back to Add funds", "data-to-funds")}
+      <hgroup class="db-addfunds__head">
+        <h2 id="db-paywith-title" class="db-addfunds__title">Add funds with</h2>
+        <p class="db-addfunds__sub">Select payment method</p>
+      </hgroup>
       <ul class="db-card db-cardlist" aria-labelledby="db-paywith-title">
         ${CARDS.map(
           (c) => `<li><button type="button" class="db-select__option" data-card="${c.id}" aria-pressed="${c.id === state.card}">
@@ -575,26 +621,33 @@ function payWithPage(state) {
 }
 
 /**
- * Add funds — the amount (the 60fps "Comma Jump Number Input", typed on the
- * system keyboard, in dollars or USDT with the other under it), the card to
- * charge, and the button. The amount field is made once (see mount) and dropped into
+ * Add funds (nodes 1197:7118 – 1197:7021) — the amount (the 60fps "Comma
+ * Jump Number Input", typed on the system keyboard, in dollars or USDT with
+ * the other under it, or the limit when it's over), preset amounts, the card
+ * to charge, and the button at the foot of the screen. The amount field is made once (see mount) and dropped into
  * [data-amount].
  */
-function addFundsPage(state) {
+function addFundsPage(state, value) {
   return `
     <section class="db-addfunds" aria-labelledby="db-addfunds-title">
+      ${backArrow("#home", "Back")}
       <h2 id="db-addfunds-title" class="db-addfunds__title">Add funds</h2>
-      <div data-amount></div>
+      <div class="db-addfunds__amount">
+        <div data-amount></div>
+        <div class="db-presets" role="group" aria-label="Amount">
+          ${PRESETS.map((n) => `<button type="button" class="db-preset" data-preset="${n}" aria-pressed="${value === n}">$${n}</button>`).join("")}
+        </div>
+      </div>
       <section class="db-section" aria-labelledby="db-paywith">
         <div class="db-section__head"><h2 id="db-paywith">Pay with</h2></div>
         ${cardRow(state)}
       </section>
       <p class="db-addfunds__error" data-add-error role="alert"></p>
-      <button type="button" class="db-btn" data-add-confirm>Add funds</button>
+      <button type="button" class="db-btn db-addfunds__go" data-add-confirm>Add funds</button>
     </section>`;
 }
 
-function main(state) {
+function main(state, value = 0) {
   switch (state.page) {
     case "home":
       return `
@@ -613,11 +666,7 @@ function main(state) {
           </div>
           <ul class="db-payees">${PAYEES.map(payee).join("")}</ul>
         </section>
-        <section class="db-section" aria-labelledby="db-spending">
-          <div class="db-section__head">
-            <h2 id="db-spending">Analysis</h2>
-            <a href="#analysis" class="db-link">See more</a>
-          </div>
+        <section class="db-section" aria-label="Spending">
           <div class="db-card db-card--analysis"><div data-spending></div></div>
         </section>`;
     case "transactions":
@@ -627,7 +676,7 @@ function main(state) {
     case "tx":
       return detailPage(BY_ID.get(state.txId), state.back);
     case "add-funds":
-      return addFundsPage(state);
+      return addFundsPage(state, value);
     case "pay-with":
       return payWithPage(state);
     default: {
@@ -641,9 +690,9 @@ function main(state) {
   }
 }
 
-function render(state) {
+function render(state, value) {
   return `
-  <div class="db ${state.folded ? "is-folded" : ""} ${state.menuOpen ? "is-menu-open" : ""} ${state.light ? "is-light" : ""}"${state.hidden ? " data-stealth" : ""}>
+  <div class="db ${SUBPAGES.has(state.page) ? "is-sub" : ""} ${state.folded ? "is-folded" : ""} ${state.menuOpen ? "is-menu-open" : ""} ${state.light ? "is-light" : ""}"${state.hidden ? " data-stealth" : ""}>
     <header class="db-header">
       <a href="#home" class="db-logo">Paymesh</a>
       <div class="db-user">
@@ -671,7 +720,7 @@ function render(state) {
       </div>
     </nav>
 
-    <main class="db-main">${main(state)}</main>
+    <main class="db-main">${main(state, value)}</main>
   </div>`;
 }
 
@@ -699,9 +748,14 @@ export default {
     // made once and put back after each redraw.
     const amount = AmountInput({
       icon: icon("db-swap.svg", "current"),
-      onChange: () => {
+      warnIcon: icon("danger.svg", "current"),
+      onChange: (value) => {
         const error = root.querySelector("[data-add-error]");
         if (error) error.textContent = "";
+        // over the limit, the line under the amount says so, as you type
+        amount.warn(value > TOP_UP_LIMIT ? `Your limit is $${TOP_UP_LIMIT.toLocaleString("en-US")}` : null);
+        // the preset chip for this amount, if there is one, lights up
+        root.querySelectorAll("[data-preset]").forEach((b) => b.setAttribute("aria-pressed", String(+b.dataset.preset === value)));
       },
     });
     state.card = CARDS[0].id;
@@ -734,7 +788,7 @@ export default {
       labels();
     };
     const draw = () => {
-      root.innerHTML = render(state);
+      root.innerHTML = render(state, amount.value());
       root.querySelector("[data-spending]")?.replaceWith(spending.el);
       const slot = root.querySelector("[data-amount]");
       if (slot) {
@@ -776,6 +830,20 @@ export default {
         e.preventDefault();
         return toFunds();
       }
+      // A back arrow: the browser's Back when we came from inside the
+      // dashboard, otherwise its own link
+      if (e.target.closest("[data-back]")) {
+        if (previous) {
+          e.preventDefault();
+          history.back();
+        }
+        return;
+      }
+      if (e.target.closest("[data-preset]")) {
+        amount.set(+e.target.closest("[data-preset]").dataset.preset);
+        return amount.focus();
+      }
+      if (e.target.closest("[data-export]")) return print();
       if (e.target.closest("[data-toggle-hide]")) return toggleStealth();
       else if (e.target.closest("[data-swap]")) state.lead = state.lead === "usd" ? "usdt" : "usd";
       else if (e.target.closest("[data-fold]")) state.folded = !state.folded;
@@ -806,9 +874,12 @@ export default {
         const error = root.querySelector("[data-add-error]");
         const value = amount.value();
         if (!value) error.textContent = "Enter an amount to add.";
-        else if (value > TOP_UP_LIMIT) error.textContent = `You can add up to $${TOP_UP_LIMIT.toLocaleString("en-US")} at a time.`;
-        else location.hash = "#home"; // the payment itself isn't designed yet
-        if (error.textContent) amount.focus();
+        // over the limit: the line under the amount already says so
+        if (!value || value > TOP_UP_LIMIT) {
+          navigator.vibrate?.(10);
+          return amount.focus();
+        }
+        location.hash = "#home"; // the payment itself isn't designed yet
         return;
       }
       else if (e.target.closest("[data-copy]")) {
@@ -820,7 +891,7 @@ export default {
           .then(() => (label.textContent = "Copied"))
           .catch(() => (label.textContent = btn.dataset.copy));
         clearTimeout(copyTimer);
-        copyTimer = setTimeout(() => (label.textContent = shortId(btn.dataset.copy)), 1600);
+        copyTimer = setTimeout(() => (label.textContent = btn.dataset.copyShort), 1600);
         return;
       }
       else if (e.target.closest("[data-recipient]")) {

@@ -19,11 +19,12 @@
  *   - Reduce Motion: no movement at all, the values just change
  * Changes for Paymesh: the amount is typed on the phone's (or computer's)
  * own keyboard rather than an on-screen keypad; it is set in Rebond
- * Grotesque, like the balance; the line below is the other currency,
- * "= 1,234.00 USDT", with the snippet's up-and-down arrows beside it, which
+ * Grotesque, like the balance, the "$" as large as the digits; the line below is the other currency,
+ * "≈ 1,234 USDT", with the snippet's up-and-down arrows beside it, which
  * here swap which currency leads (the "$" sinks away and a " USDT" rises in
- * after the digits, on the same spring); and there is no red line — the
- * page's button names any limit. The selection haptic is a 5ms vibration
+ * after the digits, on the same spring); and the red line is the page's
+ * own warning (warn(), "Your limit is $1,000"), shown in place of the
+ * other currency. The selection haptic is a 5ms vibration
  * where there is one.
  *
  *   const input = AmountInput({ onChange: (value) => … });
@@ -55,7 +56,6 @@ const SPRING = (() => {
 })();
 
 const USDT_PER_USD = 1;
-const money = (n) => n.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 
 /** "1234567.8" → "1,234,567.8" — the snippet's formattedAmount */
 const group = (amount) => {
@@ -64,7 +64,7 @@ const group = (amount) => {
   return fraction === undefined ? out : `${out}.${fraction}`;
 };
 
-export function AmountInput({ onChange = () => {}, icon = "" } = {}) {
+export function AmountInput({ onChange = () => {}, icon = "", warnIcon = "" } = {}) {
   let amount = "0";
   /* which currency the big figure is in; the line below is the other */
   let lead = "usd";
@@ -81,6 +81,7 @@ export function AmountInput({ onChange = () => {}, icon = "" } = {}) {
     <div class="ai-sub">
       <span class="ai-other" aria-live="polite"></span>
       <button type="button" class="ai-swap" data-ai-swap>${icon}</button>
+      <span class="ai-warn" role="alert">${warnIcon}<span class="ai-warn__text"></span></span>
     </div>
     <span class="ai-measure" aria-hidden="true"></span>`;
 
@@ -89,6 +90,7 @@ export function AmountInput({ onChange = () => {}, icon = "" } = {}) {
   const field = el.querySelector(".ai-field");
   const other = el.querySelector(".ai-other");
   const swap = el.querySelector(".ai-swap");
+  const warnText = el.querySelector(".ai-warn__text");
   const measurer = el.querySelector(".ai-measure");
   const glyphEls = new Map();
 
@@ -101,7 +103,8 @@ export function AmountInput({ onChange = () => {}, icon = "" } = {}) {
      every group of three in the whole part — ids keyed by place, so a comma
      is the same comma as it moves. In USDT the small mark comes after. */
   const glyphs = () => {
-    const out = lead === "usd" ? [{ id: "dollar", text: "$", small: true }] : [];
+    // the "$" is set as large as the digits (node 1197:7161); " USDT" stays small
+    const out = lead === "usd" ? [{ id: "dollar", text: "$", small: false }] : [];
     const whole = amount.indexOf(".") === -1 ? amount.length : amount.indexOf(".");
     [...amount].forEach((ch, i) => {
       if (i > 0 && i < whole && (whole - i) % 3 === 0) out.push({ id: `comma${(whole - i) / 3}`, text: ",", small: false });
@@ -176,7 +179,7 @@ export function AmountInput({ onChange = () => {}, icon = "" } = {}) {
 
     // the line below: the same amount in the other currency
     const converted = lead === "usd" ? value() * USDT_PER_USD : value() / USDT_PER_USD;
-    other.textContent = lead === "usd" ? `= ${money(converted)} USDT` : `= $${money(converted)}`;
+    other.textContent = lead === "usd" ? `≈ ${group(String(+converted.toFixed(2)))} USDT` : `≈ $${group(String(+converted.toFixed(2)))}`;
     const name = lead === "usd" ? "US dollars" : "USDT";
     field.setAttribute("aria-label", `Amount in ${name}`);
     field.setAttribute("aria-valuetext", lead === "usd" ? `$${group(amount)}` : `${group(amount)} USDT`);
@@ -280,6 +283,16 @@ export function AmountInput({ onChange = () => {}, icon = "" } = {}) {
     currency: () => lead,
     /** The amount as typed, grouped: "1,234.5" */
     text: () => group(amount),
+    /** Sets the amount, with the typing motion — a preset chip. */
+    set: (n) => update(String(n)),
+    /**
+     * A warning in place of the other currency — "Your limit is $1,000"
+     * (node 1197:7021) — or null to bring the other currency back.
+     */
+    warn: (text) => {
+      warnText.textContent = text || "";
+      el.toggleAttribute("data-warn", !!text);
+    },
     destroy: () => clearTimeout(dipTimer),
   };
 }

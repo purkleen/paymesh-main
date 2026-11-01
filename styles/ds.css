@@ -1001,6 +1001,9 @@ button.nw-row { cursor: pointer; }
   --border-focus: #503ff1;
   --transaction-expense: #fe9a93;
   --transaction-completed: #8fe6a2;
+  /* node 1197:7059's status pill, and node 1197:7021's limit warning */
+  --transaction-income: #57d172;
+  --text-negative: #ffbfbe;
   --radius-lg: 12px;
   --db-nav-w: 340px;
 
@@ -1040,6 +1043,8 @@ body:has(.db) { background: var(--db-page, #0e0e11); }
   --border-focus: #503ff1;
   --transaction-expense: #d92d20;
   --transaction-completed: #15803d;
+  --transaction-income: #15803d;
+  --text-negative: #bf1a38;
 }
 body:has(.db.is-light) { --db-page: #ffffff; }
 .db.is-folded { --db-nav-w: 52px; }
@@ -1361,6 +1366,7 @@ body:has(.db.is-light) { --db-page: #ffffff; }
 /* Home's recent payees: tiles (avatar and name, on the secondary surface)
    in a row, scrolling sideways when there are more than fit; on phones the
    four most recent, spread across the width */
+.db-avatar--xxl { width: 64px; height: 64px; font: 600 22px/1 var(--font-family-inter); letter-spacing: 0; }
 .db-avatar--xl { width: 48px; height: 48px; font: 600 18px/26px var(--font-family-inter); letter-spacing: var(--tracking-text); }
 .db-payees {
   display: flex;
@@ -1404,15 +1410,30 @@ body:has(.db.is-light) { --db-page: #ffffff; }
   overflow-wrap: anywhere;
 }
 .db-avatar--s { width: 24px; height: 24px; font: 600 10px/1 var(--font-family-inter); letter-spacing: 0; }
-.db-detail { display: flex; flex-direction: column; align-items: center; gap: var(--spacing-24); width: 100%; max-width: calc(422px + 2 * var(--spacing-16)); margin: 0 auto; padding: 0 var(--spacing-16); box-sizing: border-box; }
-.db-detail__art { display: block; width: 120px; height: 120px; object-fit: contain; }
-.db-detail__title { margin: 0; font: var(--heading-3xl); letter-spacing: 0; color: var(--text-heading); text-align: center; }
-.db-detail__rows { align-self: stretch; display: flex; flex-direction: column; gap: var(--spacing-16); margin: 0; padding: var(--spacing-24) 0; }
+/* Transaction details — node 1197:7059: the back arrow, the party's 64px
+   avatar, their name (Heading/L) over the amount (Heading/3XL Semibold,
+   40/48) and its USDT (Text/M Semibold, tertiary), then a card of details
+   and, at the foot, Export PDF and where to get help — 32px apart */
+.db-detail { display: flex; flex-direction: column; align-items: center; gap: var(--spacing-32); width: 100%; max-width: calc(422px + 2 * var(--spacing-16)); margin: 0 auto; padding: 0 var(--spacing-16); box-sizing: border-box; }
+.db-detail > .db-backarrow { align-self: flex-start; }
+.db-detail__value { align-self: stretch; display: flex; flex-direction: column; align-items: center; text-align: center; }
+.db-detail__value > * { margin: 0; }
+.db-detail__party { font: var(--heading-l); letter-spacing: 0; color: var(--text-heading); }
+.db-detail__amount { font: 600 40px/48px var(--font-family-rebond); letter-spacing: 0; color: var(--icon-primary); }
+.db-detail__usdt { font: var(--text-m-semibold); letter-spacing: var(--tracking-text); color: var(--text-tertiary); }
+.db-detail__value .db-mask { justify-items: center; }
+.db-card.db-detail__card { align-self: stretch; padding: var(--spacing-12); }
+.db-detail__heading { margin: 0; font: var(--heading-m); letter-spacing: 0; color: var(--text-heading); }
+.db-detail__rows { display: flex; flex-direction: column; gap: var(--spacing-12); margin: 0; padding: var(--spacing-24) 0 0; }
 .db-detail__row { display: flex; align-items: center; justify-content: space-between; gap: var(--spacing-16); font: var(--text-m-semibold); letter-spacing: var(--tracking-text); }
-.db-detail__row dt { flex: 0 0 auto; color: var(--text-tertiary); }
+.db-detail__row dt { flex: 0 0 auto; font: var(--text-m); letter-spacing: var(--tracking-text); color: var(--text-tertiary); }
 .db-detail__row dd { display: flex; align-items: center; justify-content: flex-end; gap: var(--spacing-8); min-width: 0; margin: 0; color: var(--text-primary); text-align: right; white-space: nowrap; }
-/* the time zone, as a small tag after the time */
-.db-badge { padding: 2px 4px; border: 1px solid var(--border-default); border-radius: var(--radius-s); background: var(--surface-secondary); font: 600 10px/normal var(--font-family-inter); letter-spacing: -0.2px; color: var(--text-tertiary); }
+/* Status pill: green outline, a tick and COMPLETE (Text/XS Semibold) */
+.db-status { display: inline-flex; align-items: center; gap: var(--spacing-4); padding: var(--spacing-4) var(--spacing-12) var(--spacing-4) var(--spacing-8); border: 1px solid var(--transaction-income); border-radius: var(--radius-xl); background: rgba(0, 130, 54, .05); color: var(--transaction-income); font: 600 12px/16px var(--font-family-inter); letter-spacing: var(--tracking-text); text-transform: uppercase; }
+.db-status .db-icon { width: 16px; height: 16px; -webkit-mask-size: 12px 12px; mask-size: 12px 12px; }
+.db-detail__foot { align-self: stretch; display: flex; flex-direction: column; align-items: stretch; gap: var(--spacing-32); margin-top: auto; }
+.db-detail__help { margin: 0; padding-bottom: var(--spacing-24); font: var(--text-m); letter-spacing: var(--tracking-text); color: var(--text-primary); text-align: center; }
+.db-detail__help .db-link { font: inherit; }
 .db-copy { display: grid; place-items: center; width: 24px; height: 24px; padding: 0; border: 0; background: none; cursor: pointer; }
 .db-copy .db-icon { width: 24px; height: 24px; }
 .db-copy:hover .db-icon { background: var(--text-tertiary); }
@@ -1434,6 +1455,10 @@ body:has(.db.is-light) { --db-page: #ffffff; }
   cursor: pointer;
 }
 .db-btn:hover { background: var(--action-primary-hover); }
+/* Button (outline, L) — a hairline border, the label in the primary ink */
+.db-btn--outline { gap: var(--spacing-8); border: 1px solid var(--border-default); background: none; color: var(--text-primary) !important; }
+.db-btn--outline:hover { background: var(--surface-card-hover); }
+.db-btn--outline .db-icon { width: 24px; height: 24px; -webkit-mask-size: 20px 20px; mask-size: 20px 20px; }
 
 /* Add funds — Button (primary, L) under the balance: as wide as its label,
    and across the column on phones */
@@ -1488,6 +1513,18 @@ body:has(.db.is-light) { --db-page: #ffffff; }
   .db .db-nav__label { display: inline; }
   .db .db-nav__fold { display: none; }
   body:has(.is-menu-open) { overflow: hidden; }
+  /* a full-screen step (Add funds, Pay with, a transaction): no header —
+     its back arrow leads out — and the screen's height, so the button sits
+     at its foot */
+  .db.is-sub .db-header { display: none; }
+  .db.is-sub .db-main { min-height: 100vh; min-height: 100dvh; padding: var(--spacing-24) 0 var(--spacing-24); box-sizing: border-box; }
+  .db.is-sub .db-addfunds, .db.is-sub .db-detail { flex: 1 0 auto; padding: 0 var(--spacing-12); }
+  .db.is-sub .db-detail { padding: 0 var(--spacing-8); }
+}
+/* Export PDF prints the details alone */
+@media print {
+  .db-header, .db-nav, .db-backarrow, .db-detail__foot { display: none !important; }
+  .db { display: block; }
 }
 
 /* ==========================================================================
@@ -1900,7 +1937,13 @@ body:has(.db.is-light) { --db-page: #ffffff; }
    7pt apart, in the tertiary grey (#97979d in the dark theme). Pulled up so
    24px of air sits between the digits and its text — measured on the ink,
    a comma's tail aside */
-.ai-sub { display: flex; align-items: center; justify-content: center; gap: 7px; width: 100%; max-width: 330px; height: 30px; margin-top: -13px; font: 500 15px/30px var(--ai-font); color: var(--text-tertiary); }
+.ai-sub { display: flex; align-items: center; justify-content: center; gap: 7px; width: 100%; max-width: 330px; height: 30px; margin-top: -13px; font: 500 15px/30px var(--font-family-inter); letter-spacing: -0.2px; color: var(--text-tertiary); }
+/* over the limit (node 1197:7021): the line says so, in red, with the
+   danger icon, in place of the other currency */
+.ai-warn { display: none; align-items: center; gap: 7px; color: var(--text-negative); white-space: nowrap; }
+.ai-warn .db-icon { width: 20px; height: 20px; -webkit-mask-size: 20px 20px; mask-size: 20px 20px; }
+.ai[data-warn] .ai-warn { display: inline-flex; }
+.ai[data-warn] .ai-other, .ai[data-warn] .ai-swap { display: none; }
 .ai-other { white-space: nowrap; }
 .ai-swap { display: grid; place-items: center; width: 28px; height: 28px; margin: 0 -6px; padding: 0; border: 0; border-radius: var(--radius-m); background: none; color: inherit; cursor: pointer; }
 .ai-swap:hover { background: var(--surface-card-hover); }
@@ -1913,9 +1956,22 @@ body:has(.db.is-light) { --db-page: #ffffff; }
 
 /* Add funds page: the amount, then the cards to pay with, then the button —
    a 422px column centred in the content column, like the details page */
-.db-addfunds { display: flex; flex-direction: column; gap: var(--spacing-24); width: 100%; max-width: calc(422px + 2 * var(--spacing-16)); margin: 0 auto; padding: 0 var(--spacing-16); box-sizing: border-box; }
-.db-addfunds__title { margin: 0; font: var(--heading-2xl); color: var(--text-heading); }
+.db-addfunds { display: flex; flex-direction: column; gap: var(--spacing-32); width: 100%; max-width: calc(422px + 2 * var(--spacing-16)); margin: 0 auto; padding: 0 var(--spacing-16); box-sizing: border-box; }
+.db-addfunds__title { margin: 0; font: var(--heading-2xl); letter-spacing: 0; color: var(--text-heading); }
+/* nodes 1197:7118 – 1197:6932: the back arrow 20px above the title */
+.db-addfunds > .db-backarrow { align-self: flex-start; margin-bottom: calc(-1 * var(--spacing-12)); }
+.db-addfunds__head { display: flex; flex-direction: column; gap: var(--spacing-8); margin: 0 0 calc(-1 * var(--spacing-12)); }
+.db-addfunds__sub { margin: 0; font: var(--text-m); letter-spacing: var(--tracking-text); color: var(--text-tertiary); }
+.db-addfunds__amount { display: flex; flex-direction: column; gap: var(--spacing-24); padding-top: var(--spacing-12); }
+/* the preset amounts — the design system's Badge, four across */
+.db-presets { display: flex; gap: var(--spacing-8); }
+.db-preset { display: grid; place-items: center; flex: 1 1 0; min-width: 0; height: 32px; padding: 0 var(--spacing-8); border: 0; border-radius: var(--radius-full); background: var(--surface-secondary); color: var(--text-primary); font: 600 16px/24px var(--font-family-inter); cursor: pointer; }
+.db-preset:hover { background: var(--action-secondary-pressed); }
+.db-preset[aria-pressed="true"] { background: var(--action-primary-default); color: var(--text-inverse); }
+/* the button sits at the foot of the screen */
+.db-addfunds__go { margin-top: auto; }
 .db-addfunds .db-section { padding: 0; }
+.db-addfunds .db-select__button { min-height: 62px; }
 /* Pay with — on Add funds, the chosen card in a 52px field like the design
    system's select, with a chevron that says it opens the Pay with screen */
 .db-select__button {
@@ -1941,9 +1997,10 @@ body:has(.db.is-light) { --db-page: #ffffff; }
 /* the Pay with screen: the cards in a card, the chosen one ticked */
 .db-cardlist { margin: 0; padding: 4px; list-style: none; }
 /* back to Add funds: the chevron turned to point back */
-.db-back { display: inline-flex; align-items: center; gap: 4px; align-self: flex-start; margin-bottom: calc(-1 * var(--spacing-12)); color: var(--text-tertiary) !important; font: var(--text-s); letter-spacing: var(--tracking-text); text-decoration: none; }
-.db-back:hover { color: var(--text-primary) !important; }
-.db-back .db-icon { width: 20px; height: 20px; background: currentColor; -webkit-mask-size: 20px 20px; mask-size: 20px 20px; transform: rotate(90deg); }
+/* the back arrow atop a full-screen step: the 32px arrow, turned to point back */
+.db-backarrow { display: grid; place-items: center; flex: 0 0 auto; width: 32px; height: 32px; border-radius: var(--radius-m); }
+.db-backarrow .db-icon { width: 32px; height: 32px; -webkit-mask-size: 32px 32px; mask-size: 32px 32px; transform: rotate(180deg); }
+.db-backarrow:hover { background: var(--surface-card-hover); }
 .db-select__option {
   display: flex;
   align-items: center;
@@ -1974,5 +2031,5 @@ body:has(.db.is-light) { --db-page: #ffffff; }
 .db-cardopt__text { flex: 1 1 0; min-width: 0; display: flex; flex-direction: column; }
 .db-cardopt__label { font: var(--text-m-semibold); letter-spacing: var(--tracking-text); color: var(--text-primary); }
 .db-cardopt__sub { font: var(--text-s); letter-spacing: var(--tracking-text); color: var(--text-tertiary); }
-.db-addfunds__error { margin: calc(-1 * var(--spacing-12)) 0 0; font: var(--text-s); color: rgb(191, 26, 56); text-align: center; }
+.db-addfunds__error { margin: calc(-1 * var(--spacing-16)) 0 0; font: var(--text-s); color: rgb(191, 26, 56); text-align: center; }
 .db-addfunds__error:empty { display: none; }
