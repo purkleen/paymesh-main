@@ -25,8 +25,9 @@
  *     with a search; picking one opens their transactions
  *   - Cards and Settings aren't designed yet, so they say so
  *   - Log out goes back to the prototype menu
- *   - under the balance, an Add funds button (its page isn't designed yet,
- *     so it says so)
+ *   - under the balance, Add funds: an amount in dollars with USDT under it,
+ *     typed on the system keyboard with the 60fps "Comma Jump Number Input"
+ *     motion (src/components/amount-input.js), then the card to charge
  *   - on phones the menu sits behind a hamburger button next to the avatar
  * The page is in the URL hash (#home, #transactions, …), so Back works.
  */
@@ -34,6 +35,8 @@
 import { esc } from "../ui.js";
 import { StackedBars } from "../components/stacked-bars.js";
 import { privacyStars } from "../components/hide-sensitive-number.js";
+import { AmountInput } from "../components/amount-input.js";
+import { RETURNING_USER, SAVED_CARDS } from "../config.js";
 
 const ICON = "assets/ds/";
 const USER = { name: "Arthur Brown", initials: "AB" };
@@ -193,6 +196,16 @@ const NAV = [
 ];
 const PAGES = new Set([...NAV.map((n) => n.id), "settings", "add-funds", "analysis"]);
 const PAGE_TITLES = { "add-funds": "Add funds" };
+
+/**
+ * The cards Add funds can charge: the Visa the wallet is funded from, then
+ * the cards saved to it (src/config.js).
+ */
+const CARDS = [
+  { id: "visa-4567", scheme: "visa", label: RETURNING_USER.fundingCard.label.replace("with", "in"), expiry: "Expiry 03/2028" },
+  ...SAVED_CARDS,
+];
+const TOP_UP_LIMIT = 10000;
 
 const num = (n) => Math.abs(n).toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 const sign = (n) => (n < 0 ? "−" : "+");
@@ -516,6 +529,45 @@ const payee = (t) => `
     </button>
   </li>`;
 
+/** One card to pay with: its logo, name and expiry, and a radio. */
+const cardOption = (c, chosen) => `
+  <li>
+    <label class="db-cardopt">
+      <input type="radio" name="card" value="${c.id}" data-card ${c.id === chosen ? "checked" : ""} />
+      <span class="db-cardopt__logo${c.scheme === "visa" ? " db-cardopt__logo--full" : ""}">
+        <img src="${ICON}${c.scheme}.svg" alt="" />
+      </span>
+      <span class="db-cardopt__text">
+        <span class="db-cardopt__label">${esc(c.label)}</span>
+        <span class="db-cardopt__sub">${esc(c.expiry)}</span>
+      </span>
+      <span class="db-cardopt__radio" aria-hidden="true"></span>
+    </label>
+  </li>`;
+
+/**
+ * Add funds — the amount (the 60fps "Comma Jump Number Input", typed on the
+ * system keyboard: dollars, with USDT under it), the card to charge, and the
+ * button. The amount field is made once (see mount) and dropped into
+ * [data-amount].
+ */
+function addFundsPage(state) {
+  return `
+    <section class="db-addfunds" aria-labelledby="db-addfunds-title">
+      <h2 id="db-addfunds-title" class="db-addfunds__title">Add funds</h2>
+      <div data-amount></div>
+      <section class="db-section" aria-labelledby="db-paywith">
+        <div class="db-section__head"><h2 id="db-paywith">Pay with</h2></div>
+        <fieldset class="db-card" style="border: 0; margin: 0; min-width: 0">
+          <legend class="sr-only">Card to pay with</legend>
+          <ul class="db-cards">${CARDS.map((c) => cardOption(c, state.card)).join("")}</ul>
+        </fieldset>
+      </section>
+      <p class="db-addfunds__error" data-add-error role="alert"></p>
+      <button type="button" class="db-btn" data-add-confirm>Add funds</button>
+    </section>`;
+}
+
 function main(state) {
   switch (state.page) {
     case "home":
@@ -548,6 +600,8 @@ function main(state) {
       return recipientsPage(state);
     case "tx":
       return detailPage(BY_ID.get(state.txId), state.back);
+    case "add-funds":
+      return addFundsPage(state);
     default: {
       const label = PAGE_TITLES[state.page] || state.page[0].toUpperCase() + state.page.slice(1);
       return `
@@ -613,6 +667,15 @@ export default {
     // The spending chart (Bencho's Stacked bars) keeps its own state, so it is
     // made once and put back in its slot after every redraw.
     const spending = StackedBars({ inline: true });
+    // Add funds' amount field keeps its own state and motion, so it too is
+    // made once and put back after each redraw.
+    const amount = AmountInput({
+      onChange: () => {
+        const error = root.querySelector("[data-add-error]");
+        if (error) error.textContent = "";
+      },
+    });
+    state.card = CARDS[0].id;
     // Stealth Mode's stars, one set per hidden figure — the balance and
     // every amount on the page — each with the snippet's shimmer. Made again
     // whenever the page or a list is redrawn, since the elements are new; `labels` brings what a screen
@@ -637,6 +700,11 @@ export default {
     const draw = () => {
       root.innerHTML = render(state);
       root.querySelector("[data-spending]")?.replaceWith(spending.el);
+      const slot = root.querySelector("[data-amount]");
+      if (slot) {
+        slot.replaceWith(amount.el);
+        amount.refresh();
+      }
       attachStars();
     };
 
@@ -688,6 +756,16 @@ export default {
         location.hash = `#tx/${e.target.closest("[data-tx]").dataset.tx}`;
         return;
       }
+      else if (e.target.closest("[data-add-confirm]")) {
+        // Never disabled: an amount that can't go says why.
+        const error = root.querySelector("[data-add-error]");
+        const value = amount.value();
+        if (!value) error.textContent = "Enter an amount to add.";
+        else if (value > TOP_UP_LIMIT) error.textContent = `You can add up to $${TOP_UP_LIMIT.toLocaleString("en-US")} at a time.`;
+        else location.hash = "#home"; // the payment itself isn't designed yet
+        if (error.textContent) amount.focus();
+        return;
+      }
       else if (e.target.closest("[data-copy]")) {
         // Copies the whole ID; the label says so for a moment.
         const btn = e.target.closest("[data-copy]");
@@ -709,6 +787,11 @@ export default {
       }
       else return;
       draw();
+    });
+
+    // Picking a card is remembered for the next redraw.
+    root.addEventListener("change", (e) => {
+      if (e.target.matches("[data-card]")) state.card = e.target.value;
     });
 
     // Typing only redraws the list, so the field keeps its focus.
@@ -734,10 +817,14 @@ export default {
     addEventListener("hashchange", () => {
       state.page = pageFromHash();
       state.menuOpen = false;
+      // Add funds starts from $0 each visit, with the keyboard up
+      if (state.page === "add-funds") amount.reset();
       draw();
       scrollTo(0, 0);
+      if (state.page === "add-funds") amount.focus();
     });
 
     draw();
+    if (state.page === "add-funds") amount.focus();
   },
 };
