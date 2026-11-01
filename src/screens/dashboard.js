@@ -194,7 +194,7 @@ const NAV = [
   { id: "recipients", label: "Recipients", icon: "db-recipients.svg" },
   { id: "cards", label: "Cards", icon: "db-card.svg" },
 ];
-const PAGES = new Set([...NAV.map((n) => n.id), "settings", "add-funds", "add-card", "analysis"]);
+const PAGES = new Set([...NAV.map((n) => n.id), "settings", "add-funds", "pay-with", "add-card", "analysis"]);
 const PAGE_TITLES = { "add-funds": "Add funds", "add-card": "Add card" };
 
 /**
@@ -539,33 +539,39 @@ const cardFace = (c) => `
     <span class="db-cardopt__sub">${esc(c.expiry)}</span>
   </span>`;
 
-/**
- * Pay with: a dropdown — the chosen card, and, open, a list of all of them
- * with a tick by the chosen one, then "Add card" (its page isn't designed
- * yet, so it says so). Arrow keys move through the list, Enter
- * picks, Escape or a click elsewhere closes it.
- */
-function cardSelect(state) {
+/** Pay with, on Add funds: the chosen card, in a row that opens the Pay with screen. */
+function cardRow(state) {
   const chosen = CARDS.find((c) => c.id === state.card) || CARDS[0];
   return `
-    <div class="db-select" data-card-select>
-      <button type="button" class="db-select__button" data-card-toggle aria-haspopup="listbox" aria-expanded="${state.cardOpen}"
-        aria-labelledby="db-paywith db-card-chosen">
-        <span id="db-card-chosen" style="display: contents">${cardFace(chosen)}</span>
-        <span class="db-select__chevron" aria-hidden="true"></span>
-      </button>
-      ${
-        state.cardOpen
-          ? `<ul class="db-select__menu" role="listbox" aria-labelledby="db-paywith">${CARDS.map(
-              (c) => `<li><button type="button" class="db-select__option" role="option" data-card="${c.id}"
-                aria-selected="${c.id === chosen.id}">${cardFace(c)}<span class="db-select__check" aria-hidden="true"></span></button></li>`
-            ).join("")}
-            <li><a href="#add-card" class="db-select__option db-select__option--add" role="option" aria-selected="false">
-              <span class="db-select__add-icon">${icon("add.svg")}</span><span class="db-cardopt__label">Add card</span>
-            </a></li></ul>`
-          : ""
-      }
-    </div>`;
+    <a href="#pay-with" class="db-select__button" aria-labelledby="db-paywith db-card-chosen" aria-describedby="db-card-change">
+      <span id="db-card-chosen" style="display: contents">${cardFace(chosen)}</span>
+      <span id="db-card-change" class="sr-only">Change card</span>
+      <span class="db-select__chevron db-select__chevron--next" aria-hidden="true"></span>
+    </a>`;
+}
+
+/**
+ * Pay with — a screen of its own: every card, with a tick by the chosen
+ * one, then Add card (its page isn't designed yet, so it says so). Picking a
+ * card takes you back to Add funds with it chosen, and the amount you typed
+ * still there.
+ */
+function payWithPage(state) {
+  return `
+    <section class="db-addfunds" aria-labelledby="db-paywith-title">
+      <a href="#add-funds" class="db-back" data-to-funds>${icon("chevron-down.svg", "back")}Add funds</a>
+      <h2 id="db-paywith-title" class="db-addfunds__title">Pay with</h2>
+      <ul class="db-card db-cardlist" aria-labelledby="db-paywith-title">
+        ${CARDS.map(
+          (c) => `<li><button type="button" class="db-select__option" data-card="${c.id}" aria-pressed="${c.id === state.card}">
+            ${cardFace(c)}<span class="db-select__check" aria-hidden="true"></span></button></li>`
+        ).join("")}
+        <li><a href="#add-card" class="db-select__option db-select__option--add">
+          <span class="db-select__add-icon">${icon("add.svg")}</span><span class="db-cardopt__label">Add card</span>
+          <span class="db-select__chevron db-select__chevron--next" aria-hidden="true"></span>
+        </a></li>
+      </ul>
+    </section>`;
 }
 
 /**
@@ -581,7 +587,7 @@ function addFundsPage(state) {
       <div data-amount></div>
       <section class="db-section" aria-labelledby="db-paywith">
         <div class="db-section__head"><h2 id="db-paywith">Pay with</h2></div>
-        ${cardSelect(state)}
+        ${cardRow(state)}
       </section>
       <p class="db-addfunds__error" data-add-error role="alert"></p>
       <button type="button" class="db-btn" data-add-confirm>Add funds</button>
@@ -622,6 +628,8 @@ function main(state) {
       return detailPage(BY_ID.get(state.txId), state.back);
     case "add-funds":
       return addFundsPage(state);
+    case "pay-with":
+      return payWithPage(state);
     default: {
       const label = PAGE_TITLES[state.page] || state.page[0].toUpperCase() + state.page.slice(1);
       return `
@@ -697,13 +705,12 @@ export default {
       },
     });
     state.card = CARDS[0].id;
-    state.cardOpen = false;
-    // after the card dropdown redraws, focus lands where the keyboard expects
-    const focusCards = (open) => {
-      const target = open
-        ? root.querySelector('.db-select__option[aria-selected="true"]')
-        : root.querySelector("[data-card-toggle]");
-      target?.focus();
+    // Back to Add funds from Pay with: the browser's own Back when that is
+    // where we came from, so history doesn't fill up with the round trip
+    let previous = null;
+    const toFunds = () => {
+      if (previous === "add-funds") history.back();
+      else location.hash = "#add-funds";
     };
     // Stealth Mode's stars, one set per hidden figure — the balance and
     // every amount on the page — each with the snippet's shimmer. Made again
@@ -760,21 +767,14 @@ export default {
         state.sortOpen = false;
         draw();
       }
-      // ...and outside the card dropdown, that.
-      if (state.cardOpen && !e.target.closest("[data-card-select]")) {
-        state.cardOpen = false;
-        draw();
-      }
-      if (e.target.closest("[data-card-toggle]")) {
-        state.cardOpen = !state.cardOpen;
-        draw();
-        return focusCards(state.cardOpen);
-      }
+      // Pay with: a card is chosen, and it's back to Add funds
       if (e.target.closest("[data-card]")) {
         state.card = e.target.closest("[data-card]").dataset.card;
-        state.cardOpen = false;
-        draw();
-        return focusCards(false);
+        return toFunds();
+      }
+      if (e.target.closest("[data-to-funds]")) {
+        e.preventDefault();
+        return toFunds();
       }
       if (e.target.closest("[data-toggle-hide]")) return toggleStealth();
       else if (e.target.closest("[data-swap]")) state.lead = state.lead === "usd" ? "usdt" : "usd";
@@ -834,15 +834,6 @@ export default {
       draw();
     });
 
-    // The card list's keys: up and down move through it.
-    root.addEventListener("keydown", (e) => {
-      const option = e.target.closest?.(".db-select__option");
-      if (!option || (e.key !== "ArrowDown" && e.key !== "ArrowUp")) return;
-      e.preventDefault();
-      const all = [...root.querySelectorAll(".db-select__option")];
-      all[(all.indexOf(option) + (e.key === "ArrowDown" ? 1 : all.length - 1)) % all.length].focus();
-    });
-
     // Typing only redraws the list, so the field keeps its focus.
     root.addEventListener("input", (e) => {
       if (e.target.matches("[data-search]")) {
@@ -857,20 +848,19 @@ export default {
     });
 
     addEventListener("keydown", (e) => {
-      if (e.key === "Escape" && (state.menuOpen || state.sortOpen || state.cardOpen)) {
-        const wasCards = state.cardOpen;
-        state.menuOpen = state.sortOpen = state.cardOpen = false;
+      if (e.key === "Escape" && (state.menuOpen || state.sortOpen)) {
+        state.menuOpen = state.sortOpen = false;
         draw();
-        if (wasCards) focusCards(false);
       }
     });
 
     addEventListener("hashchange", () => {
+      previous = state.page;
       state.page = pageFromHash();
       state.menuOpen = false;
-      // Add funds starts from $0 each visit, with the keyboard up
-      state.cardOpen = false;
-      if (state.page === "add-funds") amount.reset();
+      // Add funds starts from $0 each visit, with the keyboard up — but
+      // coming back from choosing or adding a card, the amount is kept
+      if (state.page === "add-funds" && previous !== "pay-with" && previous !== "add-card") amount.reset();
       draw();
       scrollTo(0, 0);
       if (state.page === "add-funds") amount.focus();

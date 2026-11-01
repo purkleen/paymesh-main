@@ -157,14 +157,15 @@ of `styles/ds.css` (`.db-*`, with the dark values of the colour variables).
 ## Add funds
 
 **Add funds**, under the balance, opens `#add-funds`: the amount, with the same
-amount in the other currency under it; **Pay with**, a dropdown of the cards
-to charge (the Visa the wallet is funded from and the two saved cards, from
-`src/config.js`, each with its logo and expiry, then **Add card**, whose page
-isn't designed yet); and an **Add funds** button
+amount in the other currency under it; **Pay with**, the card to charge in a
+row that opens its own screen (`#pay-with`: the Visa the wallet is funded
+from and the two saved cards, from `src/config.js`, each with its logo and
+expiry and a tick by the chosen one, then **Add card**, whose page isn't
+designed yet; picking a card comes back with it chosen and the amount still
+there); and an **Add funds** button
 that is never disabled. With nothing entered it asks for an amount, and over
 $10,000 it names the limit. Otherwise it goes back to Home, since the payment
-itself isn't designed yet. The dropdown works from the keyboard too: up and
-down move through it, Enter picks, Escape closes.
+itself isn't designed yet.
 
 The amount is the 60fps snippet *Comma Jump Number Input Interaction*
 ([family-number-input-commas-shift-place-interaction](https://60fps.design/shots/family-number-input-commas-shift-place-interaction)),
