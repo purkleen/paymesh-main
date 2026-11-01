@@ -27,7 +27,7 @@
  *   - Log out goes back to the prototype menu
  *   - under the balance, Add funds: an amount in dollars with USDT under it,
  *     typed on the system keyboard with the 60fps "Comma Jump Number Input"
- *     motion (src/components/amount-input.js), preset amounts, a $1,000
+ *     motion (src/components/amount-input.js), preset amounts, a $10,000
  *     limit named as you type, then the card to charge
  *   - on phones, Add funds, Pay with and a transaction are full screens
  *     with a back arrow and no header
@@ -224,8 +224,17 @@ const CARDS = [
   { id: "visa-4567", scheme: "visa", label: RETURNING_USER.fundingCard.label.replace("with", "in"), expiry: "Expiry 03/2028" },
   ...SAVED_CARDS,
 ];
-/** The most one top-up can add (node 1197:7021: "Your limit is $1,000"). */
-const TOP_UP_LIMIT = 1000;
+/**
+ * The most one top-up can add. Over it the line under the amount says so
+ * (node 1197:7021), and well over it — past WAY_OVER — it says so louder.
+ */
+const TOP_UP_LIMIT = 10000;
+const WAY_OVER = 50000;
+const limitWarning = (value) => {
+  const limit = `$${TOP_UP_LIMIT.toLocaleString("en-US")}`;
+  if (value > WAY_OVER) return `Woah! It's way over ${limit} limit!`;
+  return value > TOP_UP_LIMIT ? `Your limit is ${limit}` : null;
+};
 /** Add funds' preset amounts (node 1197:7161). */
 const PRESETS = [25, 50, 100, 500];
 
@@ -782,7 +791,7 @@ export default {
         const error = root.querySelector("[data-add-error]");
         if (error) error.textContent = "";
         // over the limit, the line under the amount says so, as you type
-        amount.warn(value > TOP_UP_LIMIT ? `Your limit is $${TOP_UP_LIMIT.toLocaleString("en-US")}` : null);
+        amount.warn(limitWarning(value));
         // the preset chip for this amount, if there is one, lights up
         root.querySelectorAll("[data-preset]").forEach((b) => b.setAttribute("aria-pressed", String(+b.dataset.preset === value)));
       },

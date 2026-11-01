@@ -175,8 +175,9 @@ from and the two saved cards, from `src/config.js`, each with its logo and
 expiry and a tick by the chosen one, then **Add card**, whose page isn't
 designed yet; picking a card comes back with it chosen and the amount still
 there); and an **Add funds** button
-that is never disabled. Over the limit ($1,000 a top-up) the line under the
-amount turns red and says "Your limit is $1,000" as you type, and the button
+that is never disabled. Over the limit ($10,000 a top-up) the line under the
+amount turns red and says "Your limit is $10,000" as you type — past $50,000,
+"Woah! It's way over $10,000 limit!" — and the button
 does nothing; with nothing entered it asks for an amount. Otherwise it goes back to Home, since the payment
 itself isn't designed yet.
 
@@ -200,7 +201,7 @@ Motion turns it off. What changed for Paymesh:
   snippet's up-and-down arrows beside it. Here they swap which currency
   leads: the "$" sinks away and "USDT" rises in after the digits, on the
   same spring
-- its red line is the top-up limit ("Your limit is $1,000", with the danger
+- its red line is the top-up limit ("Your limit is $10,000", with the danger
   icon) in place of the other currency, rather than "Not enough ETH"
 
 Component in `src/components/amount-input.js`, styles under `.ai` in
