@@ -1420,6 +1420,7 @@ body:has(.db.is-light) { --db-page: #ffffff; }
 .db-detail__value > * { margin: 0; }
 .db-detail__party { font: var(--heading-l); letter-spacing: 0; color: var(--text-heading); }
 .db-detail__amount { font: 600 40px/48px var(--font-family-rebond); letter-spacing: 0; color: var(--icon-primary); }
+.db-detail__amount.is-income { color: var(--transaction-income); }
 .db-detail__usdt { font: var(--text-m-semibold); letter-spacing: var(--tracking-text); color: var(--text-tertiary); }
 .db-detail__value .db-mask { justify-items: center; }
 .db-card.db-detail__card { align-self: stretch; padding: var(--spacing-12); }
@@ -1466,9 +1467,10 @@ body:has(.db.is-light) { --db-page: #ffffff; }
 .db-balance__add { display: inline-flex; align-self: flex-start; gap: var(--spacing-8); height: auto; margin-top: 20px; padding: 10px var(--spacing-16) 10px 14px; border-radius: 9999px; font: 600 16px/24px var(--font-family-inter); }
 .db-balance__add:active { background: var(--action-primary-hover); }
 
-/* Phones only: the hamburger button */
-.db-menu-btn { display: none; }
-.db-icon--close { background: var(--icon-primary); -webkit-mask: url("../assets/ds/close.svg") center / 24px 24px no-repeat; mask: url("../assets/ds/close.svg") center / 24px 24px no-repeat; }
+/* Your avatar (40px): on phones it opens and closes the menu; on wider
+   screens, where the menu is always there, it is just your avatar */
+.db-avatar--me { background: var(--action-primary-default); color: var(--text-inverse); }
+.db-user__avatar { padding: 0; border: 0; cursor: default; pointer-events: none; }
 
 /* Narrower screens: the menu folds to its icons */
 @media (max-width: 1000px) {
@@ -1494,10 +1496,11 @@ body:has(.db.is-light) { --db-page: #ffffff; }
   .db-payee { width: 100%; }
   .db-tx-page__head { flex-wrap: wrap; row-gap: var(--spacing-12); }
   .db-tx-page__actions { gap: var(--spacing-8); }
-  /* the header stays put, with the hamburger next to the avatar */
+  /* the header stays put; your avatar opens the menu */
   .db-header { position: sticky; top: 0; z-index: 20; height: 88px; background: var(--background-canvas); }
   .db-user { gap: var(--spacing-12); }
-  .db-menu-btn { display: grid; margin: 0; width: 40px; height: 40px; }
+  .db-user__avatar { cursor: pointer; pointer-events: auto; }
+  .is-menu-open .db-user__avatar { box-shadow: 0 0 0 2px var(--background-canvas), 0 0 0 4px var(--action-primary-default); }
   /* the menu opens as a full-screen sheet under the header */
   .db-nav {
     display: none;
@@ -1520,6 +1523,8 @@ body:has(.db.is-light) { --db-page: #ffffff; }
   .db.is-sub .db-main { min-height: 100vh; min-height: 100dvh; padding: var(--spacing-24) 0 var(--spacing-24); box-sizing: border-box; }
   .db.is-sub .db-addfunds, .db.is-sub .db-detail { flex: 1 0 auto; padding: 0 var(--spacing-12); }
   .db.is-sub .db-detail { padding: 0 var(--spacing-8); }
+  /* Add funds' button 32px above the screen's foot */
+  .db.is-sub .db-addfunds__go { margin-bottom: var(--spacing-8); }
 }
 /* Export PDF prints the details alone */
 @media print {

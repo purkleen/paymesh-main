@@ -99,7 +99,7 @@ of `styles/ds.css` (`.db-*`, with the dark values of the colour variables).
   amount drops the day headings). The frame dates every row 13 Oct 2026; here each row
   takes its group's date.
 - The data is 20 example recipients, 10 people and 10 businesses
-  (`RECIPIENT_LIST` in `src/screens/dashboard.js`), and 13 transactions with
+  (`RECIPIENT_LIST` in `src/screens/dashboard.js`), and 13 payments (plus one top-up, below) with
   13 of them over the last 60 days: two today, two yesterday ("today" is
   13 Oct 2026). The transactions are random but come from a fixed seed, so
   every visit shows the same history. Home is laid out from the frames *Desktop-large (XL)*
@@ -153,9 +153,12 @@ of `styles/ds.css` (`.db-*`, with the dark values of the colour variables).
   value in Figma yet, so light mode uses #15803d and #d92d20.
 - **Cards** and **Settings** aren't designed yet and say so. **Fold menu** collapses the menu to its icons;
   **Log out** returns to the menu of prototypes.
-- Under 1000px the menu is icons only. On phones (640px and under) it moves
-  behind a hamburger button next to the avatar, opening as a full-screen
-  sheet under the header (links and Escape close it).
+- Under 1000px the menu is icons only. On phones (640px and under) there is
+  no menu button: tapping your avatar (40px, top right) opens the menu as a
+  full-screen sheet under the header (the avatar, a link or Escape closes it).
+- One transaction is a **top-up** (node 1202:7506): $500 added this morning
+  from the Visa, under your own name and avatar. Its details are green
+  (+$500.00), from "Visa ending **** 4567" to your Paymesh wallet.
 
 ## Add funds
 
