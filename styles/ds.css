@@ -1404,7 +1404,7 @@ body:has(.db.is-light) { --db-page: #ffffff; }
   overflow-wrap: anywhere;
 }
 .db-avatar--s { width: 24px; height: 24px; font: 600 10px/1 var(--font-family-inter); letter-spacing: 0; }
-.db-detail { display: flex; flex-direction: column; align-items: center; gap: var(--spacing-24); width: 100%; max-width: 422px; margin: 0 auto; padding: 0 var(--spacing-16); box-sizing: content-box; }
+.db-detail { display: flex; flex-direction: column; align-items: center; gap: var(--spacing-24); width: 100%; max-width: calc(422px + 2 * var(--spacing-16)); margin: 0 auto; padding: 0 var(--spacing-16); box-sizing: border-box; }
 .db-detail__art { display: block; width: 120px; height: 120px; object-fit: contain; }
 .db-detail__title { margin: 0; font: var(--heading-3xl); letter-spacing: 0; color: var(--text-heading); text-align: center; }
 .db-detail__rows { align-self: stretch; display: flex; flex-direction: column; gap: var(--spacing-16); margin: 0; padding: var(--spacing-24) 0; }
@@ -1430,6 +1430,8 @@ body:has(.db.is-light) { --db-page: #ffffff; }
   font: var(--button-l);
   text-decoration: none;
   box-sizing: border-box;
+  border: 0;
+  cursor: pointer;
 }
 .db-btn:hover { background: var(--action-primary-hover); }
 
@@ -1825,3 +1827,119 @@ body:has(.db.is-light) { --db-page: #ffffff; }
 /* Reduce Motion: the change row switches without animating */
 .hsn[data-still] .hsn-change,
 .hsn[data-still] .hsn-dollars { transition: none; }
+
+/* ==========================================================================
+   AmountInput — 60fps snippet "Comma Jump Number Input Interaction"
+   (60fps.design/shots/family-number-input-commas-shift-place-interaction).
+   Component in src/components/amount-input.js, on the dashboard's Add funds
+   page. Sizes and timings are the snippet's: 76pt semibold digits and a
+   44pt "$" lifted 10pt, a 100pt row that clips what rises into it, and the
+   spring (response 0.22, damping 0.88) the component writes into
+   --ai-spring as a CSS linear() curve.
+   ========================================================================== */
+.ai {
+  --ai-font: -apple-system, BlinkMacSystemFont, "SF Pro Display", system-ui, "Inter", sans-serif;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 100%;
+  color: var(--text-primary);
+  font-family: var(--ai-font);
+}
+.ai-row { position: relative; display: flex; align-items: center; justify-content: center; width: 100%; max-width: 330px; height: 110px; cursor: text; }
+.ai-frame { display: flex; justify-content: center; width: 100%; }
+/* the row: as wide as its glyphs, scaled down to fit, clipping a glyph as it
+   rises in from below or sinks away */
+.ai-glyphs {
+  position: relative;
+  flex: none;
+  height: 100px;
+  overflow: hidden;
+  transform-origin: center;
+  transition: width var(--ai-spring-ms) var(--ai-spring), transform var(--ai-spring-ms) var(--ai-spring);
+}
+.ai-glyph {
+  position: absolute;
+  top: 0;
+  left: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100px;
+  font: 600 76px/1 var(--ai-font);
+  white-space: pre;
+  transition: transform var(--ai-spring-ms) var(--ai-spring), opacity var(--ai-spring-ms) var(--ai-spring);
+}
+.ai-glyph > span { display: block; }
+.ai-glyph.is-small { font-size: 44px; }
+.ai-glyph.is-small > span { transform: translateY(-10px); }
+/* the comma dip: down 20pt on .easeIn(0.08), back on .easeOut(0.14) */
+.ai-glyph.is-comma > span { transition: transform 140ms cubic-bezier(0, 0, 0.58, 1); }
+.ai[data-dip] .ai-glyph.is-comma > span { transform: translateY(20px); transition: transform 80ms cubic-bezier(0.42, 0, 1, 1); }
+.ai-measure { position: absolute; visibility: hidden; white-space: pre; font: 600 76px/1 var(--ai-font); pointer-events: none; }
+.ai-measure.is-small { font-size: 44px; }
+/* the system keyboard's field: over the amount, invisible; 16px so iOS
+   doesn't zoom into it */
+.ai-field {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: transparent;
+  caret-color: transparent;
+  font-size: 16px;
+  opacity: 0;
+  cursor: text;
+}
+/* the line below: the amount in USDT, or the limit in red — 30pt, clipped,
+   3pt closer than its frame would put it */
+.ai-sub { position: relative; width: 100%; max-width: 330px; height: 30px; margin-top: -3px; overflow: hidden; font: 500 15px/30px var(--ai-font); }
+.ai-usdt, .ai-warn {
+  position: absolute;
+  inset: 0;
+  text-align: center;
+  white-space: nowrap;
+  transition: opacity var(--ai-spring-ms) var(--ai-spring), transform var(--ai-spring-ms) var(--ai-spring);
+}
+.ai-warn { color: rgb(191, 26, 56); opacity: 0; transform: translateY(10px); }
+.ai-sub[data-over] .ai-usdt { opacity: 0; transform: translateY(-10px); }
+.ai-sub[data-over] .ai-warn { opacity: 1; transform: none; }
+/* first paint and Reduce Motion: values change, nothing moves */
+.ai[data-still] .ai-glyphs, .ai[data-still] .ai-glyph, .ai[data-still] .ai-glyph > span,
+.ai[data-still] .ai-usdt, .ai[data-still] .ai-warn { transition: none; }
+@media (prefers-reduced-motion: reduce) {
+  .ai-glyphs, .ai-glyph, .ai-glyph > span, .ai-usdt, .ai-warn { transition: none !important; }
+}
+
+/* Add funds page: the amount, then the cards to pay with, then the button —
+   a 422px column centred in the content column, like the details page */
+.db-addfunds { display: flex; flex-direction: column; gap: var(--spacing-24); width: 100%; max-width: calc(422px + 2 * var(--spacing-16)); margin: 0 auto; padding: 0 var(--spacing-16); box-sizing: border-box; }
+.db-addfunds__title { margin: 0; font: var(--heading-2xl); color: var(--text-heading); }
+.db-addfunds .db-section { padding: 0; }
+.db-cards { margin: 0; padding: var(--spacing-4) 0; list-style: none; }
+.db-cardopt {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-12);
+  padding: var(--spacing-12);
+  border-radius: var(--radius-lg);
+  cursor: pointer;
+}
+.db-cardopt:hover { background: var(--surface-card-hover); }
+.db-cardopt input { position: absolute; opacity: 0; pointer-events: none; }
+.db-cardopt__logo { display: grid; place-items: center; flex: 0 0 auto; width: 34px; height: 24px; border: 1px solid #e5e5e5; border-radius: 4px; background: #fff; box-sizing: border-box; }
+.db-cardopt__logo img { display: block; max-width: 24px; max-height: 15px; }
+.db-cardopt__logo--full { border: 0; background: none; }
+.db-cardopt__logo--full img { max-width: none; max-height: none; width: 34px; height: 24px; }
+.db-cardopt__text { flex: 1 1 0; min-width: 0; display: flex; flex-direction: column; }
+.db-cardopt__label { font: var(--text-m-semibold); letter-spacing: var(--tracking-text); color: var(--text-primary); }
+.db-cardopt__sub { font: var(--text-s); letter-spacing: var(--tracking-text); color: var(--text-tertiary); }
+/* the radio: a ring, filled with the brand colour when chosen */
+.db-cardopt__radio { flex: 0 0 auto; width: 20px; height: 20px; border: 2px solid var(--border-default); border-radius: 50%; box-sizing: border-box; transition: border-color .15s, border-width .15s; }
+.db-cardopt input:checked ~ .db-cardopt__radio { border: 6px solid var(--action-primary-default); }
+.db-cardopt:has(input:focus-visible) { outline: 2px solid var(--action-primary-default); outline-offset: -2px; }
+.db-addfunds__error { margin: calc(-1 * var(--spacing-12)) 0 0; font: var(--text-s); color: rgb(191, 26, 56); text-align: center; }
+.db-addfunds__error:empty { display: none; }
