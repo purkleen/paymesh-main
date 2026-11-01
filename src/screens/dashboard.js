@@ -4,12 +4,12 @@
  *
  * Dark theme, side menu, balance and recent transactions, as drawn. What the
  * frame implies is wired up:
- *   - the eye hides and shows the balance
- *   - the arrows swap which currency the balance leads with (USD ↔ USDT)
- *   - Home: Paymesh balance, the five latest transactions, a row of payees
- *     (everyone you've paid, latest first, four on phones; See all opens
- *     Recipients), and at the bottom Analysis: what was spent each day over
- *     a week or a month
+ *   - Home (redesigned from nodes 1174:6581 and 1174:6801): the balance —
+ *     tap it for Stealth Mode, tap the line under it to swap which currency
+ *     leads — and Add funds; the five latest transactions in a card; recent
+ *     payees (everyone you've paid, latest first, four on phones; See all
+ *     opens Recipients); and Analysis, a card with what was spent each day
+ *     over a week or a month
  *     (Bencho's Stacked bars, src/components/stacked-bars.js)
  *   - transaction rows have the frame's hover (row 2) and pressed (row 3) states
  *   - "See all" and the menu's Transactions open the Transactions page
@@ -191,7 +191,7 @@ const NAV = [
   { id: "recipients", label: "Recipients", icon: "db-recipients.svg" },
   { id: "cards", label: "Cards", icon: "db-card.svg" },
 ];
-const PAGES = new Set([...NAV.map((n) => n.id), "settings", "add-funds"]);
+const PAGES = new Set([...NAV.map((n) => n.id), "settings", "add-funds", "analysis"]);
 const PAGE_TITLES = { "add-funds": "Add funds" };
 
 const num = (n) => Math.abs(n).toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
@@ -218,9 +218,9 @@ const applyTheme = (light) => {
   document.querySelector('meta[name="theme-color"]')?.setAttribute("content", light ? "#ffffff" : "#0e0e11");
 };
 
-/** Account avatar or merchant logo: 32px, 40 on the Transactions page, 24 on the details page, 56 for Home's payees. */
+/** Account avatar or merchant logo: 32px, 40 in Home's and the Transactions page's rows, 24 on the details page, 48 for Home's payees. */
 const avatar = (t, size = 32) => {
-  const cls = `db-avatar${{ 24: " db-avatar--s", 40: " db-avatar--l", 56: " db-avatar--xl" }[size] || ""}`;
+  const cls = `db-avatar${{ 24: " db-avatar--s", 40: " db-avatar--l", 48: " db-avatar--xl" }[size] || ""}`;
   if (t.logo) return `<img class="${cls} db-avatar--logo" src="${t.logo}" width="${size}" height="${size}" alt="" />`;
   return `<span class="${cls} db-avatar--${t.color}">${esc(t.initials)}</span>`;
 };
@@ -231,8 +231,8 @@ const avatar = (t, size = 32) => {
  * list. The figure is marked private, so it is also taken out of what a
  * screen reader reads.
  */
-const masked = (value) =>
-  `<span class="db-mask"><span class="db-mask__value" data-private>${value}</span>${STARS}</span>`;
+const masked = (value, count = 7) =>
+  `<span class="db-mask"><span class="db-mask__value" data-private>${value}</span>${stars(count)}</span>`;
 
 /** Transaction — one row of the list. */
 const row = (t, large = false) => `
@@ -258,22 +258,21 @@ const navButton = ({ id, label, icon: file }, current) => `
     ${icon(file)}<span class="db-nav__label">${label}</span>
   </a>`;
 
-/** The eye: "show" while the balance is hidden, "hide" while it is shown. */
-const eye = (hidden) => (hidden ? `<span class="db-icon db-icon--eye" aria-hidden="true"></span>` : icon("db-eye-off.svg"));
 /**
- * Stealth Mode's stars: "*****" set in the very text style of the figure
- * they hide — its font, size, weight and colour — as "••••••" was before.
+ * Stealth Mode's stars: "*" set in the text style of the figure they hide,
+ * as many as the frame draws (node 1174:6801) — six for the balance, seven
+ * for an amount.
  */
-const STARS = `<span class="db-stars" aria-hidden="true">${"<span>*</span>".repeat(5)}</span>`;
-const balanceLabel = (hidden) => (hidden ? "Balance hidden" : `Paymesh balance, ${num(BALANCE)} dollars`);
+const stars = (count) => `<span class="db-stars" aria-hidden="true">${"<span>*</span>".repeat(count)}</span>`;
+const balanceLabel = (hidden) => (hidden ? "Balance hidden" : `Balance, ${num(BALANCE)} dollars`);
 
 /**
- * The balance block: big figure, eye, and the other currency with the swap
- * arrows. Hiding it is Stealth Mode — the 60fps "Hide Sensitive Number"
- * (src/components/hide-sensitive-number.js): tap the balance or the eye and
- * the figures dissolve into five shimmering asterisks, each set in the text
- * style of the figure it hides (see STARS). Both figures are always there
- * under their stars, so nothing shifts. Stealth
+ * The balance block: the figure, the other currency under it, and Add
+ * funds. Hiding it is Stealth Mode — the 60fps "Hide Sensitive Number"
+ * (src/components/hide-sensitive-number.js): tap the balance and the
+ * figures dissolve into shimmering asterisks, each set in the text style of
+ * the figure it hides (see `stars`). Both figures are always there under
+ * their stars, so nothing shifts. Stealth
  * Mode covers every amount on the page too (see `masked`), and stays on as
  * you move between pages.
  */
@@ -283,28 +282,21 @@ function balance({ hidden, lead }) {
   const big = `${usd ? "$" : ""}${whole}<span class="db-balance__cents">.${cents}${usd ? "" : " USDT"}</span>`;
   const small = usd ? `${num(BALANCE)} USDT` : `$${num(BALANCE)}`;
 
+  // The frames (nodes 1174:6581 and 1174:6801) draw no eye and no swap
+  // arrows: the balance itself is the Stealth Mode switch, and the line
+  // under it swaps which currency leads.
   return `
-    <section class="db-balance" aria-label="Paymesh balance">
-      <h2 class="db-balance__label">Paymesh balance</h2>
-      <div class="db-balance__row">
-        <button type="button" class="db-balance__stealth" data-toggle-hide aria-pressed="${hidden}" aria-label="${balanceLabel(hidden)}"
-          aria-description="Stealth Mode ${hidden ? "on" : "off"}. Activate to ${hidden ? "reveal" : "hide"} the balance">
-          <span class="db-balance__amount">${big}</span>
-          ${STARS}
-        </button>
-        <button type="button" class="db-iconbtn" data-toggle-hide data-eye aria-pressed="${hidden}"
-          aria-label="${hidden ? "Show balance" : "Hide balance"}" title="${hidden ? "Show balance" : "Hide balance"}">
-          ${eye(hidden)}
-        </button>
-      </div>
-      <div class="db-balance__row db-balance__row--sub">
-        <span class="db-balance__mask">
-          <p class="db-balance__other" data-private>${small}</p>
-          ${STARS}
-        </span>
-        <button type="button" class="db-iconbtn" data-swap aria-label="Show balance in ${usd ? "USDT" : "US dollars"} first"
-          title="Swap currency">${icon("db-swap.svg", "muted")}</button>
-      </div>
+    <section class="db-balance" aria-label="Balance">
+      <h2 class="db-balance__label">Balance</h2>
+      <button type="button" class="db-balance__stealth" data-toggle-hide aria-pressed="${hidden}" aria-label="${balanceLabel(hidden)}"
+        aria-description="Stealth Mode ${hidden ? "on" : "off"}. Activate to ${hidden ? "reveal" : "hide"} the balance">
+        <span class="db-balance__amount">${big}</span>
+        ${stars(6)}
+      </button>
+      <button type="button" class="db-balance__mask" data-swap aria-label="Show balance in ${usd ? "USDT" : "US dollars"} first" title="Swap currency">
+        <span class="db-balance__other" data-private>${small}</span>
+        ${stars(6)}
+      </button>
       <a href="#add-funds" class="db-btn db-balance__add">${icon("add.svg", "current")}Add funds</a>
     </section>`;
 }
@@ -520,7 +512,7 @@ function detailPage(t, back) {
 const payee = (t) => `
   <li>
     <button type="button" class="db-payee" data-recipient="${esc(t.party)}" title="${esc(t.party)}">
-      ${avatar(t, 56)}<span class="db-payee__name">${esc(t.party)}</span>
+      ${avatar(t, 48)}<span class="db-payee__name">${esc(t.party)}</span>
     </button>
   </li>`;
 
@@ -534,18 +526,21 @@ function main(state) {
             <h2 id="db-recent">Transactions</h2>
             <a href="#transactions" class="db-link">See all</a>
           </div>
-          <ul class="db-txlist">${RECENT.map((t) => row(t)).join("")}</ul>
+          <div class="db-card"><ul class="db-txlist">${RECENT.map((t) => row(t, true)).join("")}</ul></div>
         </section>
         <section class="db-section" aria-labelledby="db-payees">
           <div class="db-section__head">
-            <h2 id="db-payees">Payees</h2>
+            <h2 id="db-payees">Recent payees</h2>
             <a href="#recipients" class="db-link">See all</a>
           </div>
           <ul class="db-payees">${PAYEES.map(payee).join("")}</ul>
         </section>
         <section class="db-section" aria-labelledby="db-spending">
-          <div class="db-section__head"><h2 id="db-spending">Analysis</h2></div>
-          <div data-spending></div>
+          <div class="db-section__head">
+            <h2 id="db-spending">Analysis</h2>
+            <a href="#analysis" class="db-link">See more</a>
+          </div>
+          <div class="db-card db-card--analysis"><div data-spending></div></div>
         </section>`;
     case "transactions":
       return transactionsPage(state);
@@ -639,25 +634,10 @@ export default {
       });
       labels();
     };
-    // The balance's two figures are as wide as what they show — the number,
-    // or its asterisks — so the eye and the swap arrows beside them move
-    // with them. The width eases on the same curve as the fade (see
-    // .db-balance__stealth); from auto, on a fresh draw, it just lands.
-    const fitBalance = () => {
-      root.querySelectorAll(".db-balance__stealth, .db-balance__mask").forEach((cell) => {
-        const shown = state.hidden ? cell.querySelector(".db-stars") : cell.querySelector(".db-balance__amount, .db-balance__other");
-        if (shown) cell.style.width = `${shown.offsetWidth}px`;
-      });
-    };
-    addEventListener("resize", fitBalance);
-    document.fonts?.ready.then(fitBalance);
-    document.fonts?.addEventListener?.("loadingdone", fitBalance);
-
     const draw = () => {
       root.innerHTML = render(state);
       root.querySelector("[data-spending]")?.replaceWith(spending.el);
       attachStars();
-      fitBalance();
     };
 
     // Stealth Mode: flipped on the elements already there rather than by a
@@ -675,12 +655,6 @@ export default {
       toggle.setAttribute("aria-pressed", String(state.hidden));
       toggle.setAttribute("aria-label", balanceLabel(state.hidden));
       toggle.setAttribute("aria-description", `Stealth Mode ${state.hidden ? "on" : "off"}. Activate to ${state.hidden ? "reveal" : "hide"} the balance`);
-      const eyeBtn = section.querySelector("[data-eye]");
-      eyeBtn.setAttribute("aria-pressed", String(state.hidden));
-      eyeBtn.setAttribute("aria-label", state.hidden ? "Show balance" : "Hide balance");
-      eyeBtn.title = state.hidden ? "Show balance" : "Hide balance";
-      eyeBtn.innerHTML = eye(state.hidden);
-      fitBalance();
     };
 
     root.addEventListener("click", (e) => {

@@ -993,6 +993,9 @@ button.nw-row { cursor: pointer; }
   --action-secondary-pressed: #4f4f58;
   --surface-secondary: #26262a;
   --surface-raised: #1a1a1e;
+  /* Home's cards (nodes 1174:6581 / 1174:6801), and a row's hover on them */
+  --surface-card: #1c1c1f;
+  --surface-card-hover: #26262a;
   --shadow-raised: 0 8px 24px rgba(0, 0, 0, .4);
   --border-default: #4f4f58;
   --border-focus: #503ff1;
@@ -1030,6 +1033,8 @@ body:has(.db) { background: var(--db-page, #0e0e11); }
   --action-secondary-pressed: #e5e5e7;
   --surface-secondary: #f4f4f6;
   --surface-raised: #ffffff;
+  --surface-card: #f4f4f6;
+  --surface-card-hover: #e5e5e7;
   --shadow-raised: 0 8px 24px rgba(0, 0, 0, .12);
   --border-default: #bdbdc1;
   --border-focus: #503ff1;
@@ -1160,7 +1165,7 @@ body:has(.db.is-light) { --db-page: #ffffff; }
 .db-main {
   display: flex;
   flex-direction: column;
-  gap: 40px;
+  gap: 32px;
   width: 100%;
   max-width: 696px;
   /* Centred on the page. At 1440px that's exactly where the frame puts it
@@ -1170,37 +1175,36 @@ body:has(.db.is-light) { --db-page: #ffffff; }
   min-width: 0;
 }
 
-/* Balance */
-.db-balance { padding: 0 var(--spacing-16); }
+/* Balance — nodes 1174:6581 / 1174:6801: "Balance" (Heading/M), the figure
+   (Rebond Bold 40/40, the cents in the tertiary grey), the other currency
+   (Heading/M), 4px apart; then Add funds, 24px below */
+.db-balance { display: flex; flex-direction: column; align-items: flex-start; gap: var(--spacing-4); padding: 0 var(--spacing-16); }
 .db-balance h2 { margin: 0; }
-.db-balance__label { font: var(--heading-l); color: var(--text-tertiary); }
-.db-balance__row { display: flex; align-items: center; gap: var(--spacing-16); }
-.db-balance__amount { margin: 0; font: 700 56px/64px var(--font-family-rebond); letter-spacing: -2.24px; white-space: nowrap; }
+.db-balance__label { font: var(--heading-m); letter-spacing: 0; color: var(--text-tertiary); }
+.db-balance__amount { margin: 0; font: 700 40px/40px var(--font-family-rebond); letter-spacing: 0; white-space: nowrap; }
 /* the balance's asterisks: Rebond Grotesque Bold, 40px, 100% line height,
    -2% tracking */
 .db-balance__stealth .db-stars { margin: 0; font: 700 40px/100% var(--font-family-rebond); letter-spacing: -0.02em; white-space: nowrap; }
-.db-balance__cents { font-size: 32px; line-height: 32px; }
+.db-balance__cents { color: var(--text-tertiary); }
 /* Stealth Mode — the 60fps "Hide Sensitive Number": the figures fade (the
    balance also easing down to 0.96) while five stars fade in over them, on
    the snippet's .easeInOut(0.15), or 100ms linear and no scale under Reduce
-   Motion. The stars are "*****" in the hidden figure's own text style (the
-   balance's set at 40px), sharing its cell; the cell's width follows what
-   is shown, so the icons beside it move with it. */
+   Motion. The stars are "*" in the hidden figure's own text style (the
+   balance's set at 40px), sharing its cell, so nothing shifts. */
 .db { --hsn-duration: 150ms; --hsn-ease: cubic-bezier(0.42, 0, 0.58, 1); }
-.db-balance__stealth { display: grid; align-items: center; justify-items: start; padding: 0; border: 0; border-radius: var(--radius-m); background: none; color: inherit; font: inherit; text-align: left; cursor: pointer; -webkit-tap-highlight-color: transparent; }
-.db-balance__mask { display: grid; align-items: center; justify-items: start; }
-/* each as wide as what it shows (set from the dashboard), easing between the
-   number and its asterisks so the icons beside them move with them */
-.db-balance__stealth, .db-balance__mask { transition: width var(--hsn-duration) var(--hsn-ease); }
+/* the balance (Stealth Mode) and the line under it (swap currency) are the
+   controls: no eye, no arrows in the frames */
+.db-balance__stealth, .db-balance__mask { display: grid; align-items: center; justify-items: start; padding: 0; border: 0; border-radius: var(--radius-m); background: none; color: inherit; font: inherit; text-align: left; cursor: pointer; -webkit-tap-highlight-color: transparent; }
 .db-balance__stealth > *, .db-balance__mask > * { grid-area: 1 / 1; }
 .db-balance__amount { display: block; transition: opacity var(--hsn-duration) var(--hsn-ease), scale var(--hsn-duration) var(--hsn-ease); }
-.db-balance__other { transition: opacity var(--hsn-duration) var(--hsn-ease); }
+.db-balance__other { display: block; transition: opacity var(--hsn-duration) var(--hsn-ease); }
 .db-stars { display: block; white-space: nowrap; opacity: 0; transition: opacity var(--hsn-duration) var(--hsn-ease); }
-/* an asterisk sits up by the cap height; drop it to the middle of the line,
-   where the figures' bulk is, as the "••••••" sat before */
-.db-stars > span { display: inline-block; transform: translateY(0.3em); }
 /* and every amount: its stars over it, right-aligned, in the amount's own
-   font and colour (they inherit it), so a list never shifts as it hides */
+   font, so a list never shifts as it hides. As the frame draws them, a
+   row's stars are in the primary ink rather than red or green, and its
+   USDT line goes blank. */
+.db-tx__amount .db-stars { color: var(--text-primary); }
+.db[data-stealth] .db-tx__usdt .db-stars { opacity: 0; }
 .db-mask { display: inline-grid; align-items: center; justify-items: end; vertical-align: top; }
 .db-mask > * { grid-area: 1 / 1; }
 .db-mask__value { transition: opacity var(--hsn-duration) var(--hsn-ease); }
@@ -1216,11 +1220,19 @@ body:has(.db.is-light) { --db-page: #ffffff; }
 .db-iconbtn { display: grid; place-items: center; width: 32px; height: 32px; margin: -4px; padding: 0; border: 0; border-radius: var(--radius-m); background: none; cursor: pointer; }
 .db-iconbtn:hover { background: var(--surface-secondary); }
 
-/* Transactions */
-.db-section { display: flex; flex-direction: column; gap: var(--spacing-8); }
-.db-section__head { display: flex; align-items: center; justify-content: space-between; padding: 0 var(--spacing-16); }
-.db-section__head h2 { margin: 0; font: var(--heading-l); color: var(--text-heading); }
-.db-link { font: var(--link-m); letter-spacing: var(--tracking-text); text-decoration: underline; color: var(--text-heading); }
+/* Home's sections — heading (Heading/M Bold) and a Link/S beside it, 8px
+   over a card, 16px in */
+.db-section { display: flex; flex-direction: column; gap: var(--spacing-8); padding: 0 var(--spacing-16); }
+.db-section__head { display: flex; align-items: center; justify-content: space-between; }
+.db-section__head h2 { margin: 0; font: var(--heading-m-bold); letter-spacing: 0; color: var(--text-heading); }
+.db-section .db-empty { padding: 0; }
+.db-link { font: 400 14px/20px var(--font-family-inter); letter-spacing: var(--tracking-text); text-decoration: underline; color: var(--text-heading); }
+/* the cards: 16px corners, 12px in; a row's own 8px top and bottom and 12px
+   sides make up the inset, so its hover fills the card's width */
+.db-card { padding: var(--spacing-12) 0; border-radius: var(--radius-xl); background: var(--surface-card); }
+.db-card .db-tx { padding: var(--spacing-8) var(--spacing-12); }
+.db-card .db-tx:hover { background: var(--surface-card-hover); }
+.db-card--analysis { padding: var(--spacing-12); }
 .db-link:hover { opacity: .7; }
 .db-txlist { margin: 0; padding: 0; list-style: none; }
 .db-tx {
@@ -1346,21 +1358,18 @@ body:has(.db.is-light) { --db-page: #ffffff; }
 
 /* Transaction details — the checkout receipt, node 1147:5103 ("order
    complete"): a 422px column, centred in the content column */
-/* Home's payees: a row of avatars and names, at least 16px in, scrolling
-   sideways when there are more than fit; on phones the four most recent,
-   spread across the width */
-.db-avatar--xl { width: 56px; height: 56px; font: var(--heading-xs); letter-spacing: 0; }
+/* Home's recent payees: tiles (avatar and name, on the secondary surface)
+   in a row, scrolling sideways when there are more than fit; on phones the
+   four most recent, spread across the width */
+.db-avatar--xl { width: 48px; height: 48px; font: 600 18px/26px var(--font-family-inter); letter-spacing: var(--tracking-text); }
 .db-payees {
   display: flex;
-  gap: var(--spacing-16);
+  gap: var(--spacing-8);
   margin: 0;
-  padding: 0 var(--spacing-16);
+  padding: 0;
   list-style: none;
   overflow-x: auto;
   scroll-snap-type: x proximity;
-  /* snap to the padding's edge, not the box's, or the first payee is
-     scrolled flush against it */
-  scroll-padding-inline: var(--spacing-16);
   scrollbar-width: none;
 }
 .db-payees::-webkit-scrollbar { display: none; }
@@ -1370,15 +1379,15 @@ body:has(.db.is-light) { --db-page: #ffffff; }
   flex-direction: column;
   align-items: center;
   gap: var(--spacing-8);
-  width: 80px;
-  padding: var(--spacing-8) 0;
+  width: 88px;
+  padding: var(--spacing-12) var(--spacing-8);
   border: 0;
   border-radius: var(--radius-lg);
-  background: none;
+  background: var(--surface-secondary);
   color: var(--text-primary);
   cursor: pointer;
 }
-.db-payee:hover { background: var(--surface-secondary); }
+.db-payee:hover { background: var(--surface-card-hover); }
 .db-payee:active { background: var(--action-secondary-pressed); }
 /* the name on up to two lines, then an ellipsis */
 .db-payee__name {
@@ -1426,7 +1435,8 @@ body:has(.db.is-light) { --db-page: #ffffff; }
 
 /* Add funds — Button (primary, L) under the balance: as wide as its label,
    and across the column on phones */
-.db-balance__add { display: inline-flex; gap: var(--spacing-8); margin-top: var(--spacing-24); padding: var(--spacing-12) var(--spacing-24) var(--spacing-12) var(--spacing-16); }
+/* Add funds — Button (primary, M, pill) */
+.db-balance__add { display: inline-flex; align-self: flex-start; gap: var(--spacing-8); height: auto; margin-top: 20px; padding: 10px var(--spacing-16) 10px 14px; border-radius: 9999px; font: 600 16px/24px var(--font-family-inter); }
 .db-balance__add:active { background: var(--action-primary-hover); }
 
 /* Phones only: the hamburger button */
@@ -1447,10 +1457,10 @@ body:has(.db.is-light) { --db-page: #ffffff; }
   .db-user { position: static; }
   .db-nav__item[aria-current="page"] { background: var(--surface-secondary); }
   .db-user__name { display: none; }
-  .db-balance__add { display: flex; width: 100%; }
-  .db-balance__amount { font-size: 44px; line-height: 52px; letter-spacing: -1.76px; }
-  .db-balance__cents { font-size: 26px; line-height: 26px; }
   .db-tx-page__title { font-size: 26px; line-height: 32px; }
+  /* the frames keep Home 16px from the screen's edge; the page already
+     gives 8 */
+  .db-balance, .db-section { padding: 0 var(--spacing-8); }
   /* the four most recent payees, side by side, no scrolling */
   .db-payees { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); overflow: visible; }
   .db-payees li:nth-child(n + 5) { display: none; }
@@ -1508,15 +1518,14 @@ body:has(.db.is-light) { --db-page: #ffffff; }
   --font-ui: var(--font-family-inter);
 }
 
-/* On Home it sits in the Spending section with no card of its own, so the
-   "slab" the chart mixes toward, and fills its tooltip and Week / Month
-   thumb with, is the page itself. The spend figure sits where the title
-   was. 16px in, like the section's heading. Doubled class, because
-   Bencho's own .stb rule comes later in this file and would put the card's
-   padding back. */
+/* On Home it sits in the Analysis card, where the frame says "Analysis goes
+   here", with no card of its own: the "slab" the chart mixes toward, and
+   fills its tooltip and Week / Month thumb with, is that card. The spend
+   figure sits where the title was. Doubled class, because Bencho's own .stb
+   rule comes later in this file and would put the card's padding back. */
 .stb.stb--inline {
-  --fill-slab: var(--background-canvas);
-  margin: 0 var(--spacing-16);
+  --fill-slab: var(--surface-card, var(--background-canvas));
+  margin: 0;
   padding: 0;
   border-radius: 0;
   background: none;
