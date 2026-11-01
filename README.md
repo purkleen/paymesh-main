@@ -77,9 +77,11 @@ Vercel login first, depending on the project's Deployment Protection setting.
 and recent transactions. Code in `src/screens/dashboard.js`, styles at the end
 of `styles/ds.css` (`.db-*`, with the dark values of the colour variables).
 
-- **Stealth Mode**: tapping the balance (or the eye) hides it the way the
+- **Stealth Mode**: tapping the balance hides it the way the
   60fps *Hide Sensitive Number* does — the figures dissolve into five
-  shimmering asterisks in the figures' own text style and come back
+  shimmering asterisks in the figures' own text style (`******` for the
+  balance; a row's amount becomes `*******` in white and its USDT line goes
+  blank, as frame 1174:6801 draws it) and come back
   on the next tap. It hides every transaction amount too — Home, the
   Transactions page, Recipients' totals and the details page — each in that
   amount's own text style, over it in the same spot so lists don't shift, and stays on
@@ -100,10 +102,15 @@ of `styles/ds.css` (`.db-*`, with the dark values of the colour variables).
   (`RECIPIENT_LIST` in `src/screens/dashboard.js`), and 13 transactions with
   13 of them over the last 60 days: two today, two yesterday ("today" is
   13 Oct 2026). The transactions are random but come from a fixed seed, so
-  every visit shows the same history. Home runs **Paymesh balance**, the latest five transactions, a row of
-  **payees** (everyone you've paid, most recently paid first, names on up to
-  two lines; the four most recent on phones; **See all** opens Recipients,
-  and a payee opens their transactions) and **Analysis**; the
+  every visit shows the same history. Home is laid out from the frames *Desktop-large (XL)*
+  1174:6581 (shown) and 1174:6801 (Stealth Mode): **Balance** (Rebond Bold
+  40px, the cents in grey) with the other currency under it — tap the
+  balance for Stealth Mode, the line under it to swap which currency leads —
+  and a pill **Add funds**; **Transactions**, the latest five in a card;
+  **Recent payees**, tiles of everyone you've paid, most recently paid
+  first (four on phones; **See all** opens Recipients, a payee opens their
+  transactions); and **Analysis**, a card holding the spending chart where
+  the frame says "Analysis goes here" (**See more** isn't designed yet); the
   recipients without a transaction say "No transactions yet". Airbnb keeps its logo;
   everyone else has an initials avatar in one of eight colours (red,
   orange, yellow, green, teal, blue, purple, pink — `--avatar-*` in

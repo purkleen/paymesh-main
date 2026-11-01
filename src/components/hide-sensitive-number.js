@@ -97,14 +97,15 @@ function drawStars(canvas, phase, large, dark = false) {
  * page is in the background.
  */
 /**
- * The sweep on text: five "*" spans in the style of the figure they hide,
+ * The sweep on text: "*" spans in the style of the figure they hide,
  * each one lifted toward the background by as much as the snippet lightens
  * that star — 0.76 grey is the star at rest, white the background, so a
  * star at 0.83 has come 29% of the way and is drawn at 71% opacity.
  */
 function shimmerText(spans, phase) {
   spans.forEach((span, index) => {
-    const distance = index / 4 - (phase * 1.8 - 0.4);
+    // index / 4 across the snippet's five; across however many there are here
+    const distance = index / (spans.length - 1) - (phase * 1.8 - 0.4);
     const white = phase < 0 ? 0.77 : 0.76 + 0.07 * Math.exp((-distance * distance) / 0.065);
     span.style.opacity = (1 - (white - 0.76) / (1 - 0.76)).toFixed(3);
   });
@@ -112,7 +113,7 @@ function shimmerText(spans, phase) {
 
 /**
  * `target` is either a canvas, for the snippet's drawn stars, or an element
- * holding five "*" spans, for stars in a figure's own text style.
+ * holding "*" spans, for stars in a figure's own text style.
  */
 export function privacyStars(target, { large = true, dark = () => false } = {}) {
   const canvas = target;
