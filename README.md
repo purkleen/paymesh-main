@@ -131,7 +131,9 @@ of `styles/ds.css` (`.db-*`, with the dark values of the colour variables).
   name, the amount in dollars with USDT under it (hidden in Stealth Mode),
   then a **Transaction details** card — a green **Complete** status, from
   and to (your wallet and the party, with their avatar), the date, and a
-  transaction ID and hash that each copy in full — then **Export PDF** (the
+  transaction ID and hash that each copy in full (the value gives way to a green
+  "✓ COPIED!" for 3 seconds, nodes 1202:7583 / 1202:7732); money in, such as
+  a top-up or a refund, shows its amount in green (#57D172) — then **Export PDF** (the
   browser's print dialog, printing the details alone, to save as PDF) and
   "Something wrong with this transaction? Request refund or contact our
   support" (those two pages aren't designed yet and say so). The back

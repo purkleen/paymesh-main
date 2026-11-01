@@ -531,10 +531,16 @@ const backArrow = (href, label, attr = "data-back") => `
 const detailRow = (label, value) => `
   <div class="db-detail__row"><dt>${label}</dt><dd>${value}</dd></div>`;
 
-/** A value that copies: the copy icon, then the value shortened. */
+/**
+ * A value that copies: the copy icon, then the value shortened. Copied, the
+ * two give way to a green "✓ Copied!" for 3 seconds (nodes 1202:7583 and
+ * 1202:7732).
+ */
 const copyValue = (full, short, what) => `
-  <button type="button" class="db-copy" data-copy="${full}" data-copy-short="${short}" aria-label="Copy ${what}" title="Copy ${what}">${icon("copy.svg")}</button>
-  <span data-copy-label>${short}</span>`;
+  <button type="button" class="db-copy" data-copy="${full}" aria-label="Copy ${what}, ${short}" title="Copy ${what}">
+    <span class="db-copy__value">${icon("copy.svg")}<span>${short}</span></span>
+    <span class="db-copy__done" aria-hidden="true">${icon("check-brand.svg", "current")}Copied!</span>
+  </button>`;
 
 /**
  * Transaction details (node 1197:7059; a top-up, node 1202:7506, comes
@@ -751,7 +757,19 @@ export default {
     const state = { txId: null, back: BACK.transactions };
     Object.assign(state, { page: pageFromHash(), hidden: false, lead: "usd", folded: false, menuOpen: false, query: "", type: "all", filtersOpen: true, sort: "newest", sortOpen: false, recipientQuery: "", light: savedLight() });
     applyTheme(state.light);
-    let copyTimer = 0;
+    // Copies text, with the clipboard API where the page may use it and the
+    // old select-and-copy where it may not (a page served over plain http).
+    const copyText = (text) =>
+      (navigator.clipboard?.writeText(text) ?? Promise.reject()).catch(() => {
+        const area = Object.assign(document.createElement("textarea"), { value: text });
+        area.setAttribute("readonly", "");
+        area.style.cssText = "position:fixed;opacity:0";
+        document.body.append(area);
+        area.select();
+        const ok = document.execCommand("copy");
+        area.remove();
+        if (!ok) throw new Error("copy failed");
+      });
     // The spending chart (Bencho's Stacked bars) keeps its own state, so it is
     // made once and put back in its slot after every redraw.
     const spending = StackedBars({ inline: true });
@@ -894,15 +912,19 @@ export default {
         return;
       }
       else if (e.target.closest("[data-copy]")) {
-        // Copies the whole ID; the label says so for a moment.
+        // Copies the whole ID or hash; "Copied!" stands in for it for 3 seconds.
         const btn = e.target.closest("[data-copy]");
-        const label = btn.parentElement.querySelector("[data-copy-label]");
-        navigator.clipboard
-          ?.writeText(btn.dataset.copy)
-          .then(() => (label.textContent = "Copied"))
-          .catch(() => (label.textContent = btn.dataset.copy));
-        clearTimeout(copyTimer);
-        copyTimer = setTimeout(() => (label.textContent = btn.dataset.copyShort), 1600);
+        copyText(btn.dataset.copy).then(
+          () => {
+            navigator.vibrate?.(10);
+            // one "Copied!" at a time
+            root.querySelectorAll("[data-copied]").forEach((other) => other.removeAttribute("data-copied"));
+            btn.setAttribute("data-copied", "");
+            clearTimeout(btn.copiedTimer);
+            btn.copiedTimer = setTimeout(() => btn.removeAttribute("data-copied"), 3000);
+          },
+          () => {}
+        );
         return;
       }
       else if (e.target.closest("[data-recipient]")) {
