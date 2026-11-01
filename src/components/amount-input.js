@@ -23,7 +23,7 @@
  * "≈ 1,234 USDT", with the snippet's up-and-down arrows beside it, which
  * here swap which currency leads (the "$" sinks away and a " USDT" rises in
  * after the digits, on the same spring); and the red line is the page's
- * own warning (warn(), "Your limit is $1,000"), shown in place of the
+ * own warning (warn(), "Your limit is $10,000"), shown in place of the
  * other currency. The selection haptic is a 5ms vibration
  * where there is one.
  *
@@ -286,7 +286,7 @@ export function AmountInput({ onChange = () => {}, icon = "", warnIcon = "" } = 
     /** Sets the amount, with the typing motion — a preset chip. */
     set: (n) => update(String(n)),
     /**
-     * A warning in place of the other currency — "Your limit is $1,000"
+     * A warning in place of the other currency — "Your limit is $10,000"
      * (node 1197:7021) — or null to bring the other currency back.
      */
     warn: (text) => {

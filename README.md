@@ -131,7 +131,9 @@ of `styles/ds.css` (`.db-*`, with the dark values of the colour variables).
   name, the amount in dollars with USDT under it (hidden in Stealth Mode),
   then a **Transaction details** card — a green **Complete** status, from
   and to (your wallet and the party, with their avatar), the date, and a
-  transaction ID and hash that each copy in full — then **Export PDF** (the
+  transaction ID and hash that each copy in full (the value gives way to a green
+  "✓ COPIED!" for 3 seconds, nodes 1202:7583 / 1202:7732); money in, such as
+  a top-up or a refund, shows its amount in green (#57D172) — then **Export PDF** (the
   browser's print dialog, printing the details alone, to save as PDF) and
   "Something wrong with this transaction? Request refund or contact our
   support" (those two pages aren't designed yet and say so). The back
@@ -173,8 +175,9 @@ from and the two saved cards, from `src/config.js`, each with its logo and
 expiry and a tick by the chosen one, then **Add card**, whose page isn't
 designed yet; picking a card comes back with it chosen and the amount still
 there); and an **Add funds** button
-that is never disabled. Over the limit ($1,000 a top-up) the line under the
-amount turns red and says "Your limit is $1,000" as you type, and the button
+that is never disabled. Over the limit ($10,000 a top-up) the line under the
+amount turns red and says "Your limit is $10,000" as you type — past $50,000,
+"Woah! It's way over $10,000 limit!" — and the button
 does nothing; with nothing entered it asks for an amount. Otherwise it goes back to Home, since the payment
 itself isn't designed yet.
 
@@ -198,7 +201,7 @@ Motion turns it off. What changed for Paymesh:
   snippet's up-and-down arrows beside it. Here they swap which currency
   leads: the "$" sinks away and "USDT" rises in after the digits, on the
   same spring
-- its red line is the top-up limit ("Your limit is $1,000", with the danger
+- its red line is the top-up limit ("Your limit is $10,000", with the danger
   icon) in place of the other currency, rather than "Not enough ETH"
 
 Component in `src/components/amount-input.js`, styles under `.ai` in
