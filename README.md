@@ -159,7 +159,8 @@ of `styles/ds.css` (`.db-*`, with the dark values of the colour variables).
 **Add funds**, under the balance, opens `#add-funds`: the amount, with the same
 amount in the other currency under it; **Pay with**, a dropdown of the cards
 to charge (the Visa the wallet is funded from and the two saved cards, from
-`src/config.js`, each with its logo and expiry); and an **Add funds** button
+`src/config.js`, each with its logo and expiry, then **Add card**, whose page
+isn't designed yet); and an **Add funds** button
 that is never disabled. With nothing entered it asks for an amount, and over
 $10,000 it names the limit. Otherwise it goes back to Home, since the payment
 itself isn't designed yet. The dropdown works from the keyboard too: up and
@@ -179,7 +180,8 @@ Motion turns it off. What changed for Paymesh:
   keypad, through an invisible field over the amount that opens the decimal
   keyboard
 - it is set in Rebond Grotesque Bold, like the balance
-- the line under it is the other currency, "= 1,234.00 USDT", with the
+- the line under it, 24px under the digits and in the tertiary grey
+  (`#97979D` in the dark theme), is the other currency, "= 1,234.00 USDT", with the
   snippet's up-and-down arrows beside it. Here they swap which currency
   leads: the "$" sinks away and "USDT" rises in after the digits, on the
   same spring
