@@ -109,8 +109,8 @@ of `styles/ds.css` (`.db-*`, with the dark values of the colour variables).
   and a pill **Add funds**; **Transactions**, the latest five in a card;
   **Recent payees**, tiles of everyone you've paid, most recently paid
   first (four on phones; **See all** opens Recipients, a payee opens their
-  transactions); and **Analysis**, a card holding the spending chart where
-  the frame says "Analysis goes here" (**See more** isn't designed yet); the
+  transactions); and the spending chart in a card with no heading (as
+  frame 1197:7204 draws it); the
   recipients without a transaction say "No transactions yet". Airbnb keeps its logo;
   everyone else has an initials avatar in one of eight colours (red,
   orange, yellow, green, teal, blue, purple, pink — `--avatar-*` in
@@ -127,15 +127,20 @@ of `styles/ds.css` (`.db-*`, with the dark values of the colour variables).
   the design system's styles, and Bencho's tokens are mapped onto the
   dashboard's, so both themes work.
 - Any transaction, on Home or the Transactions page, opens its **details**
-  (`#tx/<id>`): the checkout's "Order complete" receipt (Figma node
-  1147:5103) inside the dashboard — "Payment sent" or "Payment received",
-  the amount in dollars and USDT, from and to (your wallet and the
-  recipient, with their avatar), the time in UTC and a transaction ID that
-  copies in full. Its button goes back to the list the transaction came
-  from, and the menu keeps Transactions selected. The checkout's merchant
-  bar and legal footer are left out; the dashboard's own header and menu
-  stand in. Each ID is 24 digits worked out from the transaction, so it
-  stays the same between visits.
+  (`#tx/<id>`, Figma node 1197:7059): a back arrow, the party's avatar and
+  name, the amount in dollars with USDT under it (hidden in Stealth Mode),
+  then a **Transaction details** card — a green **Complete** status, from
+  and to (your wallet and the party, with their avatar), the date, and a
+  transaction ID and hash that each copy in full — then **Export PDF** (the
+  browser's print dialog, printing the details alone, to save as PDF) and
+  "Something wrong with this transaction? Request refund or contact our
+  support" (those two pages aren't designed yet and say so). The back
+  arrow returns to the list the transaction came from. Each ID is 24 digits
+  and each hash 64 hex digits, both worked out from the transaction, so
+  they stay the same between visits.
+- On phones, Add funds, Pay with and a transaction's details are full
+  screens, as the frames draw them: no header, a back arrow to leave, and
+  the main button at the foot of the screen.
 - **Recipients** (`#recipients`, not in Figma yet) lists all 20 recipients,
   A–Z under a heading per first letter, with the total of their
   transactions, last transaction date and transaction count. Like
@@ -151,20 +156,23 @@ of `styles/ds.css` (`.db-*`, with the dark values of the colour variables).
 - Under 1000px the menu is icons only. On phones (640px and under) it moves
   behind a hamburger button next to the avatar, opening as a full-screen
   sheet under the header (links and Escape close it).
-- **Add funds** sits under the balance, on every screen size (across the
-  column on phones). Its page (`#add-funds`) isn't designed yet and says so.
 
 ## Add funds
 
-**Add funds**, under the balance, opens `#add-funds`: the amount, with the same
-amount in the other currency under it; **Pay with**, the card to charge in a
-row that opens its own screen (`#pay-with`: the Visa the wallet is funded
+**Add funds**, under the balance, opens `#add-funds` (Figma nodes 1197:7118,
+1197:7161, 1197:6978, 1197:7021): the amount, with roughly the same amount in
+the other currency under it ("≈ 25 USDT"); four preset amounts — **$25**,
+**$50**, **$100**, **$500** — that type themselves in and light up while the
+amount matches; **Pay with**, the card to charge in a
+row that opens its own screen (`#pay-with`, node 1197:6932, "Add funds
+with — Select payment method": the Visa the wallet is funded
 from and the two saved cards, from `src/config.js`, each with its logo and
 expiry and a tick by the chosen one, then **Add card**, whose page isn't
 designed yet; picking a card comes back with it chosen and the amount still
 there); and an **Add funds** button
-that is never disabled. With nothing entered it asks for an amount, and over
-$10,000 it names the limit. Otherwise it goes back to Home, since the payment
+that is never disabled. Over the limit ($1,000 a top-up) the line under the
+amount turns red and says "Your limit is $1,000" as you type, and the button
+does nothing; with nothing entered it asks for an amount. Otherwise it goes back to Home, since the payment
 itself isn't designed yet.
 
 The amount is the 60fps snippet *Comma Jump Number Input Interaction*
@@ -180,13 +188,15 @@ Motion turns it off. What changed for Paymesh:
 - it is typed on the phone's or computer's own keyboard, not an on-screen
   keypad, through an invisible field over the amount that opens the decimal
   keyboard
-- it is set in Rebond Grotesque Bold, like the balance
+- it is set in Rebond Grotesque Bold, like the balance, the "$" as large
+  as the digits
 - the line under it, 24px under the digits and in the tertiary grey
-  (`#97979D` in the dark theme), is the other currency, "= 1,234.00 USDT", with the
+  (`#97979D` in the dark theme), is the other currency, "≈ 1,234 USDT" (Inter Medium 15px), with the
   snippet's up-and-down arrows beside it. Here they swap which currency
   leads: the "$" sinks away and "USDT" rises in after the digits, on the
   same spring
-- there is no red "Not enough ETH" line
+- its red line is the top-up limit ("Your limit is $1,000", with the danger
+  icon) in place of the other currency, rather than "Not enough ETH"
 
 Component in `src/components/amount-input.js`, styles under `.ai` in
 `styles/ds.css`.
