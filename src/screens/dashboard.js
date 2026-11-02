@@ -586,7 +586,7 @@ function detailPage(t, back) {
         </dl>
       </section>
       <div class="db-detail__foot">
-        <button type="button" class="db-btn db-btn--outline" data-export>${icon("db-export.svg", "current")}Export PDF</button>
+        <button type="button" class="db-btn db-btn--outline db-btn--m" data-export>${icon("db-export.svg", "current")}Export PDF</button>
         <p class="db-detail__help">Something wrong with this transaction?<br />
           <a href="#refund" class="db-link">Request refund</a> or <a href="#support" class="db-link">contact our support</a>.</p>
       </div>
@@ -650,7 +650,8 @@ function payWithPage(state) {
 }
 
 /**
- * Add funds (nodes 1197:7118 – 1197:7021) — the amount (the 60fps "Comma
+ * Add funds (nodes 1197:7118 – 1197:7021, restyled by 1206:206: a small
+ * "Add funds" over the amount in place of the big title) — the amount (the 60fps "Comma
  * Jump Number Input", typed on the system keyboard, in dollars or USDT with
  * the other under it, or the limit when it's over), preset amounts, the card
  * to charge, and the button at the foot of the screen. The amount field is made once (see mount) and dropped into
@@ -660,8 +661,8 @@ function addFundsPage(state, value) {
   return `
     <section class="db-addfunds" aria-labelledby="db-addfunds-title">
       ${backArrow("#home", "Back")}
-      <h2 id="db-addfunds-title" class="db-addfunds__title">Add funds</h2>
       <div class="db-addfunds__amount">
+        <h2 id="db-addfunds-title" class="db-addfunds__label">Add funds</h2>
         <div data-amount></div>
         <div class="db-presets" role="group" aria-label="Amount">
           ${PRESETS.map((n) => `<button type="button" class="db-preset" data-preset="${n}" aria-pressed="${value === n}">$${n}</button>`).join("")}
@@ -853,7 +854,20 @@ export default {
       toggle.setAttribute("aria-description", `Stealth Mode ${state.hidden ? "on" : "off"}. Activate to ${state.hidden ? "reveal" : "hide"} the balance`);
     };
 
+    // The keyboard on arriving at Add funds: phones (iOS above all) only
+    // bring it up for a field focused inside the tap itself, and the amount
+    // field isn't on the page until the hash changes and the page redraws.
+    // So the tap focuses this stand-in — an invisible decimal field that is
+    // always there — and the amount field takes the focus, keyboard and all,
+    // once it is drawn.
+    const keyboard = Object.assign(document.createElement("input"), { type: "text", inputMode: "decimal", tabIndex: -1 });
+    keyboard.setAttribute("aria-hidden", "true");
+    keyboard.style.cssText = "position:fixed;top:0;left:0;width:1px;height:1px;opacity:0;font-size:16px;pointer-events:none";
+    document.body.append(keyboard);
+    const TO_FUNDS = 'a[href="#add-funds"], [data-to-funds], [data-card]';
+
     root.addEventListener("click", (e) => {
+      if (e.target.closest(TO_FUNDS)) keyboard.focus({ preventScroll: true });
       // A click anywhere outside the sort menu closes it.
       if (state.sortOpen && !e.target.closest("[data-sort-wrap]")) {
         state.sortOpen = false;
