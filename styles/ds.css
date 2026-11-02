@@ -1963,7 +1963,8 @@ body:has(.db.is-light) { --db-page: #ffffff; }
 .ai-other { white-space: nowrap; }
 .ai-swap { display: grid; place-items: center; width: 28px; height: 28px; margin: 0 -6px; padding: 0; border: 0; border-radius: var(--radius-m); background: none; color: inherit; cursor: pointer; }
 .ai-swap:hover { background: var(--surface-card-hover); }
-.ai-swap .db-icon { width: 16px; height: 16px; -webkit-mask-size: 16px 16px; mask-size: 16px 16px; }
+/* the swap icon at 20px (nodes 1210:523 / 1211:1328) */
+.ai-swap .db-icon { width: 20px; height: 20px; -webkit-mask-size: 20px 20px; mask-size: 20px 20px; }
 /* first paint and Reduce Motion: values change, nothing moves */
 .ai[data-still] .ai-glyphs, .ai[data-still] .ai-glyph, .ai[data-still] .ai-glyph > span { transition: none; }
 @media (prefers-reduced-motion: reduce) {
@@ -1976,12 +1977,16 @@ body:has(.db.is-light) { --db-page: #ffffff; }
 .db-addfunds__title { margin: 0; font: var(--heading-2xl); letter-spacing: 0; color: var(--text-heading); }
 /* nodes 1197:7118 – 1197:6932: the back arrow 20px above the title */
 .db-addfunds > .db-backarrow { align-self: flex-start; margin-bottom: calc(-1 * var(--spacing-12)); }
+.db-addfunds__bar .db-backarrow { align-self: auto; margin: 0; }
 .db-addfunds__head { display: flex; flex-direction: column; gap: var(--spacing-8); margin: 0 0 calc(-1 * var(--spacing-12)); }
 .db-addfunds__sub { margin: 0; font: var(--text-m); letter-spacing: var(--tracking-text); color: var(--text-tertiary); }
-/* node 1206:206: the back arrow, then 32px down a small "Add funds"
-   (Heading/XS Semibold, secondary) 4px over the amount */
-.db-addfunds__amount { display: flex; flex-direction: column; gap: var(--spacing-24); margin-top: -22px; padding-top: var(--spacing-32); }
-.db-addfunds__label { margin: 0 0 -15px; font: var(--heading-xs); letter-spacing: 0; color: var(--text-secondary); text-align: center; }
+/* nodes 1210:523 / 1211:1328: a bar — the back arrow, "Add funds" centred
+   (Heading/M Bold), and a 32px space to balance the arrow — then the
+   amount, its digits 32px under the bar */
+.db-addfunds__bar { display: flex; align-items: center; justify-content: space-between; gap: var(--spacing-8); }
+.db-addfunds__bartitle { margin: 0; font: var(--heading-m-bold); letter-spacing: 0; color: var(--text-primary); text-align: center; }
+.db-addfunds__spacer { flex: 0 0 auto; width: 32px; height: 32px; }
+.db-addfunds__amount { display: flex; flex-direction: column; gap: var(--spacing-24); margin-top: -17px; }
 /* the preset amounts — the design system's Badge, four across */
 .db-presets { display: flex; gap: var(--spacing-8); }
 .db-preset { display: grid; place-items: center; flex: 1 1 0; min-width: 0; height: 32px; padding: 0 var(--spacing-8); border: 0; border-radius: var(--radius-full); background: var(--surface-secondary); color: var(--text-primary); font: 600 16px/24px var(--font-family-inter); cursor: pointer; }
