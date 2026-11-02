@@ -1416,6 +1416,8 @@ body:has(.db.is-light) { --db-page: #ffffff; }
    and, at the foot, Export PDF and where to get help — 32px apart */
 .db-detail { display: flex; flex-direction: column; align-items: center; gap: var(--spacing-32); width: 100%; max-width: calc(422px + 2 * var(--spacing-16)); margin: 0 auto; padding: 0 var(--spacing-16); box-sizing: border-box; }
 .db-detail > .db-backarrow { align-self: flex-start; }
+/* node 1206:304: the avatar 24px over the name and amount */
+.db-detail > .db-avatar + .db-detail__value { margin-top: calc(-1 * var(--spacing-8)); }
 .db-detail__value { align-self: stretch; display: flex; flex-direction: column; align-items: center; text-align: center; }
 .db-detail__value > * { margin: 0; }
 .db-detail__party { font: var(--heading-l); letter-spacing: 0; color: var(--text-heading); }
@@ -1425,7 +1427,7 @@ body:has(.db.is-light) { --db-page: #ffffff; }
 .db-detail__value .db-mask { justify-items: center; }
 .db-card.db-detail__card { align-self: stretch; padding: var(--spacing-12); }
 .db-detail__heading { margin: 0; font: var(--heading-m); letter-spacing: 0; color: var(--text-heading); }
-.db-detail__rows { display: flex; flex-direction: column; gap: var(--spacing-12); margin: 0; padding: var(--spacing-24) 0 0; }
+.db-detail__rows { display: flex; flex-direction: column; gap: var(--spacing-16); margin: 0; padding: var(--spacing-24) 0 0; }
 .db-detail__row { display: flex; align-items: center; justify-content: space-between; gap: var(--spacing-16); font: var(--text-m-semibold); letter-spacing: var(--tracking-text); }
 .db-detail__row dt { flex: 0 0 auto; font: var(--text-m); letter-spacing: var(--tracking-text); color: var(--text-tertiary); }
 .db-detail__row dd { display: flex; align-items: center; justify-content: flex-end; gap: var(--spacing-8); min-width: 0; margin: 0; color: var(--text-primary); text-align: right; white-space: nowrap; }
@@ -1467,6 +1469,8 @@ body:has(.db.is-light) { --db-page: #ffffff; }
 /* Button (outline, L) — a hairline border, the label in the primary ink */
 .db-btn--outline { gap: var(--spacing-8); border: 1px solid var(--border-default); background: none; color: var(--text-primary) !important; }
 .db-btn--outline:hover { background: var(--surface-card-hover); }
+/* Button M: 44px, Button/M (Inter Semibold 16/24) */
+.db-btn--m { height: 44px; padding: 10px var(--spacing-16) 10px 14px; font: 600 16px/24px var(--font-family-inter); }
 .db-btn--outline .db-icon { width: 24px; height: 24px; -webkit-mask-size: 20px 20px; mask-size: 20px 20px; }
 
 /* Add funds — Button (primary, L) under the balance: as wide as its label,
@@ -1528,11 +1532,10 @@ body:has(.db.is-light) { --db-page: #ffffff; }
      its back arrow leads out — and the screen's height, so the button sits
      at its foot */
   .db.is-sub .db-header { display: none; }
-  .db.is-sub .db-main { min-height: 100vh; min-height: 100dvh; padding: var(--spacing-24) 0 var(--spacing-24); box-sizing: border-box; }
+  .db.is-sub .db-main { min-height: 100vh; min-height: 100dvh; padding: var(--spacing-24) 0 var(--spacing-16); box-sizing: border-box; }
   .db.is-sub .db-addfunds, .db.is-sub .db-detail { flex: 1 0 auto; padding: 0 var(--spacing-12); }
   .db.is-sub .db-detail { padding: 0 var(--spacing-8); }
-  /* Add funds' button 32px above the screen's foot */
-  .db.is-sub .db-addfunds__go { margin-bottom: var(--spacing-8); }
+  /* Add funds' button: 16px above the screen's foot (the page's own padding) */
 }
 /* Export PDF prints the details alone */
 @media print {
@@ -1975,7 +1978,10 @@ body:has(.db.is-light) { --db-page: #ffffff; }
 .db-addfunds > .db-backarrow { align-self: flex-start; margin-bottom: calc(-1 * var(--spacing-12)); }
 .db-addfunds__head { display: flex; flex-direction: column; gap: var(--spacing-8); margin: 0 0 calc(-1 * var(--spacing-12)); }
 .db-addfunds__sub { margin: 0; font: var(--text-m); letter-spacing: var(--tracking-text); color: var(--text-tertiary); }
-.db-addfunds__amount { display: flex; flex-direction: column; gap: var(--spacing-24); padding-top: var(--spacing-12); }
+/* node 1206:206: the back arrow, then 32px down a small "Add funds"
+   (Heading/XS Semibold, secondary) 4px over the amount */
+.db-addfunds__amount { display: flex; flex-direction: column; gap: var(--spacing-24); margin-top: -22px; padding-top: var(--spacing-32); }
+.db-addfunds__label { margin: 0 0 -15px; font: var(--heading-xs); letter-spacing: 0; color: var(--text-secondary); text-align: center; }
 /* the preset amounts — the design system's Badge, four across */
 .db-presets { display: flex; gap: var(--spacing-8); }
 .db-preset { display: grid; place-items: center; flex: 1 1 0; min-width: 0; height: 32px; padding: 0 var(--spacing-8); border: 0; border-radius: var(--radius-full); background: var(--surface-secondary); color: var(--text-primary); font: 600 16px/24px var(--font-family-inter); cursor: pointer; }
