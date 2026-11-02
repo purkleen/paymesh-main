@@ -650,8 +650,8 @@ function payWithPage(state) {
 }
 
 /**
- * Add funds (nodes 1197:7118 – 1197:7021, restyled by 1206:206: a small
- * "Add funds" over the amount in place of the big title) — the amount (the 60fps "Comma
+ * Add funds (nodes 1197:7118 – 1197:7021, restyled by 1210:523 / 1211:1328:
+ * "Add funds" centred in a bar with the back arrow) — the amount (the 60fps "Comma
  * Jump Number Input", typed on the system keyboard, in dollars or USDT with
  * the other under it, or the limit when it's over), preset amounts, the card
  * to charge, and the button at the foot of the screen. The amount field is made once (see mount) and dropped into
@@ -660,9 +660,12 @@ function payWithPage(state) {
 function addFundsPage(state, value) {
   return `
     <section class="db-addfunds" aria-labelledby="db-addfunds-title">
-      ${backArrow("#home", "Back")}
+      <div class="db-addfunds__bar">
+        ${backArrow("#home", "Back")}
+        <h2 id="db-addfunds-title" class="db-addfunds__bartitle">Add funds</h2>
+        <span class="db-addfunds__spacer" aria-hidden="true"></span>
+      </div>
       <div class="db-addfunds__amount">
-        <h2 id="db-addfunds-title" class="db-addfunds__label">Add funds</h2>
         <div data-amount></div>
         <div class="db-presets" role="group" aria-label="Amount">
           ${PRESETS.map((n) => `<button type="button" class="db-preset" data-preset="${n}" aria-pressed="${value === n}">$${n}</button>`).join("")}

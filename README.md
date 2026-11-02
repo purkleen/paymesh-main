@@ -166,8 +166,9 @@ of `styles/ds.css` (`.db-*`, with the dark values of the colour variables).
 ## Add funds
 
 **Add funds**, under the balance, opens `#add-funds` (Figma nodes 1197:7118,
-1197:7161, 1197:6978, 1197:7021, restyled by 1206:206) with the keyboard
-already up: a back arrow, a small "Add funds" over the amount, with roughly the same amount in
+1197:7161, 1197:6978, 1197:7021, restyled by 1210:523 / 1211:1328) with the
+keyboard already up: a bar with the back arrow and "Add funds" centred, then
+the amount, with roughly the same amount in
 the other currency under it ("≈ 25 USDT"); four preset amounts — **$25**,
 **$50**, **$100**, **$500** — that type themselves in and light up while the
 amount matches; **Pay with**, the card to charge in a
