@@ -1176,6 +1176,14 @@ body:has(.db.is-light) { --db-page: #ffffff; }
 /* "Show balance": the design system's eye, in the dark theme's icon colour */
 .db-icon--eye { background: var(--icon-primary); -webkit-mask: url("../assets/ds/eye.svg") center / 24px 24px no-repeat; mask: url("../assets/ds/eye.svg") center / 24px 24px no-repeat; }
 .is-folded .db-nav__label { display: none; }
+/* the menu's Home layout switch: v1 / v2, the current one lit */
+.db-nav__seg { display: inline-flex; margin-left: auto; padding: 2px; border-radius: 10px; background: var(--surface-secondary); font: var(--text-xs-medium); letter-spacing: var(--tracking-text); }
+.db-nav__seg > span { padding: 2px 8px; border-radius: 8px; color: var(--text-tertiary); }
+.db-nav__seg > [data-on] { background: var(--action-primary-default); color: var(--text-inverse); }
+.db-nav__home:hover .db-nav__seg { background: var(--background-canvas); }
+.is-folded .db-nav__seg { display: none; }
+/* icons-only menu (tablets): no room for it; phones show labels, so show it */
+@media (max-width: 1000px) and (min-width: 641px) { .db .db-nav__seg { display: none; } }
 .is-folded .db-nav__fold .db-icon { transform: scaleX(-1); }
 
 /* Main column */
@@ -1267,12 +1275,30 @@ body:has(.db.is-light) { --db-page: #ffffff; }
 .db-card--analysis.db-panel { padding: var(--spacing-16); }
 .db-card--analysis .stb.stb--inline { gap: var(--spacing-24); }
 .db-card--analysis .stb.stb--inline .stb-num { font: 600 18px/26px var(--font-family-inter); letter-spacing: var(--tracking-text); }
+/* Home v2: the balance centred in a hero card, a glow of the brand colour
+   inside it, with Add funds and See activity under it */
+.db .db-hero { position: relative; isolation: isolate; align-items: center; gap: var(--spacing-4); margin: 0 var(--spacing-16); padding: var(--spacing-24) var(--spacing-16) var(--spacing-16); overflow: hidden; text-align: center; }
+.db-hero::before { content: ""; position: absolute; z-index: -1; inset: -60% -10% auto; height: 120%; border-radius: 50%; background: radial-gradient(closest-side, var(--home-glow), transparent); pointer-events: none; }
+.db-hero__label { margin: 0; font: var(--text-s); letter-spacing: var(--tracking-text); color: var(--text-tertiary); }
+.db-hero .db-balance__stealth, .db-hero .db-balance__mask { justify-items: center; text-align: center; }
+.db-hero .db-balance__amount { font-size: 44px; line-height: 48px; }
+.db-hero .db-balance__stealth .db-stars { font-size: 44px; }
+.db-hero__actions { display: flex; gap: var(--spacing-8); align-self: stretch; margin-top: var(--spacing-16); }
+.db-hero__actions .db-btn { flex: 1 1 0; justify-content: center; margin: 0; height: 44px; padding: 10px var(--spacing-16); border-radius: 9999px; font: 600 16px/24px var(--font-family-inter); }
+/* Send again: bare avatars in a row, first names under them; scrolls
+   sideways when there are more than fit */
+.db-again { display: flex; gap: var(--spacing-12); margin: 0; padding: 0; list-style: none; overflow-x: auto; scrollbar-width: none; scroll-snap-type: x proximity; }
+.db-again::-webkit-scrollbar { display: none; }
+.db-again li { flex: 0 0 auto; scroll-snap-align: start; }
+.db-again__item { display: flex; flex-direction: column; align-items: center; gap: 6px; width: 60px; padding: 4px 0; border: 0; border-radius: var(--radius-lg); background: none; color: var(--text-primary); cursor: pointer; }
+.db-again__item:hover .db-avatar { box-shadow: 0 0 0 2px var(--background-canvas), 0 0 0 4px var(--border-panel); }
+.db-again__name { max-width: 60px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font: var(--text-xs-medium); letter-spacing: var(--tracking-text); }
 /* the glow behind the top of Home, on phones (the frame is a phone): a
    soft disc of the brand colour, 487px across, centred 16px in and 140px
    down */
 @media (max-width: 640px) {
 .db.is-home { position: relative; overflow-x: clip; }
-.db.is-home::before {
+.db.is-home-v1::before {
   content: "";
   position: absolute;
   z-index: 21;
@@ -1285,7 +1311,8 @@ body:has(.db.is-light) { --db-page: #ffffff; }
   mix-blend-mode: screen;
   pointer-events: none;
 }
-.db.is-home.is-light::before { mix-blend-mode: multiply; }
+.db.is-home-v1.is-light::before { mix-blend-mode: multiply; }
+.db.is-home-v2 .db-hero { margin: 0 var(--spacing-8); }
 }
 .db-link:hover { opacity: .7; }
 .db-txlist { margin: 0; padding: 0; list-style: none; }
