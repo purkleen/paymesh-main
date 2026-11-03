@@ -34,6 +34,8 @@
  *   - on phones the menu opens from the menu button in the header
  *   - Home (node 1234:2620): bordered panels, a big grey "Balance", and the
  *     balance shuffling into place (src/components/shuffle-digits.js)
+ *   - Home layout in the menu switches Home between v1 (node 1234:2620)
+ *     and v2 (a hero balance card, Send again, Latest, Spending)
  * The page is in the URL hash (#home, #transactions, …), so Back works.
  */
 
@@ -257,6 +259,20 @@ const savedLight = () => {
     return false;
   }
 };
+/** Which Home layout the browser last chose: "1" (node 1234:2620) or "2". */
+const HOME_KEY = "paymesh.dashboard.home";
+const savedHome = () => {
+  try {
+    return localStorage.getItem(HOME_KEY) === "2" ? "2" : "1";
+  } catch {
+    return "1";
+  }
+};
+const saveHome = (version) => {
+  try {
+    localStorage.setItem(HOME_KEY, version);
+  } catch {}
+};
 /** Saves the theme and matches the browser chrome to the page. */
 const applyTheme = (light) => {
   try {
@@ -335,17 +351,24 @@ const balanceLabel = (hidden) => (hidden ? "Balance hidden" : `Balance, ${num(BA
  * you move between pages.
  */
 function balance({ hidden, lead }) {
-  const [whole, cents] = num(BALANCE).split(".");
-  const usd = lead === "usd";
-  const big = `${usd ? "$" : ""}${whole}<span class="db-balance__cents">.${cents}${usd ? "" : " USDT"}</span>`;
-  const small = usd ? `${num(BALANCE)} USDT` : `$${num(BALANCE)}`;
-
   // The frames (nodes 1174:6581 and 1174:6801) draw no eye and no swap
   // arrows: the balance itself is the Stealth Mode switch, and the line
   // under it swaps which currency leads.
   return `
     <section class="db-balance" aria-label="Balance">
       <h2 class="db-balance__label">Balance</h2>
+      ${balanceFigures({ hidden, lead })}
+      <a href="#add-funds" class="db-btn db-balance__add">${icon("add.svg", "current")}Add funds</a>
+    </section>`;
+}
+
+/** The balance and the line under it — the Stealth Mode and swap controls. */
+function balanceFigures({ hidden, lead }) {
+  const [whole, cents] = num(BALANCE).split(".");
+  const usd = lead === "usd";
+  const big = `${usd ? "$" : ""}${whole}<span class="db-balance__cents">.${cents}${usd ? "" : " USDT"}</span>`;
+  const small = usd ? `${num(BALANCE)} USDT` : `$${num(BALANCE)}`;
+  return `
       <button type="button" class="db-balance__stealth" data-toggle-hide aria-pressed="${hidden}" aria-label="${balanceLabel(hidden)}"
         aria-description="Stealth Mode ${hidden ? "on" : "off"}. Activate to ${hidden ? "reveal" : "hide"} the balance">
         <span class="db-balance__amount">${big}</span>
@@ -354,8 +377,47 @@ function balance({ hidden, lead }) {
       <button type="button" class="db-balance__mask" data-swap aria-label="Show balance in ${usd ? "USDT" : "US dollars"} first" title="Swap currency">
         <span class="db-balance__other" data-private>${small}</span>
         ${stars(6)}
-      </button>
-      <a href="#add-funds" class="db-btn db-balance__add">${icon("add.svg", "current")}Add funds</a>
+      </button>`;
+}
+
+/**
+ * Home v2 — a second layout to compare with v1 (node 1234:2620), switched
+ * in the menu. The same pieces, arranged differently: the balance centred in
+ * a hero card with Add funds and See activity under it; "Send again", the
+ * people and places you paid last as bare avatars in a row; then the latest
+ * transactions and the spending chart. Stealth Mode, the swap and the
+ * shuffle work as in v1.
+ */
+function homeV2(state) {
+  return `
+    <section class="db-balance db-hero db-panel" aria-label="Balance">
+      <h2 class="db-hero__label">Total balance</h2>
+      ${balanceFigures(state)}
+      <div class="db-hero__actions">
+        <a href="#add-funds" class="db-btn db-balance__add">${icon("add.svg", "current")}Add funds</a>
+        <a href="#transactions" class="db-btn db-btn--outline db-hero__more">See activity</a>
+      </div>
+    </section>
+    <section class="db-section" aria-labelledby="db-again">
+      <div class="db-section__head">
+        <h2 id="db-again">Send again</h2>
+        <a href="#recipients" class="db-link">See all</a>
+      </div>
+      <ul class="db-again">${PAYEES.map(
+        (t) => `<li><button type="button" class="db-again__item" data-recipient="${esc(t.party)}" title="${esc(t.party)}">
+          ${avatar(t, 48)}<span class="db-again__name">${esc(t.party.split(" ")[0])}</span></button></li>`
+      ).join("")}</ul>
+    </section>
+    <section class="db-section" aria-labelledby="db-recent">
+      <div class="db-section__head">
+        <h2 id="db-recent">Latest</h2>
+        <a href="#transactions" class="db-link">See all</a>
+      </div>
+      <div class="db-card db-panel db-panel--list"><ul class="db-txlist">${RECENT.map((t) => row(t, true, true)).join("")}</ul></div>
+    </section>
+    <section class="db-section" aria-labelledby="db-spend">
+      <div class="db-section__head"><h2 id="db-spend">Spending</h2></div>
+      <div class="db-card db-card--analysis db-panel"><div data-spending></div></div>
     </section>`;
 }
 
@@ -697,6 +759,7 @@ function addFundsPage(state, value) {
 function main(state, value = 0) {
   switch (state.page) {
     case "home":
+      if (state.home === "2") return homeV2(state);
       return `
         ${balance(state)}
         <section class="db-section" aria-labelledby="db-recent">
@@ -739,7 +802,7 @@ function main(state, value = 0) {
 
 function render(state, value) {
   return `
-  <div class="db ${state.page === "home" ? "is-home" : ""} ${SUBPAGES.has(state.page) ? "is-sub" : ""} ${state.folded ? "is-folded" : ""} ${state.menuOpen ? "is-menu-open" : ""} ${state.light ? "is-light" : ""}"${state.hidden ? " data-stealth" : ""}>
+  <div class="db ${state.page === "home" ? `is-home is-home-v${state.home}` : ""} ${SUBPAGES.has(state.page) ? "is-sub" : ""} ${state.folded ? "is-folded" : ""} ${state.menuOpen ? "is-menu-open" : ""} ${state.light ? "is-light" : ""}"${state.hidden ? " data-stealth" : ""}>
     <header class="db-header">
       <a href="#home" class="db-logo">Paymesh</a>
       <div class="db-user">
@@ -759,6 +822,11 @@ function render(state, value) {
         </button>
         <button type="button" class="db-nav__item" data-theme-toggle title="${state.light ? "Dark mode" : "Light mode"}">
           ${icon(state.light ? "db-moon.svg" : "db-sun.svg")}<span class="db-nav__label">${state.light ? "Dark mode" : "Light mode"}</span>
+        </button>
+        <button type="button" class="db-nav__item db-nav__home" data-home-version title="Switch Home layout"
+          aria-label="Home layout: version ${state.home}. Switch to version ${state.home === "2" ? "1" : "2"}">
+          ${icon("db-home.svg")}<span class="db-nav__label">Home layout</span>
+          <span class="db-nav__seg" aria-hidden="true"><span ${state.home === "1" ? "data-on" : ""}>v1</span><span ${state.home === "2" ? "data-on" : ""}>v2</span></span>
         </button>
         ${navButton({ id: "settings", label: "Settings", icon: "db-settings.svg" }, state.page)}
         <a class="db-nav__item" href="./" title="Log out">${icon("db-log-out.svg")}<span class="db-nav__label">Log out</span></a>
@@ -783,7 +851,7 @@ export default {
     // Where the details page's button goes: the list the transaction was picked from.
     const BACK = { home: { id: "home", label: "Home" }, transactions: { id: "transactions", label: "transactions" } };
     const state = { txId: null, back: BACK.transactions };
-    Object.assign(state, { page: pageFromHash(), hidden: false, lead: "usd", folded: false, menuOpen: false, query: "", type: "all", filtersOpen: true, sort: "newest", sortOpen: false, recipientQuery: "", light: savedLight() });
+    Object.assign(state, { page: pageFromHash(), hidden: false, lead: "usd", folded: false, menuOpen: false, query: "", type: "all", filtersOpen: true, sort: "newest", sortOpen: false, recipientQuery: "", light: savedLight(), home: savedHome() });
     applyTheme(state.light);
     // Copies text, with the clipboard API where the page may use it and the
     // old select-and-copy where it may not (a page served over plain http).
@@ -941,6 +1009,17 @@ export default {
       }
       else if (e.target.closest("[data-fold]")) state.folded = !state.folded;
       else if (e.target.closest("[data-theme-toggle]")) applyTheme((state.light = !state.light));
+      else if (e.target.closest("[data-home-version]")) {
+        // the other Home layout, and Home itself to see it
+        state.home = state.home === "2" ? "1" : "2";
+        saveHome(state.home);
+        state.menuOpen = false;
+        shuffleNext = true;
+        if (state.page !== "home") {
+          location.hash = "#home";
+          return;
+        }
+      }
       else if (e.target.closest("[data-menu]")) state.menuOpen = !state.menuOpen;
       else if (e.target.closest("[data-filters]")) state.filtersOpen = !state.filtersOpen;
       else if (e.target.closest("[data-type]")) state.type = e.target.closest("[data-type]").dataset.type;

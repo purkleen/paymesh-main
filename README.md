@@ -165,6 +165,14 @@ of `styles/ds.css` (`.db-*`, with the dark values of the colour variables).
   bordered #161818 panels with 18px corners; on Home, money going out is in
   the primary ink with its cents in grey, and dates drop "UTC"; on phones,
   a soft glow of the brand colour behind the top.
+- **Home layout** in the menu (v1 / v2) switches between two Homes; the
+  browser remembers the choice. v1 is the one above. v2 is a second layout
+  made from the same pieces to compare against it: the balance centred in a
+  hero card (with a soft brand-colour glow inside) with **Add funds** and
+  **See activity** under it; **Send again**, the people and places you last
+  paid as bare avatars with first names in a sideways row; then **Latest**
+  (the five newest transactions) and **Spending** (the chart). Stealth Mode,
+  the currency swap and the shuffle work the same in both.
 - The balance **shuffles** into place: its digits spin through random
   digits for a second (a new digit every 70ms) and land left to right
   (`src/components/shuffle-digits.js`) — on arriving at Home, on coming out
