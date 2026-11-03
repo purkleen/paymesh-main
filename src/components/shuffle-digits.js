@@ -1,9 +1,9 @@
 /**
  * shuffleDigits — every digit inside an element spins through random digits
- * and lands on its own, left to right, over half a second; the wallet
+ * and lands on its own, left to right, over a second; the wallet
  * dashboard's balance uses it to reveal itself.
  *
- *   const stop = shuffleDigits(el);           // 500ms
+ *   const stop = shuffleDigits(el);           // 1s
  *   shuffleDigits(el, { duration: 800 });
  *
  * Each digit is held at its final width while it spins, so the figure never
@@ -18,7 +18,7 @@
 
 const reduceMotion = () => !!window.matchMedia?.("(prefers-reduced-motion: reduce)").matches;
 
-export function shuffleDigits(root, { duration = 500 } = {}) {
+export function shuffleDigits(root, { duration = 1000, every = 70 } = {}) {
   if (!root || reduceMotion()) return () => {};
 
   // wrap every digit in a span of its own
@@ -60,8 +60,8 @@ export function shuffleDigits(root, { duration = 500 } = {}) {
   const tick = (now) => {
     const t = now - start;
     if (t >= duration) return finish();
-    // a new random digit every 40ms or so, until each one lands
-    const spin = now - lastSpin >= 40;
+    // a new random digit every 70ms or so (`every`), until each one lands
+    const spin = now - lastSpin >= every;
     if (spin) lastSpin = now;
     for (const c of cells) {
       if (t >= c.at) c.el.textContent = c.final;

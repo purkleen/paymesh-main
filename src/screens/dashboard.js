@@ -844,9 +844,9 @@ export default {
       });
       labels();
     };
-    // The balance reveals itself with its digits shuffling for half a
-    // second: on arriving at Home, on coming out of Stealth Mode and on
-    // swapping which currency leads.
+    // The balance reveals itself with its digits shuffling for a second,
+    // a new digit every 70ms: on arriving at Home, on coming out of
+    // Stealth Mode and on swapping which currency leads.
     let shuffleNext = true;
     let stopShuffle = () => {};
     const shuffleBalance = () => {
@@ -855,7 +855,7 @@ export default {
       if (!figures.length || state.hidden) return;
       // Rebond is measured for the held widths, so wait for it
       const run = () => {
-        const stops = figures.filter((el) => el.isConnected).map((el) => shuffleDigits(el, { duration: 500 }));
+        const stops = figures.filter((el) => el.isConnected).map((el) => shuffleDigits(el, { duration: 1000, every: 70 }));
         stopShuffle = () => stops.forEach((stop) => stop());
       };
       document.fonts?.status === "loaded" ? run() : document.fonts.ready.then(run);
