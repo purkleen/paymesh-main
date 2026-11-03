@@ -1004,6 +1004,13 @@ button.nw-row { cursor: pointer; }
   /* node 1197:7059's status pill, and node 1197:7021's limit warning */
   --transaction-income: #57d172;
   --text-negative: #ffbfbe;
+  /* Home, node 1234:2620: the big "Balance", its cards (a bordered panel
+     a shade darker than the cards elsewhere) and the glow behind the top */
+  --balance-label: #72727a;
+  --surface-panel: #161818;
+  --border-panel: rgba(102, 102, 102, .4);
+  --shadow-panel: 0 0 20px -10px rgba(0, 0, 0, .16);
+  --home-glow: rgba(80, 63, 241, .24);
   --radius-lg: 12px;
   --db-nav-w: 340px;
 
@@ -1045,6 +1052,11 @@ body:has(.db) { background: var(--db-page, #0e0e11); }
   --transaction-completed: #15803d;
   --transaction-income: #15803d;
   --text-negative: #bf1a38;
+  --balance-label: #97979d;
+  --surface-panel: #f4f4f6;
+  --border-panel: rgba(0, 0, 0, .06);
+  --shadow-panel: 0 0 20px -10px rgba(0, 0, 0, .16);
+  --home-glow: rgba(80, 63, 241, .12);
 }
 body:has(.db.is-light) { --db-page: #ffffff; }
 .db.is-folded { --db-nav-w: 52px; }
@@ -1185,7 +1197,8 @@ body:has(.db.is-light) { --db-page: #ffffff; }
    (Heading/M), 4px apart; then Add funds, 24px below */
 .db-balance { display: flex; flex-direction: column; align-items: flex-start; gap: var(--spacing-4); padding: 0 var(--spacing-16); }
 .db-balance h2 { margin: 0; }
-.db-balance__label { font: var(--heading-m); letter-spacing: 0; color: var(--text-tertiary); }
+/* "Balance": Rebond Semibold 40px on a 28px line, grey (node 1234:2620) */
+.db-balance__label { margin-bottom: -3px !important; font: 600 40px/28px var(--font-family-rebond); letter-spacing: -0.8px; color: var(--balance-label); }
 .db-balance__amount { margin: 0; font: 700 40px/40px var(--font-family-rebond); letter-spacing: 0; white-space: nowrap; }
 /* the balance's asterisks: Rebond Grotesque Bold, 40px, 100% line height,
    -2% tracking */
@@ -1221,7 +1234,10 @@ body:has(.db.is-light) { --db-page: #ffffff; }
   .db { --hsn-duration: 100ms; --hsn-ease: linear; }
   .db[data-stealth] .db-balance__amount { scale: 1; }
 }
-.db-balance__other, .db-balance__mask .db-stars { margin: 0; font: var(--heading-m); color: var(--text-tertiary); white-space: nowrap; }
+.db-balance__other, .db-balance__mask .db-stars { margin: 0; font: 600 16px/28px var(--font-family-rebond); color: var(--text-tertiary); white-space: nowrap; }
+/* the shuffle (src/components/shuffle-digits.js): each digit held at its
+   final width while it spins */
+.shuf { display: inline-block; text-align: center; }
 .db-iconbtn { display: grid; place-items: center; width: 32px; height: 32px; margin: -4px; padding: 0; border: 0; border-radius: var(--radius-m); background: none; cursor: pointer; }
 .db-iconbtn:hover { background: var(--surface-secondary); }
 
@@ -1238,6 +1254,38 @@ body:has(.db.is-light) { --db-page: #ffffff; }
 .db-card .db-tx { padding: var(--spacing-8) var(--spacing-12); }
 .db-card .db-tx:hover { background: var(--surface-card-hover); }
 .db-card--analysis { padding: var(--spacing-12); }
+/* Home's panels (node 1234:2620): #161818, a hairline border, 18px corners */
+.db-panel { border: 1px solid var(--border-panel); border-radius: 18px; background: var(--surface-panel); box-shadow: var(--shadow-panel); }
+/* the transactions: 16px in, rows 12px apart, avatar 8px from the text */
+.db-panel--list { padding: 10px; }
+.db-panel--list .db-txlist { display: flex; flex-direction: column; gap: 0; }
+.db-card.db-panel--list .db-tx { gap: var(--spacing-8); padding: 6px; border-radius: 10px; }
+/* an amount going out: primary ink, its cents in grey */
+.db-panel--list .db-tx__amount.is-expense { color: var(--text-primary); }
+.db-tx__cents { color: var(--text-tertiary); }
+.db-card--analysis.db-panel { padding: var(--spacing-16); }
+.db-card--analysis .stb.stb--inline { gap: var(--spacing-24); }
+.db-card--analysis .stb.stb--inline .stb-num { font: 600 18px/26px var(--font-family-inter); letter-spacing: var(--tracking-text); }
+/* the glow behind the top of Home, on phones (the frame is a phone): a
+   soft disc of the brand colour, 487px across, centred 16px in and 140px
+   down */
+@media (max-width: 640px) {
+.db.is-home { position: relative; overflow-x: clip; }
+.db.is-home::before {
+  content: "";
+  position: absolute;
+  z-index: 21;
+  left: calc(16px - 243px);
+  top: calc(140px - 243px);
+  width: 487px;
+  height: 487px;
+  border-radius: 50%;
+  background: radial-gradient(closest-side, var(--home-glow), transparent);
+  mix-blend-mode: screen;
+  pointer-events: none;
+}
+.db.is-home.is-light::before { mix-blend-mode: multiply; }
+}
 .db-link:hover { opacity: .7; }
 .db-txlist { margin: 0; padding: 0; list-style: none; }
 .db-tx {
@@ -1370,7 +1418,7 @@ body:has(.db.is-light) { --db-page: #ffffff; }
 .db-avatar--xl { width: 48px; height: 48px; font: 600 18px/26px var(--font-family-inter); letter-spacing: var(--tracking-text); }
 .db-payees {
   display: flex;
-  gap: var(--spacing-8);
+  gap: 11px;
   margin: 0;
   padding: 0;
   list-style: none;
@@ -1385,11 +1433,13 @@ body:has(.db.is-light) { --db-page: #ffffff; }
   flex-direction: column;
   align-items: center;
   gap: var(--spacing-8);
-  width: 88px;
-  padding: var(--spacing-12) var(--spacing-8);
-  border: 0;
-  border-radius: var(--radius-lg);
-  background: var(--surface-secondary);
+  width: 80px;
+  padding: var(--spacing-16) var(--spacing-8);
+  border: 1px solid var(--border-panel);
+  border-radius: 18px;
+  background: var(--surface-panel);
+  box-shadow: var(--shadow-panel);
+  box-sizing: border-box;
   color: var(--text-primary);
   cursor: pointer;
 }
@@ -1479,10 +1529,12 @@ body:has(.db.is-light) { --db-page: #ffffff; }
 .db-balance__add { display: inline-flex; align-self: flex-start; gap: var(--spacing-8); height: auto; margin-top: 20px; padding: 10px var(--spacing-16) 10px 14px; border-radius: 9999px; font: 600 16px/24px var(--font-family-inter); }
 .db-balance__add:active { background: var(--action-primary-hover); }
 
-/* Your avatar (40px): on phones it opens and closes the menu; on wider
-   screens, where the menu is always there, it is just your avatar */
+/* Your avatar (40px), beside your name on wider screens */
 .db-avatar--me { background: var(--action-primary-default); color: var(--text-inverse); }
-.db-user__avatar { padding: 0; border: 0; cursor: default; pointer-events: none; }
+/* Phones only: the menu button (node 1234:2620's 24px menu icon) */
+.db-menu-btn { display: none; }
+/* node 1234:2620: the wordmark in plain ink, no gradient */
+.db .db-logo { background: none; -webkit-background-clip: border-box; background-clip: border-box; color: var(--icon-primary) !important; animation: none; }
 
 /* Narrower screens: the menu folds to its icons */
 @media (max-width: 1000px) {
@@ -1508,11 +1560,12 @@ body:has(.db.is-light) { --db-page: #ffffff; }
   .db-payee { width: 100%; }
   .db-tx-page__head { flex-wrap: wrap; row-gap: var(--spacing-12); }
   .db-tx-page__actions { gap: var(--spacing-8); }
-  /* the header stays put; your avatar opens the menu */
+  /* the header stays put, the menu button at its right */
   .db-header { position: sticky; top: 0; z-index: 20; height: 88px; background: var(--background-canvas); }
   .db-user { gap: var(--spacing-12); }
-  .db-user__avatar { cursor: pointer; pointer-events: auto; }
-  .is-menu-open .db-user__avatar { box-shadow: 0 0 0 2px var(--background-canvas), 0 0 0 4px var(--action-primary-default); }
+  .db-user__avatar { display: none; }
+  .db-menu-btn { display: grid; margin: 0; }
+  .db-menu-btn .db-icon { width: 24px; height: 24px; }
   /* the menu opens as a full-screen sheet under the header */
   .db-nav {
     display: none;

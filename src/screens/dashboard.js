@@ -31,7 +31,9 @@
  *     limit named as you type, then the card to charge
  *   - on phones, Add funds, Pay with and a transaction are full screens
  *     with a back arrow and no header
- *   - on phones the menu opens from your avatar (40px) in the header
+ *   - on phones the menu opens from the menu button in the header
+ *   - Home (node 1234:2620): bordered panels, a big grey "Balance", and the
+ *     balance shuffling into place (src/components/shuffle-digits.js)
  * The page is in the URL hash (#home, #transactions, …), so Back works.
  */
 
@@ -39,6 +41,7 @@ import { esc } from "../ui.js";
 import { StackedBars } from "../components/stacked-bars.js";
 import { privacyStars } from "../components/hide-sensitive-number.js";
 import { AmountInput } from "../components/amount-input.js";
+import { shuffleDigits } from "../components/shuffle-digits.js";
 import { RETURNING_USER, SAVED_CARDS } from "../config.js";
 
 const ICON = "assets/ds/";
@@ -279,7 +282,18 @@ const masked = (value, count = 7) =>
   `<span class="db-mask"><span class="db-mask__value" data-private>${value}</span>${stars(count)}</span>`;
 
 /** Transaction — one row of the list. */
-const row = (t, large = false) => `
+/**
+ * On Home (node 1234:2620) a row drops the time zone from its date, and an
+ * amount going out is in the primary ink with its cents in grey, as the
+ * balance is; elsewhere it stays red.
+ */
+const amountHTML = (t, home) => {
+  const [whole, cents] = num(t.amount).split(".");
+  return home && t.amount < 0
+    ? `${sign(t.amount)}$${whole}.<span class="db-tx__cents">${cents}</span>`
+    : `${sign(t.amount)}$${num(t.amount)}`;
+};
+const row = (t, large = false, home = false) => `
   <li>
     <button type="button" class="db-tx" data-tx="${t.id}" aria-label="${esc(t.party)}, ${sign(t.amount)}$${num(t.amount)}, ${esc(t.date)}"
       data-label-hidden="${esc(t.party)}, amount hidden, ${esc(t.date)}">
@@ -287,10 +301,10 @@ const row = (t, large = false) => `
       <span class="db-tx__info">
         <span class="db-tx__line db-tx__line--main">
           <span class="db-tx__party">${esc(t.party)}</span>
-          <span class="db-tx__amount ${t.amount < 0 ? "is-expense" : "is-income"}">${masked(`${sign(t.amount)}$${num(t.amount)}`)}</span>
+          <span class="db-tx__amount ${t.amount < 0 ? "is-expense" : "is-income"}">${masked(amountHTML(t, home))}</span>
         </span>
         <span class="db-tx__line db-tx__line--sub">
-          <span class="db-tx__date">${esc(t.date)}</span>
+          <span class="db-tx__date">${esc(home ? t.date.replace(/ UTC$/, "") : t.date)}</span>
           <span class="db-tx__usdt">${masked(`${sign(t.amount)}${num(t.amount)} USDT`)}</span>
         </span>
       </span>
@@ -690,7 +704,7 @@ function main(state, value = 0) {
             <h2 id="db-recent">Transactions</h2>
             <a href="#transactions" class="db-link">See all</a>
           </div>
-          <div class="db-card"><ul class="db-txlist">${RECENT.map((t) => row(t, true)).join("")}</ul></div>
+          <div class="db-card db-panel db-panel--list"><ul class="db-txlist">${RECENT.map((t) => row(t, true, true)).join("")}</ul></div>
         </section>
         <section class="db-section" aria-labelledby="db-payees">
           <div class="db-section__head">
@@ -700,7 +714,7 @@ function main(state, value = 0) {
           <ul class="db-payees">${PAYEES.map(payee).join("")}</ul>
         </section>
         <section class="db-section" aria-label="Spending">
-          <div class="db-card db-card--analysis"><div data-spending></div></div>
+          <div class="db-card db-card--analysis db-panel"><div data-spending></div></div>
         </section>`;
     case "transactions":
       return transactionsPage(state);
@@ -725,13 +739,14 @@ function main(state, value = 0) {
 
 function render(state, value) {
   return `
-  <div class="db ${SUBPAGES.has(state.page) ? "is-sub" : ""} ${state.folded ? "is-folded" : ""} ${state.menuOpen ? "is-menu-open" : ""} ${state.light ? "is-light" : ""}"${state.hidden ? " data-stealth" : ""}>
+  <div class="db ${state.page === "home" ? "is-home" : ""} ${SUBPAGES.has(state.page) ? "is-sub" : ""} ${state.folded ? "is-folded" : ""} ${state.menuOpen ? "is-menu-open" : ""} ${state.light ? "is-light" : ""}"${state.hidden ? " data-stealth" : ""}>
     <header class="db-header">
       <a href="#home" class="db-logo">Paymesh</a>
       <div class="db-user">
         <span class="db-user__name">${esc(USER.name)}</span>
-        <button type="button" class="db-avatar db-avatar--l db-avatar--me db-user__avatar" data-menu aria-controls="db-nav" aria-expanded="${state.menuOpen}"
-          aria-label="${state.menuOpen ? "Close menu" : "Open menu"}">${USER.initials}</button>
+        <span class="db-avatar db-avatar--l db-avatar--me db-user__avatar" aria-hidden="true">${USER.initials}</span>
+        <button type="button" class="db-iconbtn db-menu-btn" data-menu aria-controls="db-nav" aria-expanded="${state.menuOpen}"
+          aria-label="${state.menuOpen ? "Close menu" : "Open menu"}">${icon(state.menuOpen ? "close.svg" : "db-menu.svg")}</button>
       </div>
     </header>
 
@@ -829,7 +844,24 @@ export default {
       });
       labels();
     };
+    // The balance reveals itself with its digits shuffling for half a
+    // second: on arriving at Home, on coming out of Stealth Mode and on
+    // swapping which currency leads.
+    let shuffleNext = true;
+    let stopShuffle = () => {};
+    const shuffleBalance = () => {
+      stopShuffle();
+      const figures = [...root.querySelectorAll(".db-balance__amount, .db-balance__other")];
+      if (!figures.length || state.hidden) return;
+      // Rebond is measured for the held widths, so wait for it
+      const run = () => {
+        const stops = figures.filter((el) => el.isConnected).map((el) => shuffleDigits(el, { duration: 500 }));
+        stopShuffle = () => stops.forEach((stop) => stop());
+      };
+      document.fonts?.status === "loaded" ? run() : document.fonts.ready.then(run);
+    };
     const draw = () => {
+      stopShuffle();
       root.innerHTML = render(state, amount.value());
       root.querySelector("[data-spending]")?.replaceWith(spending.el);
       const slot = root.querySelector("[data-amount]");
@@ -838,6 +870,8 @@ export default {
         amount.refresh();
       }
       attachStars();
+      if (shuffleNext && state.page === "home") shuffleBalance();
+      shuffleNext = false;
     };
 
     // Stealth Mode: flipped on the elements already there rather than by a
@@ -851,6 +885,7 @@ export default {
       labels();
       const section = root.querySelector(".db-balance");
       if (!section) return;
+      if (!state.hidden) shuffleBalance();
       const toggle = section.querySelector(".db-balance__stealth");
       toggle.setAttribute("aria-pressed", String(state.hidden));
       toggle.setAttribute("aria-label", balanceLabel(state.hidden));
@@ -900,7 +935,10 @@ export default {
       }
       if (e.target.closest("[data-export]")) return print();
       if (e.target.closest("[data-toggle-hide]")) return toggleStealth();
-      else if (e.target.closest("[data-swap]")) state.lead = state.lead === "usd" ? "usdt" : "usd";
+      else if (e.target.closest("[data-swap]")) {
+        state.lead = state.lead === "usd" ? "usdt" : "usd";
+        shuffleNext = true;
+      }
       else if (e.target.closest("[data-fold]")) state.folded = !state.folded;
       else if (e.target.closest("[data-theme-toggle]")) applyTheme((state.light = !state.light));
       else if (e.target.closest("[data-menu]")) state.menuOpen = !state.menuOpen;
@@ -987,6 +1025,7 @@ export default {
     addEventListener("hashchange", () => {
       previous = state.page;
       state.page = pageFromHash();
+      if (state.page === "home" && previous !== "home") shuffleNext = true;
       state.menuOpen = false;
       // Add funds starts from $0 each visit, with the keyboard up — but
       // coming back from choosing or adding a card, the amount is kept

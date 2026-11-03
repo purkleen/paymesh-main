@@ -156,9 +156,20 @@ of `styles/ds.css` (`.db-*`, with the dark values of the colour variables).
   value in Figma yet, so light mode uses #15803d and #d92d20.
 - **Cards** and **Settings** aren't designed yet and say so. **Fold menu** collapses the menu to its icons;
   **Log out** returns to the menu of prototypes.
-- Under 1000px the menu is icons only. On phones (640px and under) there is
-  no menu button: tapping your avatar (40px, top right) opens the menu as a
-  full-screen sheet under the header (the avatar, a link or Escape closes it).
+- Under 1000px the menu is icons only. On phones (640px and under) a menu
+  button at the top right (node 1234:2620) opens the menu as a full-screen
+  sheet under the header (the button, a link or Escape closes it).
+- Home follows node 1234:2620: a plain white "Paymesh"; a big grey
+  **Balance** (Rebond Semibold 40px) over the figure, the USDT line in
+  Rebond Semibold 16px; transactions, payee tiles and the spending chart in
+  bordered #161818 panels with 18px corners; on Home, money going out is in
+  the primary ink with its cents in grey, and dates drop "UTC"; on phones,
+  a soft glow of the brand colour behind the top.
+- The balance **shuffles** into place: its digits spin through random
+  digits for half a second and land left to right
+  (`src/components/shuffle-digits.js`) — on arriving at Home, on coming out
+  of Stealth Mode and on swapping currency. Each digit holds its final
+  width, so the figure doesn't jitter; Reduce Motion turns it off.
 - One transaction is a **top-up** (node 1202:7506): $500 added this morning
   from the Visa, under your own name and avatar. Its details are green
   (+$500.00), from "Visa ending **** 4567" to your Paymesh wallet.
