@@ -166,7 +166,7 @@ of `styles/ds.css` (`.db-*`, with the dark values of the colour variables).
   the primary ink with its cents in grey, and dates drop "UTC"; on phones,
   a soft glow of the brand colour behind the top.
 - The balance **shuffles** into place: its digits spin through random
-  digits for half a second and land left to right
+  digits for a second (a new digit every 70ms) and land left to right
   (`src/components/shuffle-digits.js`) — on arriving at Home, on coming out
   of Stealth Mode and on swapping currency. Each digit holds its final
   width, so the figure doesn't jitter; Reduce Motion turns it off.

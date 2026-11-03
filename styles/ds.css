@@ -1257,11 +1257,12 @@ body:has(.db.is-light) { --db-page: #ffffff; }
 /* Home's panels (node 1234:2620): #161818, a hairline border, 18px corners */
 .db-panel { border: 1px solid var(--border-panel); border-radius: 18px; background: var(--surface-panel); box-shadow: var(--shadow-panel); }
 /* the transactions: 16px in, rows 12px apart, avatar 8px from the text */
-.db-panel--list { padding: 10px; }
+/* 16px from the outer edge (the 1px border, 9px, and a row's 6px) */
+.db-panel--list { padding: 9px; }
 .db-panel--list .db-txlist { display: flex; flex-direction: column; gap: 0; }
 .db-card.db-panel--list .db-tx { gap: var(--spacing-8); padding: 6px; border-radius: 10px; }
 /* an amount going out: primary ink, its cents in grey */
-.db-panel--list .db-tx__amount.is-expense { color: var(--text-primary); }
+.db-panel--list .db-tx__amount.is-expense { color: var(--text-heading); }
 .db-tx__cents { color: var(--text-tertiary); }
 .db-card--analysis.db-panel { padding: var(--spacing-16); }
 .db-card--analysis .stb.stb--inline { gap: var(--spacing-24); }
