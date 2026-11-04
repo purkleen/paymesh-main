@@ -2138,3 +2138,132 @@ body:has(.db.is-light) { --db-page: #ffffff; }
 .db-cardopt__sub { font: var(--text-s); letter-spacing: var(--tracking-text); color: var(--text-tertiary); }
 .db-addfunds__error { margin: calc(-1 * var(--spacing-16)) 0 0; font: var(--text-s); color: rgb(191, 26, 56); text-align: center; }
 .db-addfunds__error:empty { display: none; }
+
+/* ==========================================================================
+   Section 1282:6150 — Home, Settings, Add funds, Transactions, Recipients,
+   a recipient and Transaction details, restyled together
+   ========================================================================== */
+.db { --border-subtle: #303035; }
+.db.is-light { --border-subtle: #e5e5e7; }
+
+/* Money out in the primary ink, money in green, the USDT line grey —
+   everywhere a row appears */
+.db-tx__amount.is-expense { color: var(--text-primary); }
+.db-tx__usdt { color: var(--text-tertiary); }
+
+/* Home (node 1282:4883): 44px between blocks; "Balance" 6px over the
+   figure, the USDT line right under it */
+.db.is-home-v1 .db-main { gap: 44px; }
+.db.is-home-v1 .db-balance__label { margin-bottom: 2px !important; }
+.db.is-home-v1 .db-balance__mask { margin-top: calc(-1 * var(--spacing-4)); }
+
+/* the invite banner: a dark gradient panel, the copy on the left and a
+   glass ring breaking out of the right edge */
+.db-invite {
+  position: relative;
+  display: flex;
+  align-items: center;
+  min-height: 121px;
+  margin: 0 var(--spacing-16);
+  padding: 26px var(--spacing-16);
+  overflow: hidden;
+  background: linear-gradient(250deg, #0e0e11 1%, #1d1e20 188%);
+  color: inherit;
+  text-decoration: none;
+  box-sizing: border-box;
+}
+.db.is-light .db-invite { background: linear-gradient(250deg, #ffffff 1%, #eceef4 188%); }
+.db-invite__text { position: relative; z-index: 1; display: flex; flex-direction: column; gap: 10px; width: 239px; max-width: 70%; }
+.db-invite__title { font: 600 18px/22px var(--font-family-rebond); letter-spacing: -0.9px; color: var(--text-heading); }
+.db-invite__body { font: 400 15px/21px var(--font-family-inter); letter-spacing: -0.1px; color: #a8a8a8; }
+.db.is-light .db-invite__body { color: var(--text-tertiary); }
+/* stand-in for the frame's rendered glass ring (Figma's image host is out
+   of reach here): a tilted ring of blue light */
+.db-invite__art {
+  position: absolute;
+  right: -28px;
+  top: -22px;
+  width: 168px;
+  height: 168px;
+  border-radius: 50%;
+  background:
+    radial-gradient(closest-side, transparent 58%, rgba(10, 30, 120, .9) 62%, #2b5cff 70%, #9fd3ff 76%, #1a3cff 82%, rgba(5, 15, 60, .9) 90%, transparent 93%);
+  transform: rotate(-30deg) scaleX(.62);
+  filter: drop-shadow(0 0 14px rgba(60, 110, 255, .55));
+}
+.db-invite:hover .db-invite__title { text-decoration: underline; }
+
+/* section titles that are links, with a chevron after them */
+.db-section__title { margin: 0; font: var(--heading-m-bold); letter-spacing: 0; color: var(--text-heading); }
+.db-section__title a { display: inline-flex; align-items: center; gap: 2px; color: inherit; text-decoration: none; }
+.db-section__title a:hover { opacity: .75; }
+.db-section__chevron { width: 24px; height: 24px; background: currentColor; -webkit-mask: url("../assets/ds/chevron-down.svg") center / 24px 24px no-repeat; mask: url("../assets/ds/chevron-down.svg") center / 24px 24px no-repeat; transform: rotate(-90deg); }
+/* Home's three latest: straight on the page, 16px apart */
+.db-txlist--home { display: flex; flex-direction: column; gap: var(--spacing-16); }
+.db-txlist--home .db-tx { gap: var(--spacing-8); padding: 0; border-radius: var(--radius-m); }
+.db-txlist--home .db-tx:hover { background: none; opacity: .8; }
+/* the glow behind the top of Home, now centred 67px in, 174px down */
+@media (max-width: 640px) {
+  .db.is-home-v1::before { left: calc(67px - 243px); top: calc(174px - 243px); }
+  .db-invite { margin: 0 var(--spacing-8); }
+}
+
+/* a full screen's head: the back arrow, then (an avatar and) the title,
+   16px apart (nodes 1282:5368, 1282:5481, 1282:5589, 1282:5026) */
+.db-pagehead { display: flex; flex-direction: column; align-items: flex-start; gap: var(--spacing-16); }
+.db-pagehead .db-avatar { margin: 0; }
+
+/* Transactions, Recipients and a recipient: head and search 16px apart,
+   then the chips and the list 24px apart; days 24px apart, their rows
+   12px apart */
+.db-tx-page .db-pagehead { margin: 0 var(--spacing-16); }
+.db-tx-page .db-groups { gap: var(--spacing-24); }
+.db-tx-page .db-group { display: flex; flex-direction: column; gap: var(--spacing-12); }
+.db-tx-page .db-group__label { font: var(--heading-m-bold); letter-spacing: 0; }
+.db-tx-page .db-txlist { display: flex; flex-direction: column; gap: var(--spacing-12); }
+.db-tx-page .db-tx { gap: var(--spacing-8); padding: 0 var(--spacing-16); }
+/* All / Received / Sent — Button S */
+.db-type { width: auto; min-width: 95px; padding: 6px var(--spacing-16); font: 600 14px/20px var(--font-family-inter); }
+@media (max-width: 640px) {
+  .db-tx-page .db-pagehead, .db-tx-page .db-search, .db-tx-page .db-types, .db-tx-page .db-group__label, .db-tx-page .db-empty { margin-left: var(--spacing-8); margin-right: var(--spacing-8); }
+  .db-tx-page .db-tx { padding: 0 var(--spacing-8); }
+}
+
+/* Settings (node 1282:5026): cards of rows 16px apart, Log out at the foot */
+.db-settings { display: flex; flex-direction: column; gap: var(--spacing-24); width: 100%; max-width: calc(422px + 2 * var(--spacing-16)); margin: 0 auto; padding: 0 var(--spacing-16); box-sizing: border-box; }
+.db-settings__groups { display: flex; flex-direction: column; gap: var(--spacing-16); }
+.db-settings__group { display: flex; flex-direction: column; gap: var(--spacing-8); margin: 0; padding: var(--spacing-8) var(--spacing-16); list-style: none; border-radius: var(--radius-xl); background: var(--surface-card); }
+.db-settings__foot { margin-top: auto; }
+.db-setting { display: flex; align-items: center; gap: var(--spacing-8); width: 100%; padding: var(--spacing-8) 0; border: 0; background: none; color: var(--text-primary); font: 600 16px/24px var(--font-family-inter); letter-spacing: -0.2px; text-align: left; text-decoration: none; cursor: pointer; }
+.db-setting:hover { opacity: .75; }
+.db-setting .db-icon { width: 24px; height: 24px; }
+.db-setting__label { flex: 1 1 0; min-width: 0; }
+.db-setting__value { font: var(--text-s); color: var(--text-tertiary); }
+.db-setting__chevron { width: 24px; height: 24px; background: currentColor; -webkit-mask: url("../assets/ds/chevron-down.svg") center / 24px 24px no-repeat; mask: url("../assets/ds/chevron-down.svg") center / 24px 24px no-repeat; transform: rotate(-90deg); }
+@media (max-width: 640px) {
+  .db.is-sub .db-settings { flex: 1 0 auto; padding: 0 var(--spacing-8); }
+}
+
+/* Add funds (nodes 1282:5185 / 1282:5115 / 1282:5150): a 24px title; the
+   presets outlined, the chosen one filled; the card in a subtly bordered
+   row with a 24px chevron; 16px from the screen's sides */
+.db-addfunds__bartitle { font: var(--heading-l); letter-spacing: 0; color: var(--text-heading); }
+.db-preset { height: 32px; padding: 6px 8px 6px 10px; border: 1px solid var(--border-default); background: none; font: 600 14px/20px var(--font-family-inter); box-sizing: border-box; }
+.db-preset:hover { background: var(--surface-secondary); }
+.db-preset[aria-pressed="true"] { border-color: var(--action-primary-default); background: var(--action-primary-default); color: var(--text-inverse); }
+.db-addfunds .db-select__button { min-height: 0; padding: var(--spacing-8) var(--spacing-16); border-color: var(--border-subtle); }
+.db-addfunds .db-select__chevron--next { width: 24px; height: 24px; color: var(--icon-primary); -webkit-mask-size: 24px 24px; mask-size: 24px 24px; }
+@media (max-width: 640px) {
+  .db.is-sub .db-addfunds { padding: 0 var(--spacing-8); }
+}
+
+/* Transaction details (nodes 1282:5995 / 1282:6066): a glow of the brand
+   colour behind the top; the card without its heading, rows 12px apart;
+   the status as a soft green tag; 20px copy icons; Export PDF a link */
+.db-detail { position: relative; isolation: isolate; }
+.db-detail::before { content: ""; position: absolute; z-index: -1; left: 50%; top: -130px; width: 411px; height: 411px; translate: -50% 0; border-radius: 50%; background: radial-gradient(closest-side, var(--home-glow), transparent); pointer-events: none; }
+.db-detail__rows { gap: var(--spacing-12); padding: 0; }
+.db-status { padding: var(--spacing-4) var(--spacing-12) var(--spacing-4) var(--spacing-8); border: 0; font: 600 14px/20px var(--font-family-inter); text-transform: none; }
+.db-copy .db-copy__value .db-icon { width: 20px; height: 20px; -webkit-mask-size: 20px 20px; mask-size: 20px 20px; }
+.db-btn--link { height: 52px; background: none; color: var(--text-primary) !important; font: 600 18px/26px var(--font-family-inter); letter-spacing: -0.16px; text-decoration: underline; text-underline-offset: 3px; }
+.db-btn--link:hover { background: none; opacity: .75; }

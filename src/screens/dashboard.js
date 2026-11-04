@@ -143,7 +143,7 @@ const TRANSACTIONS = (() => {
     at: TODAY + (9 * 60 + 41) * 60 * 1000,
   });
   const time = (at) => new Date(at).toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit", timeZone: "UTC" });
-  return list.sort((a, b) => b.at - a.at).map((t) => ({ ...t, date: `${day(t.at)} · ${time(t.at)} UTC` }));
+  return list.sort((a, b) => b.at - a.at).map((t) => ({ ...t, date: `${day(t.at)} · ${time(t.at)}` }));
 })();
 
 /**
@@ -172,17 +172,15 @@ const PAYEES = [...new Map(TRANSACTIONS.filter((t) => t.amount < 0).map((t) => [
   .sort((a, b) => b.at - a.at);
 
 /**
- * The Transactions page's groups (node 1141:4323): Today, Yesterday, then one
- * per date, written "20 October, Friday".
+ * The Transactions page's groups (Section 1282:6150): Today, Yesterday, then
+ * one per date, written "28 October".
  */
 const GROUPS = (() => {
   const label = (at) => {
     const ago = Math.floor((TODAY + DAY - 1 - at) / DAY);
     if (ago <= 0) return "Today";
     if (ago === 1) return "Yesterday";
-    const d = new Date(at);
-    const opts = { timeZone: "UTC" };
-    return `${d.toLocaleDateString("en-GB", { ...opts, day: "numeric", month: "long" })}, ${d.toLocaleDateString("en-GB", { ...opts, weekday: "long" })}`;
+    return new Date(at).toLocaleDateString("en-GB", { timeZone: "UTC", day: "numeric", month: "long" });
   };
   const groups = [];
   for (const t of TRANSACTIONS) {
@@ -195,17 +193,10 @@ const GROUPS = (() => {
 
 const TYPES = [
   { id: "all", label: "All" },
-  { id: "in", label: "In" },
-  { id: "out", label: "Out" },
+  { id: "in", label: "Received" },
+  { id: "out", label: "Sent" },
 ];
 
-/** Sort by date — sorting by amount drops the day headings. */
-const SORTS = [
-  { id: "newest", label: "Newest first", by: "date" },
-  { id: "oldest", label: "Oldest first", by: "date" },
-  { id: "largest", label: "Largest amount", by: "amount" },
-  { id: "smallest", label: "Smallest amount", by: "amount" },
-];
 
 const NAV = [
   { id: "home", label: "Home", icon: "db-home.svg" },
@@ -213,13 +204,13 @@ const NAV = [
   { id: "recipients", label: "Recipients", icon: "db-recipients.svg" },
   { id: "cards", label: "Cards", icon: "db-card.svg" },
 ];
-const PAGES = new Set([...NAV.map((n) => n.id), "settings", "add-funds", "pay-with", "add-card", "analysis", "refund", "support"]);
-const PAGE_TITLES = { "add-funds": "Add funds", "add-card": "Add card", refund: "Request refund", support: "Support" };
+const PAGES = new Set([...NAV.map((n) => n.id), "settings", "add-funds", "pay-with", "add-card", "analysis", "refund", "support", "invite", "profile", "security", "statements"]);
+const PAGE_TITLES = { "add-funds": "Add funds", "add-card": "Add card", refund: "Request refund", support: "Support", invite: "Invite friends", profile: "Personal details" };
 /**
  * Pages that are a step away from Home, drawn (nodes 1197:6932 – 1197:7059)
  * as full screens with a back arrow: on phones they drop the app's header.
  */
-const SUBPAGES = new Set(["add-funds", "pay-with", "tx"]);
+const SUBPAGES = new Set(["add-funds", "pay-with", "tx", "transactions", "recipients", "recipient", "settings"]);
 
 /**
  * The cards Add funds can charge: the Visa the wallet is funded from, then
@@ -298,18 +289,8 @@ const masked = (value, count = 7) =>
   `<span class="db-mask"><span class="db-mask__value" data-private>${value}</span>${stars(count)}</span>`;
 
 /** Transaction — one row of the list. */
-/**
- * On Home (node 1234:2620) a row drops the time zone from its date, and an
- * amount going out is in the primary ink with its cents in grey, as the
- * balance is; elsewhere it stays red.
- */
-const amountHTML = (t, home) => {
-  const [whole, cents] = num(t.amount).split(".");
-  return home && t.amount < 0
-    ? `${sign(t.amount)}$${whole}.<span class="db-tx__cents">${cents}</span>`
-    : `${sign(t.amount)}$${num(t.amount)}`;
-};
-const row = (t, large = false, home = false) => `
+/** Transaction — one row of a list: money out in the primary ink, money in green (Section 1282:6150). */
+const row = (t, large = false) => `
   <li>
     <button type="button" class="db-tx" data-tx="${t.id}" aria-label="${esc(t.party)}, ${sign(t.amount)}$${num(t.amount)}, ${esc(t.date)}"
       data-label-hidden="${esc(t.party)}, amount hidden, ${esc(t.date)}">
@@ -317,10 +298,10 @@ const row = (t, large = false, home = false) => `
       <span class="db-tx__info">
         <span class="db-tx__line db-tx__line--main">
           <span class="db-tx__party">${esc(t.party)}</span>
-          <span class="db-tx__amount ${t.amount < 0 ? "is-expense" : "is-income"}">${masked(amountHTML(t, home))}</span>
+          <span class="db-tx__amount ${t.amount < 0 ? "is-expense" : "is-income"}">${masked(`${sign(t.amount)}$${num(t.amount)}`)}</span>
         </span>
         <span class="db-tx__line db-tx__line--sub">
-          <span class="db-tx__date">${esc(home ? t.date.replace(/ UTC$/, "") : t.date)}</span>
+          <span class="db-tx__date">${esc(t.date)}</span>
           <span class="db-tx__usdt">${masked(`${sign(t.amount)}${num(t.amount)} USDT`)}</span>
         </span>
       </span>
@@ -413,7 +394,7 @@ function homeV2(state) {
         <h2 id="db-recent">Latest</h2>
         <a href="#transactions" class="db-link">See all</a>
       </div>
-      <div class="db-card db-panel db-panel--list"><ul class="db-txlist">${RECENT.map((t) => row(t, true, true)).join("")}</ul></div>
+      <div class="db-card db-panel db-panel--list"><ul class="db-txlist">${RECENT.map((t) => row(t, true)).join("")}</ul></div>
     </section>
     <section class="db-section" aria-labelledby="db-spend">
       <div class="db-section__head"><h2 id="db-spend">Spending</h2></div>
@@ -426,21 +407,22 @@ function homeV2(state) {
  * chosen order. The search also matches the day headings ("Friday",
  * "20 October").
  */
-function filtered({ query, type, sort }) {
+function filtered({ query, type = "all", party = null }) {
   const q = query.trim().toLowerCase();
   const keep = (g) => (t) =>
+    (!party || t.party === party) &&
     (type === "all" || (type === "in" ? t.amount > 0 : t.amount < 0)) &&
     (!q || [g.label, t.party, t.date, `${sign(t.amount)}$${num(t.amount)}`, num(t.amount)].some((v) => v.toLowerCase().includes(q)));
-  const groups = GROUPS.map((g) => ({ ...g, items: g.items.filter(keep(g)) })).filter((g) => g.items.length);
-
-  if (sort === "oldest") return groups.reverse().map((g) => ({ ...g, items: [...g.items].reverse() }));
-  if (sort === "largest" || sort === "smallest") {
-    const dir = sort === "largest" ? -1 : 1;
-    const items = groups.flatMap((g) => g.items).sort((a, b) => dir * (Math.abs(a.amount) - Math.abs(b.amount)));
-    return items.length ? [{ label: "", items }] : [];
-  }
-  return groups;
+  return GROUPS.map((g) => ({ ...g, items: g.items.filter(keep(g)) })).filter((g) => g.items.length);
 }
+
+/** A full screen's head: the back arrow, then (an avatar and) the title, 16px apart. */
+const pageHead = ({ back, backLabel, title, id, lead = "" }) => `
+  <div class="db-pagehead">
+    ${backArrow(back, backLabel)}
+    ${lead}
+    <h2 id="${id}" class="db-tx-page__title">${title}</h2>
+  </div>`;
 
 const groupsHTML = (state) => {
   const groups = filtered(state);
@@ -471,52 +453,22 @@ const searchField = ({ attr, value, placeholder, label }) => `
     </button>
   </div>`;
 
-/** Sort by date — Button (secondary, S) and the menu it opens. */
-function sortMenu(state) {
-  const current = SORTS.find((s) => s.id === state.sort);
-  return `
-    <div class="db-sort" data-sort-wrap>
-      <button type="button" class="db-chip db-chip--trailing" data-sort-toggle aria-haspopup="true" aria-expanded="${state.sortOpen}"
-        aria-label="Sort by ${current.by}: ${current.label.toLowerCase()}">
-        Sort by ${current.by}<span class="db-chevron" aria-hidden="true"></span>
-      </button>
-      ${
-        state.sortOpen
-          ? `<div class="db-sort__menu" role="radiogroup" aria-label="Sort">${SORTS.map(
-              (s) => `<button type="button" class="db-sort__item" role="radio" data-sort="${s.id}" aria-checked="${s.id === state.sort}">${s.label}</button>`
-            ).join("")}</div>`
-          : ""
-      }
-    </div>`;
-}
 
-/** Transactions — node 1141:4323. */
+/**
+ * Transactions (Section 1282:6150, nodes 1282:5368 / 1282:5698): back arrow
+ * and title, the search, All / Received / Sent, then the list by day.
+ */
 function transactionsPage(state) {
   return `
     <section class="db-tx-page" aria-labelledby="db-all">
       <div class="db-tx-page__top">
-        <div class="db-tx-page__head">
-          <h2 id="db-all" class="db-tx-page__title">Transactions</h2>
-          <div class="db-tx-page__actions">
-            <button type="button" class="db-chip ${state.filtersOpen ? "db-chip--primary" : ""}" data-filters aria-controls="db-types"
-              aria-expanded="${state.filtersOpen}">
-              <span class="db-filters-icon" aria-hidden="true"></span>Filters${!state.filtersOpen && state.type !== "all" ? " (1)" : ""}
-            </button>
-            ${sortMenu(state)}
-          </div>
-        </div>
-        ${searchField({ attr: "data-search", value: state.query, placeholder: "Search recipients, amounts, or transaction dates", label: "Search transactions" })}
+        ${pageHead({ back: "#home", backLabel: "Back to Home", title: "Transactions", id: "db-all" })}
+        ${searchField({ attr: "data-search", value: state.query, placeholder: "Search transactions, payees, amounts", label: "Search transactions" })}
       </div>
-      <div class="db-tx-page__list">
-        ${
-          state.filtersOpen
-            ? `<div class="db-types" id="db-types" role="radiogroup" aria-label="Type">${TYPES.map(
-                (t) => `<button type="button" class="db-type" role="radio" data-type="${t.id}" aria-checked="${t.id === state.type}">${t.label}</button>`
-              ).join("")}</div>`
-            : ""
-        }
-        <div class="db-groups" data-groups>${groupsHTML(state)}</div>
-      </div>
+      <div class="db-types" id="db-types" role="radiogroup" aria-label="Type">${TYPES.map(
+        (t) => `<button type="button" class="db-type" role="radio" data-type="${t.id}" aria-checked="${t.id === state.type}">${t.label}</button>`
+      ).join("")}</div>
+      <div class="db-groups" data-groups>${groupsHTML(state)}</div>
     </section>`;
 }
 
@@ -540,7 +492,7 @@ const RECIPIENTS = (() => {
 const recipientRow = (r) => `
   <li>
     <button type="button" class="db-tx" data-recipient="${esc(r.party)}">
-      ${avatar(r)}
+      ${avatar(r, 40)}
       <span class="db-tx__info">
         <span class="db-tx__line db-tx__line--main">
           <span class="db-tx__party">${esc(r.party)}</span>
@@ -573,15 +525,75 @@ const recipientsHTML = ({ recipientQuery }) => {
     : `<p class="db-empty">No recipients match.</p>`;
 };
 
-/** Recipients — laid out like the Transactions page. */
+/** Recipients (node 1282:5481) — laid out like the Transactions page. */
 function recipientsPage(state) {
   return `
     <section class="db-tx-page" aria-labelledby="db-recipients">
-      <div class="db-tx-page__head">
-        <h2 id="db-recipients" class="db-tx-page__title">Recipients</h2>
+      <div class="db-tx-page__top">
+        ${pageHead({ back: "#home", backLabel: "Back to Home", title: "Recipients", id: "db-recipients" })}
+        ${searchField({ attr: "data-recipient-search", value: state.recipientQuery, placeholder: "Search recipients", label: "Search recipients" })}
       </div>
-      ${searchField({ attr: "data-recipient-search", value: state.recipientQuery, placeholder: "Search people and businesses", label: "Search recipients" })}
       <div class="db-groups" data-recipients>${recipientsHTML(state)}</div>
+    </section>`;
+}
+
+/** One recipient's transactions, by day, matching the page's search. */
+const personHTML = (state) => {
+  const groups = filtered({ query: state.personQuery, party: state.recipient });
+  return groups.length
+    ? groups
+        .map((g) => `<section class="db-group"><h3 class="db-group__label">${esc(g.label)}</h3><ul class="db-txlist">${g.items.map((t) => row(t, true)).join("")}</ul></section>`)
+        .join("")
+    : `<p class="db-empty">${RECIPIENTS.find((r) => r.party === state.recipient)?.count ? "No transactions match." : "No transactions yet."}</p>`;
+};
+
+/**
+ * A recipient (node 1282:5589): back arrow, their avatar and name, a search
+ * of their transactions, then those transactions by day.
+ */
+function recipientPage(state) {
+  const r = RECIPIENTS.find((x) => x.party === state.recipient);
+  return `
+    <section class="db-tx-page" aria-labelledby="db-person">
+      <div class="db-tx-page__top">
+        ${pageHead({ back: "#recipients", backLabel: "Back to Recipients", title: esc(r.party), id: "db-person", lead: avatar(r, 48) })}
+        ${searchField({ attr: "data-person-search", value: state.personQuery, placeholder: "Search transactions, dates", label: `Search transactions with ${esc(r.party)}` })}
+      </div>
+      <div class="db-groups" data-person>${personHTML(state)}</div>
+    </section>`;
+}
+
+/**
+ * Settings (node 1282:5026): groups of rows in cards, Log out at the foot.
+ * The frame's rows are placeholders ("Add card"), so these are the wallet's
+ * own settings; the ones without a page yet say so when opened.
+ */
+const settingRow = ({ href, attr = "", file, label, extra = "" }) =>
+  `<li>${href
+    ? `<a class="db-setting" href="${href}">`
+    : `<button type="button" class="db-setting" ${attr}>`}${icon(file)}<span class="db-setting__label">${label}</span>${extra}<span class="db-setting__chevron" aria-hidden="true"></span>${href ? "</a>" : "</button>"}</li>`;
+function settingsPage(state) {
+  return `
+    <section class="db-settings" aria-labelledby="db-settings-title">
+      ${pageHead({ back: "#home", backLabel: "Back to Home", title: "Settings", id: "db-settings-title" })}
+      <div class="db-settings__groups">
+        <ul class="db-settings__group">
+          ${settingRow({ href: "#cards", file: "db-card.svg", label: "Cards" })}
+          ${settingRow({ href: "#add-card", file: "add.svg", label: "Add card" })}
+        </ul>
+        <ul class="db-settings__group">
+          ${settingRow({ href: "#profile", file: "db-recipients.svg", label: "Personal details" })}
+          ${settingRow({ href: "#security", file: "safety.svg", label: "Security" })}
+          ${settingRow({ href: "#statements", file: "receipt.svg", label: "Statements" })}
+        </ul>
+        <ul class="db-settings__group">
+          ${settingRow({ attr: "data-theme-toggle", file: state.light ? "db-moon.svg" : "db-sun.svg", label: state.light ? "Dark mode" : "Light mode" })}
+          ${settingRow({ attr: "data-home-version", file: "db-home.svg", label: "Home layout", extra: `<span class="db-setting__value">v${state.home}</span>` })}
+        </ul>
+      </div>
+      <ul class="db-settings__group db-settings__foot">
+        ${settingRow({ href: "./", file: "db-log-out.svg", label: "Log out" })}
+      </ul>
     </section>`;
 }
 
@@ -591,7 +603,7 @@ const longWhen = (at) => {
   const d = new Date(at);
   const h = d.getUTCHours();
   const month = d.toLocaleDateString("en-US", { month: "short", timeZone: "UTC" });
-  return `${month} ${d.getUTCDate()}, ${d.getUTCFullYear()} at ${h % 12 || 12}.${String(d.getUTCMinutes()).padStart(2, "0")} ${h < 12 ? "am" : "pm"} UTC`;
+  return `${month} ${d.getUTCDate()}, ${d.getUTCFullYear()} at ${h % 12 || 12}.${String(d.getUTCMinutes()).padStart(2, "0")} ${h < 12 ? "am" : "pm"}`;
 };
 const shortId = (id) => `${id.slice(0, 5)}...${id.slice(-6)}`;
 /**
@@ -651,18 +663,18 @@ function detailPage(t, back) {
         <p class="db-detail__usdt">${masked(`${sign(t.amount)}${num(t.amount)} USDT`)}</p>
       </div>
       <section class="db-card db-detail__card" aria-labelledby="db-detail-card">
-        <h3 id="db-detail-card" class="db-detail__heading">Transaction details</h3>
+        <h3 id="db-detail-card" class="sr-only">Transaction details</h3>
         <dl class="db-detail__rows">
-          ${detailRow("Status", `<span class="db-status">${icon("check-brand.svg", "current")}Complete</span>`)}
           ${detailRow("From", out ? wallet : party)}
           ${detailRow("To", out ? party : wallet)}
+          ${detailRow("Status", `<span class="db-status">${icon("check-brand.svg", "current")}Completed</span>`)}
           ${detailRow("Date", longWhen(t.at))}
           ${detailRow("Transaction ID", copyValue(t.id, shortId(t.id), "transaction ID"))}
           ${detailRow("Hash", copyValue(hash, shortHash(hash), "hash"))}
         </dl>
       </section>
       <div class="db-detail__foot">
-        <button type="button" class="db-btn db-btn--outline db-btn--m" data-export>${icon("db-export.svg", "current")}Export PDF</button>
+        <button type="button" class="db-btn db-btn--link" data-export>Export PDF</button>
         <p class="db-detail__help">Something wrong with this transaction?<br />
           <a href="#refund" class="db-link">Request refund</a> or <a href="#support" class="db-link">contact our support</a>.</p>
       </div>
@@ -748,7 +760,7 @@ function addFundsPage(state, value) {
         </div>
       </div>
       <section class="db-section" aria-labelledby="db-paywith">
-        <div class="db-section__head"><h2 id="db-paywith">Pay with</h2></div>
+        <h2 id="db-paywith" class="sr-only">Pay with</h2>
         ${cardRow(state)}
       </section>
       <p class="db-addfunds__error" data-add-error role="alert"></p>
@@ -762,27 +774,33 @@ function main(state, value = 0) {
       if (state.home === "2") return homeV2(state);
       return `
         ${balance(state)}
+        <a href="#invite" class="db-invite db-panel">
+          <span class="db-invite__text">
+            <span class="db-invite__title">Invite friends, earn £50</span>
+            <span class="db-invite__body">Earn £50 for each friend you invite by 26 March. T&amp;C apply.</span>
+          </span>
+          <span class="db-invite__art" aria-hidden="true"></span>
+        </a>
         <section class="db-section" aria-labelledby="db-recent">
-          <div class="db-section__head">
-            <h2 id="db-recent">Transactions</h2>
-            <a href="#transactions" class="db-link">See all</a>
-          </div>
-          <div class="db-card db-panel db-panel--list"><ul class="db-txlist">${RECENT.map((t) => row(t, true, true)).join("")}</ul></div>
+          <h2 class="db-section__title" id="db-recent"><a href="#transactions">Transactions<span class="db-section__chevron" aria-hidden="true"></span></a></h2>
+          <ul class="db-txlist db-txlist--home">${RECENT.slice(0, 3).map((t) => row(t, true)).join("")}</ul>
         </section>
         <section class="db-section" aria-labelledby="db-payees">
-          <div class="db-section__head">
-            <h2 id="db-payees">Recent payees</h2>
-            <a href="#recipients" class="db-link">See all</a>
-          </div>
+          <h2 class="db-section__title" id="db-payees"><a href="#recipients">Recent payees<span class="db-section__chevron" aria-hidden="true"></span></a></h2>
           <ul class="db-payees">${PAYEES.map(payee).join("")}</ul>
         </section>
-        <section class="db-section" aria-label="Spending">
+        <section class="db-section" aria-labelledby="db-spend1">
+          <h2 class="db-section__title" id="db-spend1">Spending analysis</h2>
           <div class="db-card db-card--analysis db-panel"><div data-spending></div></div>
         </section>`;
     case "transactions":
       return transactionsPage(state);
     case "recipients":
       return recipientsPage(state);
+    case "recipient":
+      return recipientPage(state);
+    case "settings":
+      return settingsPage(state);
     case "tx":
       return detailPage(BY_ID.get(state.txId), state.back);
     case "add-funds":
@@ -846,12 +864,21 @@ export default {
         state.txId = id.slice(3);
         return "tx";
       }
+      // "#recipient/<name>" is one recipient's page
+      if (id.startsWith("recipient/")) {
+        const name = decodeURIComponent(id.slice(10));
+        if (RECIPIENTS.some((r) => r.party === name)) {
+          if (state.recipient !== name) state.personQuery = "";
+          state.recipient = name;
+          return "recipient";
+        }
+      }
       return PAGES.has(id) ? id : "home";
     };
     // Where the details page's button goes: the list the transaction was picked from.
     const BACK = { home: { id: "home", label: "Home" }, transactions: { id: "transactions", label: "transactions" } };
-    const state = { txId: null, back: BACK.transactions };
-    Object.assign(state, { page: pageFromHash(), hidden: false, lead: "usd", folded: false, menuOpen: false, query: "", type: "all", filtersOpen: true, sort: "newest", sortOpen: false, recipientQuery: "", light: savedLight(), home: savedHome() });
+    const state = { txId: null, back: BACK.transactions, recipient: null, personQuery: "" };
+    Object.assign(state, { page: pageFromHash(), hidden: false, lead: "usd", folded: false, menuOpen: false, query: "", type: "all", recipientQuery: "", light: savedLight(), home: savedHome() });
     applyTheme(state.light);
     // Copies text, with the clipboard API where the page may use it and the
     // old select-and-copy where it may not (a page served over plain http).
@@ -974,11 +1001,6 @@ export default {
 
     root.addEventListener("click", (e) => {
       if (e.target.closest(TO_FUNDS)) keyboard.focus({ preventScroll: true });
-      // A click anywhere outside the sort menu closes it.
-      if (state.sortOpen && !e.target.closest("[data-sort-wrap]")) {
-        state.sortOpen = false;
-        draw();
-      }
       // Pay with: a card is chosen, and it's back to Add funds
       if (e.target.closest("[data-card]")) {
         state.card = e.target.closest("[data-card]").dataset.card;
@@ -1021,13 +1043,7 @@ export default {
         }
       }
       else if (e.target.closest("[data-menu]")) state.menuOpen = !state.menuOpen;
-      else if (e.target.closest("[data-filters]")) state.filtersOpen = !state.filtersOpen;
       else if (e.target.closest("[data-type]")) state.type = e.target.closest("[data-type]").dataset.type;
-      else if (e.target.closest("[data-sort-toggle]")) state.sortOpen = !state.sortOpen;
-      else if (e.target.closest("[data-sort]")) {
-        state.sort = e.target.closest("[data-sort]").dataset.sort;
-        state.sortOpen = false;
-      }
       else if (e.target.closest("[data-clear]")) {
         // Empty the field and let the input handler redraw the list.
         const input = e.target.closest(".db-search").querySelector("input");
@@ -1037,7 +1053,10 @@ export default {
         return;
       }
       else if (e.target.closest("[data-tx]")) {
-        state.back = BACK[state.page] || BACK.transactions;
+        state.back =
+          state.page === "recipient"
+            ? { id: `recipient/${encodeURIComponent(state.recipient)}`, label: state.recipient }
+            : BACK[state.page] || BACK.transactions;
         location.hash = `#tx/${e.target.closest("[data-tx]").dataset.tx}`;
         return;
       }
@@ -1071,10 +1090,8 @@ export default {
         return;
       }
       else if (e.target.closest("[data-recipient]")) {
-        // A recipient opens the Transactions page, searched to them.
-        state.query = e.target.closest("[data-recipient]").dataset.recipient;
-        state.type = "all";
-        location.hash = "#transactions";
+        // A recipient opens their own page (node 1282:5589).
+        location.hash = `#recipient/${encodeURIComponent(e.target.closest("[data-recipient]").dataset.recipient)}`;
         return;
       }
       else return;
@@ -1091,12 +1108,16 @@ export default {
         state.recipientQuery = e.target.value;
         root.querySelector("[data-recipients]").innerHTML = recipientsHTML(state);
         attachStars();
+      } else if (e.target.matches("[data-person-search]")) {
+        state.personQuery = e.target.value;
+        root.querySelector("[data-person]").innerHTML = personHTML(state);
+        attachStars();
       }
     });
 
     addEventListener("keydown", (e) => {
-      if (e.key === "Escape" && (state.menuOpen || state.sortOpen)) {
-        state.menuOpen = state.sortOpen = false;
+      if (e.key === "Escape" && state.menuOpen) {
+        state.menuOpen = false;
         draw();
       }
     });

@@ -88,16 +88,14 @@ of `styles/ds.css` (`.db-*`, with the dark values of the colour variables).
   between pages; see *Hide sensitive number* below; the arrows swap whether it leads with
   US dollars or USDT.
 - Transaction rows use the frame's hover (row 2) and pressed (row 3) colours.
-- **See all** and the menu's **Transactions** open the Transactions page
-  (`#transactions`, Figma node 1141:4323): the list grouped by day (Today,
-  Yesterday, 20 October, Friday), a search that filters as you type (names,
-  amounts, dates and day headings) — the design system's Search component
-  (*Paymesh Design System* node 1484:15499: a 2px focus border and a close
-  button that clears it, also used on Recipients) — the **All / In / Out** badges,
-  **Filters**, which shows and hides those badges, and **Sort by date**, a
-  menu of newest / oldest first and largest / smallest amount (sorting by
-  amount drops the day headings). The frame dates every row 13 Oct 2026; here each row
-  takes its group's date.
+- **Transactions ›** on Home and the menu's **Transactions** open the
+  Transactions page (`#transactions`, Figma nodes 1282:5368 / 1282:5698 in
+  Section 1282:6150): a back arrow over the title, a search that filters as
+  you type (names, amounts, dates and day headings — the design system's
+  Search component, *Paymesh Design System* node 1484:15499, with a focus
+  border and a close button that clears it), **All / Received / Sent**, then
+  the list grouped by day (Today, Yesterday, 28 October). Dates no longer
+  carry a time zone, money out is in the primary ink and money in green.
 - The data is 20 example recipients, 10 people and 10 businesses
   (`RECIPIENT_LIST` in `src/screens/dashboard.js`), and 13 payments (plus one top-up, below) with
   13 of them over the last 60 days: two today, two yesterday ("today" is
@@ -144,22 +142,33 @@ of `styles/ds.css` (`.db-*`, with the dark values of the colour variables).
   screens, as the frames draw them: no header, a back arrow to leave, and
   the main button 16px from the foot of the screen. The details' layout
   follows node 1206:304 (Export PDF is the 44px Button M).
-- **Recipients** (`#recipients`, not in Figma yet) lists all 20 recipients,
+- **Recipients** (`#recipients`, node 1282:5481) lists all 20 recipients,
   A–Z under a heading per first letter, with the total of their
-  transactions, last transaction date and transaction count. Like
-  Transactions, its title sits level with the top of the menu. Its search filters as you type; picking
-  someone opens Transactions searched to them.
+  transactions, last transaction date and transaction count, under a back
+  arrow, the title and a search. Picking someone (here, on Home's payees or
+  in Send again) opens **their page** (`#recipient/<name>`, node 1282:5589):
+  their avatar and name, a search of their transactions ("Search
+  transactions, dates"), and those transactions by day.
 - **Light mode** in the menu (above Settings) switches the dashboard to the
   design system's light colours, and **Dark mode** switches back; the
   browser remembers the choice. Icons are masks in the theme's icon colour,
   so one set of SVGs serves both. The rise and fall colours have no light
   value in Figma yet, so light mode uses #15803d and #d92d20.
-- **Cards** and **Settings** aren't designed yet and say so. **Fold menu** collapses the menu to its icons;
+- **Settings** (`#settings`, node 1282:5026): cards of rows — Cards and Add
+  card; Personal details, Security and Statements; Light / Dark mode and
+  Home layout — and Log out at the foot. The frame's rows are placeholders
+  ("Add card"), so these are the wallet's own; pages not designed yet say
+  so. **Cards** isn't designed yet either. **Fold menu** collapses the menu to its icons;
   **Log out** returns to the menu of prototypes.
 - Under 1000px the menu is icons only. On phones (640px and under) a menu
   button at the top right (node 1234:2620) opens the menu as a full-screen
   sheet under the header (the button, a link or Escape closes it).
-- Home follows node 1234:2620: a plain white "Paymesh"; a big grey
+- Home v1 follows node 1282:4883 (Section 1282:6150): the balance; an
+  **Invite friends, earn £50** banner (its glass ring drawn in CSS, as
+  Figma's image host is out of reach); **Transactions ›**, the three latest
+  straight on the page; **Recent payees ›**; and **Spending analysis**. On
+  phones, Transactions, Recipients, a recipient and Settings are full
+  screens with a back arrow, like Add funds. Earlier, Home followed node 1234:2620: a plain white "Paymesh"; a big grey
   **Balance** (Rebond Semibold 40px) over the figure, the USDT line in
   Rebond Semibold 16px; transactions, payee tiles and the spending chart in
   bordered #161818 panels with 18px corners; on Home, money going out is in
