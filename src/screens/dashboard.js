@@ -47,8 +47,19 @@ import { shuffleDigits } from "../components/shuffle-digits.js";
 import { RETURNING_USER, SAVED_CARDS } from "../config.js";
 
 const ICON = "assets/ds/";
-const USER = { name: "Arthur Brown", initials: "AB" };
-const BALANCE = 23562.89;
+const USER = { name: "Arthur Brown", initials: "AB", email: "arthur.brown@gmail.com" };
+
+/**
+ * Which account the prototype shows (Figma page 1341:22528): ?account=new is
+ * a brand-new account — nothing in it yet (node 1341:22529); ?account=first
+ * has had one payment in (node 1341:22691); anything else is the full
+ * history (node 1341:22555).
+ */
+const ACCOUNT = (() => {
+  const a = new URLSearchParams(location.search).get("account");
+  return a === "new" || a === "first" ? a : "full";
+})();
+const BALANCE = { new: 0, first: 1355.03, full: 23562.89 }[ACCOUNT];
 
 /**
  * Recipients — 10 people and 10 businesses. Airbnb keeps the logo from the
@@ -143,6 +154,12 @@ const TRANSACTIONS = (() => {
     at: TODAY + (9 * 60 + 41) * 60 * 1000,
   });
   const time = (at) => new Date(at).toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit", timeZone: "UTC" });
+  // the smaller accounts: nothing at all, or one payment in from Olivia
+  if (ACCOUNT === "new") return [];
+  if (ACCOUNT === "first") {
+    const { range, ...olivia } = RECIPIENT_LIST.find((r) => r.party === "Olivia Bennett");
+    list.splice(0, list.length, { ...olivia, amount: 1355.03, at: TODAY + (16 * 60 + 28) * 60 * 1000 });
+  }
   return list.sort((a, b) => b.at - a.at).map((t) => ({ ...t, date: `${day(t.at)} · ${time(t.at)}` }));
 })();
 
@@ -167,9 +184,15 @@ const BY_ID = new Map(TRANSACTIONS.map((t) => [t.id, t]));
 /** Home's list — the latest five. */
 const RECENT = TRANSACTIONS.slice(0, 5);
 
-/** Home's payees: everyone you have paid, most recently paid first. */
-const PAYEES = [...new Map(TRANSACTIONS.filter((t) => t.amount < 0).map((t) => [t.party, t])).values()]
-  .sort((a, b) => b.at - a.at);
+/**
+ * Home's payees: everyone you have paid, most recently paid first — or, before
+ * you have paid anyone, whoever has paid you (node 1341:22691).
+ */
+const PAYEES = (() => {
+  const others = TRANSACTIONS.filter((t) => !t.topUp);
+  const paid = others.filter((t) => t.amount < 0);
+  return [...new Map((paid.length ? paid : others).map((t) => [t.party, t])).values()].sort((a, b) => b.at - a.at);
+})();
 
 /**
  * The Transactions page's groups (Section 1282:6150): Today, Yesterday, then
@@ -204,13 +227,19 @@ const NAV = [
   { id: "recipients", label: "Recipients", icon: "db-recipients.svg" },
   { id: "cards", label: "Cards", icon: "db-card.svg" },
 ];
-const PAGES = new Set([...NAV.map((n) => n.id), "settings", "add-funds", "pay-with", "add-card", "analysis", "refund", "support", "invite", "profile", "security", "statements"]);
-const PAGE_TITLES = { "add-funds": "Add funds", "add-card": "Add card", refund: "Request refund", support: "Support", invite: "Invite friends", profile: "Personal details" };
+const PAGES = new Set([
+  ...NAV.map((n) => n.id), "settings", "add-funds", "pay-with", "add-card", "added", "analysis", "refund", "support", "help", "about",
+  "name", "email", "address", "password", "notifications", "sign-in-activity", "card",
+]);
+const PAGE_TITLES = {
+  refund: "Ask for refund", support: "Support", name: "Name", email: "Email", address: "Address", password: "Password management",
+  notifications: "Notifications", "sign-in-activity": "Sign-in activity", card: "Card", analysis: "Analysis",
+};
 /**
- * Pages that are a step away from Home, drawn (nodes 1197:6932 – 1197:7059)
- * as full screens with a back arrow: on phones they drop the app's header.
+ * Every page but Home is drawn (page 1341:22528) as a full screen with a
+ * back button: on phones they drop the app's header.
  */
-const SUBPAGES = new Set(["add-funds", "pay-with", "tx", "transactions", "recipients", "recipient", "settings"]);
+const isSubpage = (page) => page !== "home";
 
 /**
  * The cards Add funds can charge: the Visa the wallet is funded from, then
@@ -219,7 +248,11 @@ const SUBPAGES = new Set(["add-funds", "pay-with", "tx", "transactions", "recipi
 const CARDS = [
   { id: "visa-4567", scheme: "visa", label: RETURNING_USER.fundingCard.label.replace("with", "in"), expiry: "Expiry 03/2028" },
   ...SAVED_CARDS,
+  // to show Add funds' "Your card is expired" (node 1341:23119)
+  { id: "visa-3021", scheme: "visa", label: "Visa ending in 3021", expiry: "Expired 03/2025", expired: true },
 ];
+/** Cards the bank turns down — Add funds' "Your card didn't go through" (node 1341:23072). */
+const DECLINES = new Set(["mc-1234"]);
 /**
  * The most one top-up can add. Over it the line under the amount says so
  * (node 1197:7021), and well over it — past WAY_OVER — it says so louder.
@@ -274,7 +307,7 @@ const applyTheme = (light) => {
 
 /** Account avatar or merchant logo: 32px, 40 in Home's and the Transactions page's rows, 24 in the details' rows, 48 for Home's payees, 64 atop the details. */
 const avatar = (t, size = 32) => {
-  const cls = `db-avatar${{ 24: " db-avatar--s", 40: " db-avatar--l", 48: " db-avatar--xl", 64: " db-avatar--xxl" }[size] || ""}`;
+  const cls = `db-avatar${{ 24: " db-avatar--s", 40: " db-avatar--l", 48: " db-avatar--xl", 56: " db-avatar--56", 64: " db-avatar--xxl" }[size] || ""}`;
   if (t.logo) return `<img class="${cls} db-avatar--logo" src="${t.logo}" width="${size}" height="${size}" alt="" />`;
   return `<span class="${cls} db-avatar--${t.color}">${esc(t.initials)}</span>`;
 };
@@ -339,7 +372,7 @@ function balance({ hidden, lead }) {
     <section class="db-balance" aria-label="Balance">
       <h2 class="db-balance__label">Balance</h2>
       ${balanceFigures({ hidden, lead })}
-      <a href="#add-funds" class="db-btn db-balance__add">${icon("add.svg", "current")}Add funds</a>
+      ${ACCOUNT === "new" ? "" : `<a href="#add-funds" class="db-btn db-balance__add">${icon("add.svg", "current")}Add funds</a>`}
     </section>`;
 }
 
@@ -379,7 +412,9 @@ function homeV2(state) {
         <a href="#transactions" class="db-btn db-btn--outline db-hero__more">See activity</a>
       </div>
     </section>
-    <section class="db-section" aria-labelledby="db-again">
+    ${ACCOUNT === "new"
+      ? emptyState({ art: "rings", id: "db-ready2", title: "Your account is ready", body: "Add funds to start paying anyone, anywhere. Your transactions and payees will show up here." })
+      : `<section class="db-section" aria-labelledby="db-again">
       <div class="db-section__head">
         <h2 id="db-again">Send again</h2>
         <a href="#recipients" class="db-link">See all</a>
@@ -398,8 +433,10 @@ function homeV2(state) {
     </section>
     <section class="db-section" aria-labelledby="db-spend">
       <div class="db-section__head"><h2 id="db-spend">Spending</h2></div>
-      <div class="db-card db-card--analysis db-panel"><div data-spending></div></div>
-    </section>`;
+      ${ACCOUNT === "first"
+        ? `<div class="db-card db-card--analysis db-panel db-nodata"><p>No data to display yet</p></div>`
+        : `<div class="db-card db-card--analysis db-panel"><div data-spending></div></div>`}
+    </section>`}`;
 }
 
 /**
@@ -416,12 +453,38 @@ function filtered({ query, type = "all", party = null }) {
   return GROUPS.map((g) => ({ ...g, items: g.items.filter(keep(g)) })).filter((g) => g.items.length);
 }
 
-/** A full screen's head: the back arrow, then (an avatar and) the title, 16px apart. */
-const pageHead = ({ back, backLabel, title, id, lead = "" }) => `
-  <div class="db-pagehead">
-    ${backArrow(back, backLabel)}
-    ${lead}
-    <h2 id="${id}" class="db-tx-page__title">${title}</h2>
+/**
+ * A full screen's bar (page 1341:22528): the back button, the title centred
+ * (Heading/M Bold), and on the right a matching space — or a button.
+ */
+const pageHead = ({ back, backLabel, title = "", id = "", right = "", attr = "data-back" }) => `
+  <div class="db-bar">
+    ${backArrow(back, backLabel, attr)}
+    ${title ? `<h2 id="${id}" class="db-bar__title">${title}</h2>` : `<span class="db-bar__title"></span>`}
+    ${right || `<span class="db-bar__spacer" aria-hidden="true"></span>`}
+  </div>`;
+
+/**
+ * The empty states' artwork (nodes 1341:22529, 1341:22947, 1341:22970): the
+ * frames use renders that can't be fetched here, so these are drawn — glass
+ * rings for money and transactions, stacked glass cards for recipients — in
+ * the brand blue with a glow.
+ */
+const ART = {
+  rings: `<svg viewBox="0 0 211 211" aria-hidden="true"><defs><linearGradient id="art-g" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#c9d2ff"/><stop offset=".5" stop-color="#4b5cff"/><stop offset="1" stop-color="#1b2bd6"/></linearGradient><filter id="art-f" x="-30%" y="-30%" width="160%" height="160%"><feGaussianBlur stdDeviation="4" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter></defs><g fill="none" stroke="url(#art-g)" stroke-width="5" filter="url(#art-f)"><ellipse cx="52" cy="105" rx="16" ry="38" transform="rotate(-12 52 105)"/><ellipse cx="80" cy="105" rx="18" ry="42" transform="rotate(-8 80 105)"/><ellipse cx="105.5" cy="105" rx="4" ry="44"/><ellipse cx="131" cy="105" rx="18" ry="42" transform="rotate(8 131 105)"/><ellipse cx="159" cy="105" rx="16" ry="38" transform="rotate(12 159 105)"/></g></svg>`,
+  cards: `<svg viewBox="0 0 211 211" aria-hidden="true"><defs><linearGradient id="art-c" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#c9d2ff"/><stop offset=".5" stop-color="#4b5cff"/><stop offset="1" stop-color="#1b2bd6"/></linearGradient><filter id="art-cf" x="-30%" y="-30%" width="160%" height="160%"><feGaussianBlur stdDeviation="4" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter></defs><g fill="rgba(79,92,255,.08)" stroke="url(#art-c)" stroke-width="4" filter="url(#art-cf)"><rect x="62" y="58" width="44" height="96" rx="8" transform="skewY(-8)"/><rect x="84" y="62" width="44" height="96" rx="8" transform="skewY(-8)"/><rect x="106" y="66" width="44" height="96" rx="8" transform="skewY(-8)"/></g></svg>`,
+  tick: `<svg viewBox="0 0 211 211" aria-hidden="true"><defs><linearGradient id="art-t" x1="0" y1="1" x2="1" y2="0"><stop offset="0" stop-color="#4b5cff"/><stop offset="1" stop-color="#e6ebff"/></linearGradient><filter id="art-tf" x="-30%" y="-30%" width="160%" height="160%"><feGaussianBlur stdDeviation="5" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter></defs><path d="M58 112 L92 146 L156 66" fill="none" stroke="url(#art-t)" stroke-width="10" stroke-linecap="round" stroke-linejoin="round" filter="url(#art-tf)"/></svg>`,
+};
+
+/** An empty state: the artwork, a title, a line or two, and Add funds. */
+const emptyState = ({ art, title, body, id }) => `
+  <div class="db-emptystate">
+    <span class="db-emptystate__art">${ART[art]}</span>
+    <div class="db-emptystate__text">
+      <h2 id="${id}" class="db-emptystate__title">${title}</h2>
+      <p class="db-emptystate__body">${body}</p>
+    </div>
+    <a href="#add-funds" class="db-btn db-balance__add db-emptystate__btn">${icon("add.svg", "current")}Add funds</a>
   </div>`;
 
 const groupsHTML = (state) => {
@@ -463,12 +526,13 @@ function transactionsPage(state) {
     <section class="db-tx-page" aria-labelledby="db-all">
       <div class="db-tx-page__top">
         ${pageHead({ back: "#home", backLabel: "Back to Home", title: "Transactions", id: "db-all" })}
-        ${searchField({ attr: "data-search", value: state.query, placeholder: "Search transactions, payees, amounts", label: "Search transactions" })}
+        ${TRANSACTIONS.length ? searchField({ attr: "data-search", value: state.query, placeholder: "Search transactions, payees, amounts", label: "Search transactions" }) : ""}
       </div>
-      <div class="db-types" id="db-types" role="radiogroup" aria-label="Type">${TYPES.map(
+      ${TRANSACTIONS.length ? "" : emptyState({ art: "rings", id: "db-none", title: "No transactions yet", body: "Transactions, payees, and analysis will show up after your first transaction." })}
+      ${TRANSACTIONS.length ? `<div class="db-types" id="db-types" role="radiogroup" aria-label="Type">${TYPES.map(
         (t) => `<button type="button" class="db-type" role="radio" data-type="${t.id}" aria-checked="${t.id === state.type}">${t.label}</button>`
       ).join("")}</div>
-      <div class="db-groups" data-groups>${groupsHTML(state)}</div>
+      <div class="db-groups" data-groups>${groupsHTML(state)}</div>` : ""}
     </section>`;
 }
 
@@ -486,7 +550,8 @@ const RECIPIENTS = (() => {
       r.count += 1;
       r.amount += t.amount;
     }
-  return [...byParty.values()].sort((a, b) => a.party.localeCompare(b.party));
+  // the full history lists every recipient; a newer account only those it has dealt with
+  return [...byParty.values()].filter((r) => ACCOUNT === "full" || r.count).sort((a, b) => a.party.localeCompare(b.party));
 })();
 
 const recipientRow = (r) => `
@@ -531,9 +596,11 @@ function recipientsPage(state) {
     <section class="db-tx-page" aria-labelledby="db-recipients">
       <div class="db-tx-page__top">
         ${pageHead({ back: "#home", backLabel: "Back to Home", title: "Recipients", id: "db-recipients" })}
-        ${searchField({ attr: "data-recipient-search", value: state.recipientQuery, placeholder: "Search recipients", label: "Search recipients" })}
+        ${RECIPIENTS.length ? searchField({ attr: "data-recipient-search", value: state.recipientQuery, placeholder: "Search recipients", label: "Search recipients" }) : ""}
       </div>
-      <div class="db-groups" data-recipients>${recipientsHTML(state)}</div>
+      ${RECIPIENTS.length
+        ? `<div class="db-groups" data-recipients>${recipientsHTML(state)}</div>`
+        : emptyState({ art: "cards", id: "db-norecipients", title: "No recipients yet", body: "Recipients will show up here after the first transaction." })}
     </section>`;
 }
 
@@ -556,44 +623,154 @@ function recipientPage(state) {
   return `
     <section class="db-tx-page" aria-labelledby="db-person">
       <div class="db-tx-page__top">
-        ${pageHead({ back: "#recipients", backLabel: "Back to Recipients", title: esc(r.party), id: "db-person", lead: avatar(r, 48) })}
+        ${pageHead({ back: "#recipients", backLabel: "Back to Recipients", title: esc(r.party), id: "db-person" })}
         ${searchField({ attr: "data-person-search", value: state.personQuery, placeholder: "Search transactions, dates", label: `Search transactions with ${esc(r.party)}` })}
       </div>
       <div class="db-groups" data-person>${personHTML(state)}</div>
     </section>`;
 }
 
+/** A row of a grouped list: icon, label, chevron (page 1341:22528). */
+const listRow = ({ href, file, label, cls = "" }) =>
+  `<li><a class="db-row ${cls}" href="${href}">${icon(file)}<span class="db-row__label">${label}</span><span class="db-row__chevron" aria-hidden="true"></span></a></li>`;
+const listGroup = (heading, rows) => `
+  <section class="db-listgroup">
+    ${heading ? `<h3 class="db-listgroup__title">${heading}</h3>` : ""}
+    <ul class="db-list">${rows.join("")}</ul>
+  </section>`;
+
 /**
- * Settings (node 1282:5026): groups of rows in cards, Log out at the foot.
- * The frame's rows are placeholders ("Add card"), so these are the wallet's
- * own settings; the ones without a page yet say so when opened.
+ * Settings (node 1341:23895): you, then your details, payment methods,
+ * security, Help and About, and Log out. Rows without a page yet say so.
  */
-const settingRow = ({ href, attr = "", file, label, extra = "" }) =>
-  `<li>${href
-    ? `<a class="db-setting" href="${href}">`
-    : `<button type="button" class="db-setting" ${attr}>`}${icon(file)}<span class="db-setting__label">${label}</span>${extra}<span class="db-setting__chevron" aria-hidden="true"></span>${href ? "</a>" : "</button>"}</li>`;
-function settingsPage(state) {
+function settingsPage() {
   return `
-    <section class="db-settings" aria-labelledby="db-settings-title">
+    <section class="db-page" aria-labelledby="db-settings-title">
       ${pageHead({ back: "#home", backLabel: "Back to Home", title: "Settings", id: "db-settings-title" })}
-      <div class="db-settings__groups">
-        <ul class="db-settings__group">
-          ${settingRow({ href: "#cards", file: "db-card.svg", label: "Cards" })}
-          ${settingRow({ href: "#add-card", file: "add.svg", label: "Add card" })}
-        </ul>
-        <ul class="db-settings__group">
-          ${settingRow({ href: "#profile", file: "db-recipients.svg", label: "Personal details" })}
-          ${settingRow({ href: "#security", file: "safety.svg", label: "Security" })}
-          ${settingRow({ href: "#statements", file: "receipt.svg", label: "Statements" })}
-        </ul>
-        <ul class="db-settings__group">
-          ${settingRow({ attr: "data-theme-toggle", file: state.light ? "db-moon.svg" : "db-sun.svg", label: state.light ? "Dark mode" : "Light mode" })}
-          ${settingRow({ attr: "data-home-version", file: "db-home.svg", label: "Home layout", extra: `<span class="db-setting__value">v${state.home}</span>` })}
-        </ul>
+      <div class="db-profile">
+        <span class="db-avatar db-avatar--56 db-avatar--me">${USER.initials}</span>
+        <p class="db-profile__name">${esc(USER.name)}</p>
+        <p class="db-profile__email">${esc(USER.email)}</p>
       </div>
-      <ul class="db-settings__group db-settings__foot">
-        ${settingRow({ href: "./", file: "db-log-out.svg", label: "Log out" })}
+      <div class="db-listgroups">
+        ${listGroup("Personal information", [
+          listRow({ href: "#name", file: "lc-user.svg", label: "Name" }),
+          listRow({ href: "#email", file: "lc-mail.svg", label: "Email" }),
+          listRow({ href: "#address", file: "lc-map-pin.svg", label: "Address" }),
+        ])}
+        ${listGroup("Payment methods", [listRow({ href: "#cards", file: "db-card.svg", label: "Cards" })])}
+        ${listGroup("Security", [
+          listRow({ href: "#password", file: "lc-key-round.svg", label: "Password management" }),
+          listRow({ href: "#notifications", file: "lc-bell.svg", label: "Notifications" }),
+          listRow({ href: "#sign-in-activity", file: "lc-devices.svg", label: "Sign-in activity" }),
+        ])}
+        ${listGroup("", [listRow({ href: "#help", file: "lc-life-buoy.svg", label: "Help" }), listRow({ href: "#about", file: "lc-info.svg", label: "About" })])}
+        ${listGroup("", [listRow({ href: "./", file: "db-log-out.svg", label: "Log out", cls: "db-row--tight" })])}
+      </div>
+    </section>`;
+}
+
+/** Help (node 1341:23283) — from a transaction it names the merchant. */
+function helpPage(state) {
+  const who = state.helpParty ? esc(state.helpParty) : "the merchant";
+  return `
+    <section class="db-page" aria-labelledby="db-help-title">
+      ${pageHead({ back: "#home", backLabel: "Back", title: "Help", id: "db-help-title" })}
+      <p class="db-page__text">To get help with your purchase contact ${who}. If this doesn’t work try contacting us.</p>
+      <ul class="db-list">
+        ${listRow({ href: "#refund", file: "lc-ticket-x.svg", label: "Ask for refund" })}
+        ${listRow({ href: "#support", file: "lc-chat.svg", label: "Contact our support team" })}
       </ul>
+    </section>`;
+}
+
+/** A message panel — red for errors, green for good news (nodes 1341:23072, 1341:24032). */
+const notice = ({ tone = "negative", title, body, code = "" }) => `
+  <div class="db-notice db-notice--${tone}" role="${tone === "negative" ? "alert" : "status"}">
+    <p class="db-notice__title">${title}</p>
+    <p class="db-notice__body">${body}</p>
+    ${code ? `<button type="button" class="db-copy db-notice__code" data-copy="${code}" aria-label="Copy error code ${code}">
+      <span class="db-copy__value">Error code: ${code}${icon("copy.svg", "current")}</span>
+      <span class="db-copy__done" aria-hidden="true">Error code: Copied!</span></button>` : ""}
+  </div>`;
+
+/** About (node 1341:24032), word for word as the frame has it. */
+function aboutPage() {
+  const declined = (tone) =>
+    notice({
+      tone,
+      title: "Your card didn’t go through",
+      body: `There isn’t enough money on this card to complete the payment. Please <a href="#pay-with">pick a different card</a> or add a new one. If this doesn’t work <a href="#support">contact our support team</a>.`,
+      code: "3fdsb3x",
+    });
+  return `
+    <section class="db-page" aria-labelledby="db-about-title">
+      ${pageHead({ back: "#settings", backLabel: "Back to Settings", title: "About", id: "db-about-title" })}
+      <div class="db-page__text">
+        <p>MoonPay has restricted your account. You can’t buy or sell through them right now, but your crypto is safe and still yours. Their wallet is self-custody, so the assets sit in your wallet and not with MoonPay. Disabled accounts block buy and sell actions, but wallet export is still allowed.</p>
+        <p>Why this usually happens: a security review, a problem with identity verification, suspected fraud, or MoonPay finding more than one account in your name. MoonPay allows one account per person. If multiple accounts are detected, they will be restricted and permanently closed.</p>
+      </div>
+      ${declined("positive")}
+      <div class="db-page__block">
+        <h3 class="db-page__heading">Important</h3>
+        <p class="db-page__text">Watch out for scams: fake “MoonPay support” pages with phone numbers show up in search results. Only contact MoonPay through the chat on their official site or in the app. Real support will never ask for your recovery phrase.</p>
+      </div>
+      ${declined("negative")}
+    </section>`;
+}
+
+/** Cards (node 1341:23319): your cards, and + to add one. */
+function cardsPage() {
+  return `
+    <section class="db-page" aria-labelledby="db-cards-title">
+      ${pageHead({
+        back: "#home", backLabel: "Back to Home", title: "Cards", id: "db-cards-title",
+        right: `<a href="#add-card" class="db-roundbtn db-roundbtn--primary" aria-label="Add card" title="Add card">${icon("add.svg", "current")}</a>`,
+      })}
+      <ul class="db-list">
+        ${CARDS.map((c) => `<li><a class="db-row db-row--card" href="#card">${cardFace(c)}<span class="db-row__chevron" aria-hidden="true"></span></a></li>`).join("")}
+      </ul>
+    </section>`;
+}
+
+/**
+ * Add new card (nodes 1341:23366 / 1341:23384): name on card, number (its
+ * brand at the end), expiry and security code, your details, and the button.
+ * The new card is saved for this visit and chosen to pay with.
+ */
+const field = ({ id, label, attr = "", extra = "", cls = "", inputmode = "text", autocomplete = "off" }) => `
+  <div class="db-field ${cls}">
+    <label class="db-field__label" for="${id}">${label}<span class="db-field__req" aria-hidden="true">*</span></label>
+    <div class="db-field__box">
+      <input id="${id}" class="db-field__input" ${attr} inputmode="${inputmode}" autocomplete="${autocomplete}" required />
+      ${extra}
+    </div>
+  </div>`;
+function addCardPage() {
+  return `
+    <section class="db-page db-page--form" aria-labelledby="db-addcard-title">
+      ${pageHead({ back: "#cards", backLabel: "Back", title: "Add new card", id: "db-addcard-title" })}
+      <form class="db-form" data-card-form novalidate>
+        <fieldset class="db-form__section">
+          <legend class="db-form__title">Add card</legend>
+          ${field({ id: "cc-name", label: "Name on card", attr: "data-cc-name", autocomplete: "cc-name" })}
+          ${field({ id: "cc-number", label: "Card number", attr: 'data-cc-number maxlength="23"', inputmode: "numeric", autocomplete: "cc-number",
+            extra: `<span class="db-cardopt__logo" data-cc-brand><img src="${ICON}mastercard.svg" alt="" /></span>` })}
+          <div class="db-form__row">
+            ${field({ id: "cc-exp", label: "Expiry date (MM/YY)", attr: 'data-cc-exp maxlength="5"', inputmode: "numeric", autocomplete: "cc-exp" })}
+            ${field({ id: "cc-csc", label: "Security code", attr: 'data-cc-csc maxlength="4"', inputmode: "numeric", autocomplete: "cc-csc",
+              extra: icon("db-card.svg") })}
+          </div>
+        </fieldset>
+        <section class="db-form__section" aria-labelledby="db-billing">
+          <h3 id="db-billing" class="db-form__title">Customer information</h3>
+          <div class="db-billing">
+            <p class="db-billing__head"><span>${esc(USER.name)}</span><a href="#address" class="db-billing__edit">Edit</a></p>
+            <p class="db-billing__body">${esc(USER.email)}<br />United Kingdom<br />+44 7490 075 987</p>
+          </div>
+        </section>
+        <button type="submit" class="db-btn db-form__go">Add new card</button>
+      </form>
     </section>`;
 }
 
@@ -621,9 +798,9 @@ const txHash = (id) => {
 };
 const shortHash = (hash) => `${hash.slice(0, 5)}...${hash.slice(-5)}`;
 
-/** The back arrow at the top of a full-screen step (nodes 1197:6932 – 1197:7059). */
+/** The back button at the top of a full screen: a 44px circle with an arrow (page 1341:22528). */
 const backArrow = (href, label, attr = "data-back") => `
-  <a href="${href}" class="db-backarrow" ${attr} aria-label="${label}" title="${label}">${icon("arrow-right.svg")}</a>`;
+  <a href="${href}" class="db-backarrow" ${attr} aria-label="${label}" title="${label}">${icon("lc-arrow-left.svg")}</a>`;
 
 const detailRow = (label, value) => `
   <div class="db-detail__row"><dt>${label}</dt><dd>${value}</dd></div>`;
@@ -655,8 +832,8 @@ function detailPage(t, back) {
   const hash = txHash(t.id);
   return `
     <section class="db-detail" aria-labelledby="db-detail-title">
-      ${backArrow(`#${back.id}`, `Back to ${back.label}`)}
-      ${avatar(t, 64)}
+      ${pageHead({ back: `#${back.id}`, backLabel: `Back to ${back.label}` })}
+      ${avatar(t, 56)}
       <div class="db-detail__value">
         <h2 id="db-detail-title" class="db-detail__party">${esc(t.party)}</h2>
         <p class="db-detail__amount${out ? "" : " is-income"}">${masked(`${sign(t.amount)}$${num(t.amount)}`)}</p>
@@ -674,9 +851,7 @@ function detailPage(t, back) {
         </dl>
       </section>
       <div class="db-detail__foot">
-        <button type="button" class="db-btn db-btn--link" data-export>Export PDF</button>
-        <p class="db-detail__help">Something wrong with this transaction?<br />
-          <a href="#refund" class="db-link">Request refund</a> or <a href="#support" class="db-link">contact our support</a>.</p>
+        <ul class="db-list db-list--help"><li><a class="db-row" href="#help">${icon("lc-life-buoy.svg")}<span class="db-row__label">Help</span><span class="db-row__chevron" aria-hidden="true"></span></a></li></ul>
       </div>
     </section>`;
 }
@@ -696,7 +871,7 @@ const cardFace = (c) => `
   </span>
   <span class="db-cardopt__text">
     <span class="db-cardopt__label">${esc(c.label)}</span>
-    <span class="db-cardopt__sub">${esc(c.expiry)}</span>
+    <span class="db-cardopt__sub${c.expired ? " is-expired" : ""}">${esc(c.expiry)}</span>
   </span>`;
 
 /** Pay with, on Add funds: the chosen card, in a row that opens the Pay with screen. */
@@ -719,11 +894,8 @@ function cardRow(state) {
 function payWithPage(state) {
   return `
     <section class="db-addfunds" aria-labelledby="db-paywith-title">
-      ${backArrow("#add-funds", "Back to Add funds", "data-to-funds")}
-      <hgroup class="db-addfunds__head">
-        <h2 id="db-paywith-title" class="db-addfunds__title">Add funds with</h2>
-        <p class="db-addfunds__sub">Select payment method</p>
-      </hgroup>
+      ${pageHead({ back: "#add-funds", backLabel: "Back to Add funds", title: "Pay with", id: "db-paywith-title", attr: "data-to-funds" })}
+      <p class="db-addfunds__sub">Select payment method</p>
       <ul class="db-card db-cardlist" aria-labelledby="db-paywith-title">
         ${CARDS.map(
           (c) => `<li><button type="button" class="db-select__option" data-card="${c.id}" aria-pressed="${c.id === state.card}">
@@ -748,11 +920,8 @@ function payWithPage(state) {
 function addFundsPage(state, value) {
   return `
     <section class="db-addfunds" aria-labelledby="db-addfunds-title">
-      <div class="db-addfunds__bar">
-        ${backArrow("#home", "Back")}
-        <h2 id="db-addfunds-title" class="db-addfunds__bartitle">Add funds</h2>
-        <span class="db-addfunds__spacer" aria-hidden="true"></span>
-      </div>
+      ${pageHead({ back: "#home", backLabel: "Back" })}
+      <h2 id="db-addfunds-title" class="sr-only">Add funds</h2>
       <div class="db-addfunds__amount">
         <div data-amount></div>
         <div class="db-presets" role="group" aria-label="Amount">
@@ -763,8 +932,40 @@ function addFundsPage(state, value) {
         <h2 id="db-paywith" class="sr-only">Pay with</h2>
         ${cardRow(state)}
       </section>
-      <p class="db-addfunds__error" data-add-error role="alert"></p>
-      <button type="button" class="db-btn db-addfunds__go" data-add-confirm>Add funds</button>
+      <div class="db-addfunds__foot">
+        ${state.payError === "declined"
+          ? notice({
+              title: "Your card didn’t go through",
+              body: `There isn’t enough money on this card to complete the payment. Please pick a different card or add a new one. If this doesn’t work <a href="#support">contact our support team</a>.`,
+              code: "3fdsb3x",
+            })
+          : state.payError === "expired"
+            ? notice({ title: "Your card is expired", body: "Choose another card or add a new one." })
+            : ""}
+        <p class="db-addfunds__error" data-add-error role="alert"></p>
+        <button type="button" class="db-btn db-addfunds__go" data-add-confirm>Add funds</button>
+      </div>
+    </section>`;
+}
+
+/**
+ * Funds added (node 1341:24174): the wordmark, a glowing tick, the amount,
+ * and back to the dashboard or on to the top-up's details.
+ */
+function addedPage(state) {
+  const t = state.added;
+  return `
+    <section class="db-added" aria-labelledby="db-added-title">
+      <a href="#home" class="db-logo db-added__logo">Paymesh</a>
+      <div class="db-added__body">
+        <span class="db-added__art">${ART.tick}</span>
+        <h2 id="db-added-title" class="db-added__title">$${num(t.amount)}<br />added to your wallet</h2>
+        <p class="db-added__text">${TRANSACTIONS.length ? "It’s in your balance now, ready to pay anyone, anywhere." : "Transactions, payees, and analysis will show up after your first transaction."}</p>
+      </div>
+      <div class="db-added__foot">
+        <a href="#home" class="db-btn db-added__home">Go back to dashboard</a>
+        <a href="#tx/${t.id}" class="db-added__link" data-view-added>View transaction details</a>
+      </div>
     </section>`;
 }
 
@@ -774,14 +975,9 @@ function main(state, value = 0) {
       if (state.home === "2") return homeV2(state);
       return `
         ${balance(state)}
-        <a href="#invite" class="db-invite db-panel">
-          <span class="db-invite__text">
-            <span class="db-invite__title">Invite friends, earn £50</span>
-            <span class="db-invite__body">Earn £50 for each friend you invite by 26 March. T&amp;C apply.</span>
-          </span>
-          <span class="db-invite__art" aria-hidden="true"></span>
-        </a>
-        <section class="db-section" aria-labelledby="db-recent">
+        ${ACCOUNT === "new"
+          ? emptyState({ art: "rings", id: "db-ready", title: "Your account is ready", body: "Add funds to start paying anyone, anywhere. Your transactions and payees will show up here." })
+          : `<section class="db-section" aria-labelledby="db-recent">
           <h2 class="db-section__title" id="db-recent"><a href="#transactions">Transactions<span class="db-section__chevron" aria-hidden="true"></span></a></h2>
           <ul class="db-txlist db-txlist--home">${RECENT.slice(0, 3).map((t) => row(t, true)).join("")}</ul>
         </section>
@@ -791,8 +987,10 @@ function main(state, value = 0) {
         </section>
         <section class="db-section" aria-labelledby="db-spend1">
           <h2 class="db-section__title" id="db-spend1">Spending analysis</h2>
-          <div class="db-card db-card--analysis db-panel"><div data-spending></div></div>
-        </section>`;
+          ${ACCOUNT === "first"
+            ? `<div class="db-card db-card--analysis db-panel db-nodata"><p>No data to display yet</p></div>`
+            : `<div class="db-card db-card--analysis db-panel"><div data-spending></div></div>`}
+        </section>`}`;
     case "transactions":
       return transactionsPage(state);
     case "recipients":
@@ -807,12 +1005,22 @@ function main(state, value = 0) {
       return addFundsPage(state, value);
     case "pay-with":
       return payWithPage(state);
+    case "added":
+      return addedPage(state);
+    case "help":
+      return helpPage(state);
+    case "about":
+      return aboutPage();
+    case "cards":
+      return cardsPage();
+    case "add-card":
+      return addCardPage();
     default: {
       const label = PAGE_TITLES[state.page] || state.page[0].toUpperCase() + state.page.slice(1);
       return `
-        <section class="db-section">
-          <div class="db-section__head"><h2>${label}</h2></div>
-          <p class="db-empty">This page isn&rsquo;t in the design yet. <a href="#home" class="db-link">Back to Home</a></p>
+        <section class="db-page" aria-labelledby="db-tbd">
+          ${pageHead({ back: "#home", backLabel: "Back", title: label, id: "db-tbd" })}
+          <p class="db-page__text">This page isn&rsquo;t in the design yet.</p>
         </section>`;
     }
   }
@@ -820,7 +1028,7 @@ function main(state, value = 0) {
 
 function render(state, value) {
   return `
-  <div class="db ${state.page === "home" ? `is-home is-home-v${state.home}` : ""} ${SUBPAGES.has(state.page) ? "is-sub" : ""} ${state.folded ? "is-folded" : ""} ${state.menuOpen ? "is-menu-open" : ""} ${state.light ? "is-light" : ""}"${state.hidden ? " data-stealth" : ""}>
+  <div class="db ${state.page === "home" ? `is-home is-home-v${state.home}` : ""} ${isSubpage(state.page) ? "is-sub" : ""} ${state.folded ? "is-folded" : ""} ${state.menuOpen ? "is-menu-open" : ""} ${state.light ? "is-light" : ""}"${state.hidden ? " data-stealth" : ""}>
     <header class="db-header">
       <a href="#home" class="db-logo">Paymesh</a>
       <div class="db-user">
@@ -873,6 +1081,7 @@ export default {
           return "recipient";
         }
       }
+      if (id === "added" && !state.added) return "home";
       return PAGES.has(id) ? id : "home";
     };
     // Where the details page's button goes: the list the transaction was picked from.
@@ -904,6 +1113,11 @@ export default {
       onChange: (value) => {
         const error = root.querySelector("[data-add-error]");
         if (error) error.textContent = "";
+        // a new amount clears a card's error
+        if (state.payError) {
+          state.payError = null;
+          root.querySelector(".db-addfunds__foot .db-notice")?.remove();
+        }
         // over the limit, the line under the amount says so, as you type
         amount.warn(limitWarning(value));
         // the preset chip for this amount, if there is one, lights up
@@ -1004,6 +1218,7 @@ export default {
       // Pay with: a card is chosen, and it's back to Add funds
       if (e.target.closest("[data-card]")) {
         state.card = e.target.closest("[data-card]").dataset.card;
+        state.payError = null;
         return toFunds();
       }
       if (e.target.closest("[data-to-funds]")) {
@@ -1023,7 +1238,8 @@ export default {
         amount.set(+e.target.closest("[data-preset]").dataset.preset);
         return amount.focus();
       }
-      if (e.target.closest("[data-export]")) return print();
+      // from Funds added to the top-up's details, and back to Home from there
+      if (e.target.closest("[data-view-added]")) state.back = BACK.home;
       if (e.target.closest("[data-toggle-hide]")) return toggleStealth();
       else if (e.target.closest("[data-swap]")) {
         state.lead = state.lead === "usd" ? "usdt" : "usd";
@@ -1070,7 +1286,27 @@ export default {
           navigator.vibrate?.(10);
           return amount.focus();
         }
-        location.hash = "#home"; // the payment itself isn't designed yet
+        // the card: expired, turned down, or through (nodes 1341:23119,
+        // 1341:23072, 1341:24174)
+        const card = CARDS.find((c) => c.id === state.card) || CARDS[0];
+        if (card.expired || DECLINES.has(card.id)) {
+          navigator.vibrate?.(10);
+          state.payError = card.expired ? "expired" : "declined";
+          draw();
+          return;
+        }
+        const now = new Date();
+        const t = {
+          party: USER.name, initials: USER.initials, color: "me", topUp: true,
+          card: `${card.label.split(" ending")[0]} ending **** ${card.label.slice(-4)}`,
+          amount: value,
+          at: TODAY + (now.getHours() * 60 + now.getMinutes()) * 60 * 1000,
+        };
+        t.date = `13 Oct 2026 · ${String(now.getHours()).padStart(2, "0")}:${String(now.getMinutes()).padStart(2, "0")}`;
+        t.id = txId(t);
+        BY_ID.set(t.id, t);
+        state.added = t;
+        location.hash = "#added";
         return;
       }
       else if (e.target.closest("[data-copy]")) {
@@ -1099,7 +1335,60 @@ export default {
     });
 
     // Typing only redraws the list, so the field keeps its focus.
+    // Add new card: the number in fours with its brand, the expiry as MM/YY,
+    // the code in digits; then the card is saved and chosen to pay with
+    const ccFormat = (e) => {
+      const el = e.target;
+      if (el.matches("[data-cc-number]")) {
+        const digits = el.value.replace(/\D/g, "").slice(0, 19);
+        el.value = digits.replace(/(\d{4})(?=\d)/g, "$1 ");
+        const visa = digits.startsWith("4");
+        const brand = root.querySelector("[data-cc-brand]");
+        brand.classList.toggle("db-cardopt__logo--full", visa);
+        brand.firstElementChild.src = `${ICON}${visa ? "visa" : "mastercard"}.svg`;
+      } else if (el.matches("[data-cc-exp]")) {
+        const d = el.value.replace(/\D/g, "").slice(0, 4);
+        el.value = d.length > 2 ? `${d.slice(0, 2)}/${d.slice(2)}` : d;
+      } else if (el.matches("[data-cc-csc]")) {
+        el.value = el.value.replace(/\D/g, "").slice(0, 4);
+      } else return false;
+      el.closest(".db-field")?.classList.remove("is-invalid");
+      return true;
+    };
+    root.addEventListener("submit", (e) => {
+      const form = e.target.closest("[data-card-form]");
+      if (!form) return;
+      e.preventDefault();
+      const get = (a) => form.querySelector(`[${a}]`);
+      const digits = get("data-cc-number").value.replace(/\D/g, "");
+      const [mm, yy] = get("data-cc-exp").value.split("/");
+      const checks = [
+        ["data-cc-name", get("data-cc-name").value.trim().length > 1],
+        ["data-cc-number", digits.length >= 13],
+        ["data-cc-exp", +mm >= 1 && +mm <= 12 && /^\d\d$/.test(yy || "")],
+        ["data-cc-csc", /^\d{3,4}$/.test(get("data-cc-csc").value)],
+      ];
+      checks.forEach(([a, ok]) => get(a).closest(".db-field").classList.toggle("is-invalid", !ok));
+      const bad = checks.find(([, ok]) => !ok);
+      if (bad) {
+        navigator.vibrate?.(10);
+        return get(bad[0]).focus();
+      }
+      const visa = digits.startsWith("4");
+      const card = {
+        id: `card-${digits.slice(-4)}-${Date.now()}`,
+        scheme: visa ? "visa" : "mastercard",
+        label: `${visa ? "Visa" : "Mastercard"} ending in ${digits.slice(-4)}`,
+        expiry: `Expiry ${mm}/20${yy}`,
+      };
+      CARDS.push(card);
+      state.card = card.id;
+      state.payError = null;
+      location.hash = state.addCardFrom === "pay-with" || state.addCardFrom === "add-funds" ? "#add-funds" : "#cards";
+    });
+
     root.addEventListener("input", (e) => {
+      if (ccFormat(e)) return;
       if (e.target.matches("[data-search]")) {
         state.query = e.target.value;
         root.querySelector("[data-groups]").innerHTML = groupsHTML(state);
@@ -1129,7 +1418,17 @@ export default {
       state.menuOpen = false;
       // Add funds starts from $0 each visit, with the keyboard up — but
       // coming back from choosing or adding a card, the amount is kept
-      if (state.page === "add-funds" && previous !== "pay-with" && previous !== "add-card") amount.reset();
+      if (state.page === "add-funds" && previous !== "pay-with" && previous !== "add-card") {
+        amount.reset();
+        state.payError = null;
+      }
+      // Help names the merchant when it is opened from a transaction
+      if (state.page === "help") {
+        const t = previous === "tx" ? BY_ID.get(state.txId) : null;
+        state.helpParty = t && !t.topUp ? t.party : null;
+      }
+      // a new card goes back to where it was asked for
+      if (state.page === "add-card" && previous !== "add-card") state.addCardFrom = previous;
       draw();
       scrollTo(0, 0);
       if (state.page === "add-funds") amount.focus();
