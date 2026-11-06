@@ -77,6 +77,37 @@ Vercel login first, depending on the project's Deployment Protection setting.
 and recent transactions. Code in `src/screens/dashboard.js`, styles at the end
 of `styles/ds.css` (`.db-*`, with the dark values of the colour variables).
 
+**Latest design — Figma page 1341:22528.** Every screen follows it; the
+interactions are unchanged.
+- Every page but Home opens with a bar: a 44px round back button, the title
+  centred, and a matching space (or, on Cards, a **+**). On phones these
+  are full screens without the app's header.
+- **Demo accounts**: `dashboard.html?account=new` is a brand-new account
+  ($0.00, "Your account is ready", empty Transactions and Recipients);
+  `?account=first` has had one payment in ($1,355.03, one payee, "No data to
+  display yet"); without the parameter it is the full history.
+- **Add funds** has no title; the amount is 56px. Paying with *Mastercard
+  ending in 1234* shows "Your card didn’t go through" (its error code
+  copies); the expired *Visa ending in 3021* shows "Your card is expired".
+  Any other card goes to **Funds added** (`#added`): the amount "added to
+  your wallet", **Go back to dashboard**, and **View transaction details**
+  of the new top-up.
+- **Transaction details** end with a **Help** row, which opens **Help**
+  (`#help`): contact the merchant, **Ask for refund**, **Contact our
+  support team**. Export PDF is gone, as in the frames.
+- **Settings** (`#settings`): you (avatar, name, email), then Personal
+  information (Name, Email, Address), Payment methods (Cards), Security
+  (Password management, Notifications, Sign-in activity), Help and About,
+  and Log out. **About** (`#about`) is the frame's text, word for word.
+  Light mode and Home layout stay in the menu.
+- **Cards** (`#cards`) lists the cards with **+** for **Add new card**
+  (`#add-card`): name, number (grouped in fours, its brand shown), expiry
+  (MM/YY) and security code, your details, and the button — it checks the
+  fields, saves the card for the visit and chooses it to pay with.
+- Artwork the frames take from images Figma won't serve here (the empty
+  states' glass rings and cards, the success tick) is drawn in SVG. New
+  icons are from Lucide (ISC licence), in `assets/ds/lc-*.svg`.
+
 - **Stealth Mode**: tapping the balance hides it the way the
   60fps *Hide Sensitive Number* does — the figures dissolve into five
   shimmering asterisks in the figures' own text style (`******` for the

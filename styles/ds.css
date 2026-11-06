@@ -2225,7 +2225,7 @@ body:has(.db.is-light) { --db-page: #ffffff; }
 /* All / Received / Sent — Button S */
 .db-type { width: auto; min-width: 95px; padding: 6px var(--spacing-16); font: 600 14px/20px var(--font-family-inter); }
 @media (max-width: 640px) {
-  .db-tx-page .db-pagehead, .db-tx-page .db-search, .db-tx-page .db-types, .db-tx-page .db-group__label, .db-tx-page .db-empty { margin-left: var(--spacing-8); margin-right: var(--spacing-8); }
+  .db-tx-page .db-bar, .db-tx-page .db-search, .db-tx-page .db-types, .db-tx-page .db-group__label, .db-tx-page .db-empty { margin-left: var(--spacing-8); margin-right: var(--spacing-8); }
   .db-tx-page .db-tx { padding: 0 var(--spacing-8); }
 }
 
@@ -2267,3 +2267,168 @@ body:has(.db.is-light) { --db-page: #ffffff; }
 .db-copy .db-copy__value .db-icon { width: 20px; height: 20px; -webkit-mask-size: 20px 20px; mask-size: 20px 20px; }
 .db-btn--link { height: 52px; background: none; color: var(--text-primary) !important; font: 600 18px/26px var(--font-family-inter); letter-spacing: -0.16px; text-decoration: underline; text-underline-offset: 3px; }
 .db-btn--link:hover { background: none; opacity: .75; }
+
+/* ==========================================================================
+   Figma page 1341:22528 — every screen restyled; interactions unchanged
+   ========================================================================== */
+.db { --surface-list: #1b1b1e; --divider: rgba(255, 255, 255, .06); --notice-neg-bg: #251214; --notice-pos-bg: #122513; --text-positive: #8fe6a2; }
+.db.is-light { --surface-list: #f4f4f6; --divider: rgba(0, 0, 0, .08); --notice-neg-bg: #fdecee; --notice-pos-bg: #e8f7ec; --text-positive: #15803d; }
+
+/* the bar a full screen opens with: a 44px round back button, the title
+   centred (Heading/M Bold), a matching space or button on the right; 32px
+   above the content */
+.db-bar { display: flex; align-items: center; justify-content: space-between; gap: var(--spacing-8); min-height: 44px; }
+.db-bar__title { flex: 1 1 0; min-width: 0; margin: 0; overflow: hidden; font: var(--heading-m-bold); letter-spacing: 0; color: var(--text-heading); text-align: center; text-overflow: ellipsis; white-space: nowrap; }
+.db-bar__spacer { flex: 0 0 auto; width: 44px; height: 44px; }
+.db .db-backarrow { display: grid; place-items: center; flex: 0 0 auto; width: 44px; height: 44px; margin: 0; border-radius: var(--radius-full); background: var(--surface-secondary); }
+.db .db-backarrow .db-icon { width: 24px; height: 24px; -webkit-mask-size: 24px 24px; mask-size: 24px 24px; transform: none; }
+.db .db-backarrow:hover { background: var(--action-secondary-pressed); }
+.db-roundbtn { display: grid; place-items: center; flex: 0 0 auto; width: 44px; height: 44px; border-radius: var(--radius-full); background: var(--surface-secondary); color: var(--icon-primary); text-decoration: none; }
+.db-roundbtn--primary { background: var(--action-primary-default); color: var(--text-inverse) !important; }
+.db-roundbtn--primary:hover { background: var(--action-primary-hover); }
+.db-roundbtn .db-icon { width: 24px; height: 24px; }
+.db-tx-page .db-bar { margin: 0 var(--spacing-16); }
+.db-tx-page__top { gap: var(--spacing-32); }
+.db-tx-page__top .db-search { margin-top: 0; }
+
+/* a plain full screen: bar, then its content 32px apart, in a 422px column */
+.db-page { display: flex; flex-direction: column; gap: var(--spacing-32); width: 100%; max-width: calc(422px + 2 * var(--spacing-16)); margin: 0 auto; padding: 0 var(--spacing-16); box-sizing: border-box; }
+.db-page__text { margin: 0; font: var(--text-s); letter-spacing: -0.16px; color: var(--text-secondary); }
+div.db-page__text { display: flex; flex-direction: column; gap: 20px; }
+div.db-page__text p { margin: 0; }
+.db-page__block { display: flex; flex-direction: column; gap: var(--spacing-8); }
+.db-page__heading { margin: 0; font: var(--heading-m-bold); letter-spacing: 0; color: var(--text-primary); }
+
+/* grouped lists (Settings, Help, Cards, details' Help): #1b1b1e cards, rows
+   of a 24px icon, the label and a chevron, hairlines between */
+.db-listgroups { display: flex; flex-direction: column; gap: var(--spacing-16); }
+.db-listgroup { display: flex; flex-direction: column; gap: var(--spacing-8); }
+.db-listgroup__title { margin: 0; font: 600 16px/24px var(--font-family-inter); letter-spacing: -0.2px; color: var(--text-secondary); }
+.db-list { display: flex; flex-direction: column; margin: 0; padding: var(--spacing-8) var(--spacing-16); list-style: none; border-radius: var(--radius-xl); background: var(--surface-list); }
+.db-list > li + li { margin-top: 6px; padding-top: 6px; border-top: 1px solid var(--divider); }
+.db-row { display: flex; align-items: center; gap: var(--spacing-16); padding: var(--spacing-8) 0; color: var(--text-primary); font: 600 16px/24px var(--font-family-inter); letter-spacing: -0.2px; text-decoration: none; }
+.db-row--tight { gap: var(--spacing-8); }
+.db-row--card { gap: var(--spacing-12); }
+.db-row:hover { opacity: .75; }
+.db-row .db-icon { width: 24px; height: 24px; }
+.db-row__label { flex: 1 1 0; min-width: 0; }
+.db-row__chevron { flex: 0 0 auto; width: 24px; height: 24px; background: var(--icon-primary); -webkit-mask: url("../assets/ds/chevron-down.svg") center / 24px 24px no-repeat; mask: url("../assets/ds/chevron-down.svg") center / 24px 24px no-repeat; transform: rotate(-90deg); }
+.db-list--help { background: var(--surface-secondary); }
+
+/* Settings: you, centred */
+.db-profile { display: flex; flex-direction: column; align-items: center; text-align: center; }
+.db-profile > * { margin: 0; }
+.db-profile .db-avatar { margin-bottom: var(--spacing-16); }
+.db-profile__name { font: var(--heading-l); letter-spacing: 0; color: var(--text-heading); }
+.db-profile__email { font: 400 18px/26px var(--font-family-inter); letter-spacing: -0.16px; color: var(--text-tertiary); }
+.db-avatar--56 { width: 56px; height: 56px; font: 600 20px/28px var(--font-family-rebond); letter-spacing: 0; }
+
+/* message panels: red errors, green good news */
+.db-notice { display: flex; flex-direction: column; gap: var(--spacing-12); padding: var(--spacing-12); border-radius: 10px; font: var(--text-s); letter-spacing: -0.16px; }
+.db-notice p { margin: 0; }
+.db-notice--negative { background: var(--notice-neg-bg); color: var(--text-negative); }
+.db-notice--positive { background: var(--notice-pos-bg); color: var(--text-positive); }
+.db-notice__title { font-weight: 600; }
+.db-notice a { color: inherit !important; text-decoration: underline; }
+.db-notice .db-notice__code { justify-items: start; color: inherit; font: inherit; letter-spacing: inherit; }
+.db-notice__code .db-copy__value { gap: var(--spacing-8); }
+.db-notice__code .db-copy__value .db-icon, .db-notice__code .db-icon { width: 20px; height: 20px; background: currentColor; -webkit-mask-size: 20px 20px; mask-size: 20px 20px; }
+.db-notice__code .db-copy__done { color: inherit; font: inherit; text-transform: none; }
+
+/* empty states: the artwork overlapping its text by 16px, the copy, a pill */
+.db-emptystate { display: flex; flex-direction: column; align-items: center; width: 100%; max-width: 360px; margin: 0 auto; text-align: center; }
+.db-emptystate__art { display: block; width: 211px; height: 211px; margin-bottom: -16px; }
+.db-emptystate__art svg { display: block; width: 100%; height: 100%; }
+.db-emptystate__text { display: flex; flex-direction: column; gap: var(--spacing-4); width: 100%; }
+.db-emptystate__title { margin: 0; font: var(--heading-m-bold); letter-spacing: 0; color: var(--text-heading); }
+.db-emptystate__body { margin: 0; font: var(--text-m); letter-spacing: -0.16px; color: var(--text-secondary); }
+.db .db-emptystate__btn { align-self: stretch; justify-content: center; margin-top: var(--spacing-24); }
+.db-tx-page > .db-emptystate { max-width: 296px; }
+.db.is-home-v1 .db-main > .db-emptystate { margin-top: -20px; }
+/* one payment in: the spending card has nothing to chart yet */
+.db-nodata { display: grid; place-items: center; min-height: 222px; box-sizing: border-box; }
+.db-nodata p { margin: 0; font: var(--heading-s); letter-spacing: 0; color: var(--text-heading); }
+.db-payees li:only-child { margin-right: auto; }
+
+/* Transactions / Recipients: rows 16px apart; chips outlined, the chosen one
+   filled */
+.db-tx-page .db-txlist { gap: var(--spacing-16); }
+.db-type { min-width: 95px; border: 1px solid var(--border-default); background: none; box-sizing: border-box; }
+.db-type:hover { background: var(--surface-secondary); }
+.db-type[aria-checked="true"] { border-color: var(--action-primary-default); background: var(--action-primary-default); color: var(--text-inverse); }
+.db-tx__usdt { color: var(--text-tertiary); }
+
+/* Transaction details: 56px avatar 16px over the name; the card rows; the
+   Help row pinned to the foot */
+.db-detail > .db-bar { align-self: stretch; }
+.db-detail > .db-avatar + .db-detail__value { margin-top: calc(-1 * var(--spacing-16)); }
+.db-detail__usdt { font: var(--text-m); }
+.db-card.db-detail__card { background: var(--surface-list); }
+.db-status { background: rgba(87, 209, 114, .1); }
+.db-detail__foot { margin-top: auto; padding-top: var(--spacing-32); }
+.db-list--help { padding: var(--spacing-8) var(--spacing-16); }
+.db-list--help .db-row { gap: var(--spacing-8); }
+
+/* Add funds: no title; the amount 56/64; the card row's expired line red;
+   errors above the button */
+.ai-glyph { height: 72px; font-size: 56px; }
+.ai-glyphs { height: 72px; }
+.ai-row { height: 80px; }
+.ai-glyph.is-small { font-size: 32px; }
+.ai-glyph.is-small > span { transform: translateY(-7px); }
+.ai-measure { font-size: 56px; }
+.ai-measure.is-small { font-size: 32px; }
+.ai-sub { margin-top: -4px; }
+.db-addfunds__amount { margin-top: 0; padding-top: var(--spacing-24); }
+.db-cardopt__sub.is-expired { color: var(--text-negative); }
+.db-addfunds__foot { display: flex; flex-direction: column; gap: var(--spacing-16); margin-top: auto; }
+.db-addfunds__foot .db-addfunds__go { margin-top: 0; }
+.db-addfunds__foot .db-addfunds__error { margin: 0; }
+.db-addfunds__sub { margin: calc(-1 * var(--spacing-16)) 0 0; font: var(--text-m); letter-spacing: -0.16px; color: var(--text-tertiary); text-align: center; }
+
+/* Funds added: the wordmark, a glowing tick, the amount, two ways on */
+.db-added { position: relative; isolation: isolate; display: flex; flex-direction: column; flex: 1 0 auto; width: 100%; max-width: calc(422px + 2 * var(--spacing-16)); min-height: calc(100dvh - 120px); margin: 0 auto; padding: 0 var(--spacing-16); box-sizing: border-box; }
+.db-added::before { content: ""; position: absolute; z-index: -1; left: -194px; top: -195px; width: 487px; height: 487px; border-radius: 50%; background: radial-gradient(closest-side, var(--home-glow), transparent); pointer-events: none; }
+.db .db-added__logo { align-self: flex-start; margin: 0; }
+.db-added__body { display: flex; flex-direction: column; align-items: center; margin-top: 96px; text-align: center; }
+.db-added__art { display: block; width: 211px; height: 211px; margin-bottom: -16px; }
+.db-added__art svg { width: 100%; height: 100%; }
+.db-added__title { margin: 0; font: var(--heading-2xl); letter-spacing: 0; color: var(--text-heading); }
+.db-added__text { margin: 10px 0 0; font: var(--text-m); letter-spacing: -0.16px; color: var(--text-secondary); }
+.db-added__foot { display: flex; flex-direction: column; gap: var(--spacing-16); margin-top: auto; padding-top: var(--spacing-32); }
+.db .db-added__home { border-radius: var(--radius-full); }
+.db-added__link { align-self: center; padding: 10px var(--spacing-16); color: var(--text-primary) !important; font: 600 16px/24px var(--font-family-inter); letter-spacing: -0.16px; text-decoration: underline; }
+
+/* Add new card: fields 52px with 16px corners, a red asterisk on each label */
+.db-page--form { flex: 1 0 auto; }
+.db-form { display: flex; flex-direction: column; gap: var(--spacing-32); flex: 1 0 auto; }
+.db-form__section { display: flex; flex-direction: column; gap: var(--spacing-8); margin: 0; padding: 0; border: 0; min-width: 0; }
+.db-form__title { margin: 0 0 0; padding: 0; font: 600 18px/26px var(--font-family-inter); letter-spacing: -0.16px; color: var(--text-primary); }
+fieldset.db-form__section > .db-field { margin-top: 8px; }
+.db-form__row { display: flex; gap: var(--spacing-16); margin-top: 8px; }
+.db-form__row > .db-field { flex: 1 1 0; min-width: 0; margin-top: 0 !important; }
+.db-field { display: flex; flex-direction: column; gap: var(--spacing-8); }
+.db-field__label { font: 600 14px/20px var(--font-family-inter); color: var(--text-primary); }
+.db-field__req { color: var(--text-negative); }
+.db-field__box { display: flex; align-items: center; gap: var(--spacing-8); height: 52px; padding: 0 var(--spacing-16); border: 1px solid var(--border-default); border-radius: var(--radius-xl); box-shadow: var(--shadow-xs); box-sizing: border-box; }
+.db-field__box:focus-within { border-color: var(--border-focus); box-shadow: inset 0 0 0 1px var(--border-focus); }
+.db-field.is-invalid .db-field__box { border-color: var(--text-negative); box-shadow: inset 0 0 0 1px var(--text-negative); }
+.db-field__input { flex: 1 1 0; min-width: 0; height: 100%; padding: 0; border: 0; outline: 0; background: none; color: var(--text-primary); font: var(--text-m); letter-spacing: -0.16px; }
+.db-field__box .db-icon { flex: 0 0 auto; width: 24px; height: 24px; background: var(--text-secondary); }
+.db-billing { display: flex; flex-direction: column; gap: var(--spacing-4); padding: var(--spacing-16); border: 1px solid var(--border-default); border-radius: 8px; background: var(--surface-list); }
+.db-billing p { margin: 0; }
+.db-billing__head { display: flex; align-items: baseline; justify-content: space-between; font: var(--text-m-semibold); letter-spacing: -0.16px; color: var(--text-primary); }
+.db-billing__edit { font: 600 14px/20px var(--font-family-inter); text-decoration: underline; }
+.db-billing__body { font: var(--text-m); letter-spacing: -0.16px; color: var(--text-primary); }
+.db .db-form__go { margin-top: auto; }
+
+/* the menu (node 1341:22747): rows 52px, the current page in Rebond Bold 20 */
+.db-nav__item { font: 600 18px/26px var(--font-family-inter); letter-spacing: -0.16px; gap: var(--spacing-12); }
+.db-nav__item[aria-current="page"] { font: var(--heading-m-bold); letter-spacing: 0; }
+
+@media (max-width: 640px) {
+  .db-tx-page .db-bar { margin: 0 var(--spacing-8); }
+  .db.is-sub .db-page, .db.is-sub .db-added { padding: 0 var(--spacing-8); }
+  .db-nav__item[aria-current="page"] { background: none; }
+}
+.db .db-field__input:focus-visible { outline: none; }
