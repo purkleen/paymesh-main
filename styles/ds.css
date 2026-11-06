@@ -2432,3 +2432,12 @@ fieldset.db-form__section > .db-field { margin-top: 8px; }
   .db-nav__item[aria-current="page"] { background: none; }
 }
 .db .db-field__input:focus-visible { outline: none; }
+
+/* Pay with as Cards (node 1341:23319): rows are buttons; the chosen card has
+   a tick where the others have a chevron. In lists, Mastercard's chip is
+   dark with a subtle border */
+.db-row--pick { width: 100%; border: 0; background: none; text-align: left; cursor: pointer; }
+.db-row__tick { flex: 0 0 auto; width: 24px; height: 24px; background: var(--action-primary-default); -webkit-mask: url("../assets/ds/check-brand.svg") center / 16px 16px no-repeat; mask: url("../assets/ds/check-brand.svg") center / 16px 16px no-repeat; }
+.db-row--card .db-cardopt__logo:not(.db-cardopt__logo--full),
+.db-select__button .db-cardopt__logo:not(.db-cardopt__logo--full) { border-color: var(--border-subtle); background: none; }
+.db.is-light .db-row--card .db-cardopt__logo:not(.db-cardopt__logo--full) { background: #fff; }
