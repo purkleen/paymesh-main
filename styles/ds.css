@@ -957,6 +957,8 @@ button.nw-row { cursor: pointer; }
 .nw-clear:hover { opacity: 1; }
 
 .nw-terms { padding: 0 var(--spacing-16) var(--spacing-8); }
+/* Terms checkbox at 24px, like the payment method controls */
+.nw-terms .ds-check input { width: 24px; height: 24px; margin: 0; border-radius: 6px; background-size: 16.8px; }
 .nw-back { align-self: center; }
 
 /* ==========================================================================
