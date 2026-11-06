@@ -107,8 +107,13 @@ interactions are unchanged.
   (`#add-card`): name, number (grouped in fours, its brand shown), expiry
   (MM/YY) and security code, your details, and the button — it checks the
   fields, saves the card for the visit and chooses it to pay with.
+- **Funds added** plays the glass tick turning into place
+  (`assets/ds/success-tick.mp4`, the uploaded render without its silent
+  audio track) once, holding on its last frame; under Reduce Motion it
+  shows that frame (`success-tick.jpg`). On the light theme it sits in a
+  dark rounded tile.
 - Artwork the frames take from images Figma won't serve here (the empty
-  states' glass rings and cards, the success tick) is drawn in SVG. New
+  states' glass rings and cards) is drawn in SVG. New
   icons are from Lucide (ISC licence), in `assets/ds/lc-*.svg`.
 
 - **Stealth Mode**: tapping the balance hides it the way the
