@@ -886,25 +886,24 @@ function cardRow(state) {
 }
 
 /**
- * Pay with — a screen of its own (node 1197:6932, "Add funds with"): every card, with a tick by the chosen
+ * Pay with — laid out as Cards (node 1341:23319): the + adds a card, and a
+ * tick marks the one you are paying with. Earlier (node 1197:6932): every card, with a tick by the chosen
  * one, then Add card (its page isn't designed yet, so it says so). Picking a
  * card takes you back to Add funds with it chosen, and the amount you typed
  * still there.
  */
 function payWithPage(state) {
   return `
-    <section class="db-addfunds" aria-labelledby="db-paywith-title">
-      ${pageHead({ back: "#add-funds", backLabel: "Back to Add funds", title: "Pay with", id: "db-paywith-title", attr: "data-to-funds" })}
-      <p class="db-addfunds__sub">Select payment method</p>
-      <ul class="db-card db-cardlist" aria-labelledby="db-paywith-title">
+    <section class="db-page" aria-labelledby="db-paywith-title">
+      ${pageHead({
+        back: "#add-funds", backLabel: "Back to Add funds", title: "Cards", id: "db-paywith-title", attr: "data-to-funds",
+        right: `<a href="#add-card" class="db-roundbtn db-roundbtn--primary" aria-label="Add card" title="Add card">${icon("add.svg", "current")}</a>`,
+      })}
+      <ul class="db-list" aria-label="Pay with">
         ${CARDS.map(
-          (c) => `<li><button type="button" class="db-select__option" data-card="${c.id}" aria-pressed="${c.id === state.card}">
-            ${cardFace(c)}<span class="db-select__check" aria-hidden="true"></span></button></li>`
+          (c) => `<li><button type="button" class="db-row db-row--card db-row--pick" data-card="${c.id}" aria-pressed="${c.id === state.card}">
+            ${cardFace(c)}<span class="${c.id === state.card ? "db-row__tick" : "db-row__chevron"}" aria-hidden="true"></span></button></li>`
         ).join("")}
-        <li><a href="#add-card" class="db-select__option db-select__option--add">
-          <span class="db-select__add-icon">${icon("add.svg")}</span><span class="db-cardopt__label">Add card</span>
-          <span class="db-select__chevron db-select__chevron--next" aria-hidden="true"></span>
-        </a></li>
       </ul>
     </section>`;
 }

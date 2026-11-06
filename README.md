@@ -100,6 +100,9 @@ interactions are unchanged.
   (Password management, Notifications, Sign-in activity), Help and About,
   and Log out. **About** (`#about`) is the frame's text, word for word.
   Light mode and Home layout stay in the menu.
+- Choosing the card on Add funds opens the same **Cards** list (node
+  1341:23319): a tick marks the card you are paying with, picking one goes
+  back with the amount kept, and **+** adds a card, which comes back chosen.
 - **Cards** (`#cards`) lists the cards with **+** for **Add new card**
   (`#add-card`): name, number (grouped in fours, its brand shown), expiry
   (MM/YY) and security code, your details, and the button — it checks the
