@@ -468,12 +468,11 @@ const pageHead = ({ back, backLabel, title = "", id = "", right = "", attr = "da
  * The empty states' artwork (nodes 1341:22529, 1341:22947, 1341:22970): the
  * frames use renders that can't be fetched here, so these are drawn — glass
  * rings for money and transactions, stacked glass cards for recipients — in
- * the brand blue with a glow.
+ * the brand blue with a glow. (Funds added plays its own video.)
  */
 const ART = {
   rings: `<svg viewBox="0 0 211 211" aria-hidden="true"><defs><linearGradient id="art-g" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#c9d2ff"/><stop offset=".5" stop-color="#4b5cff"/><stop offset="1" stop-color="#1b2bd6"/></linearGradient><filter id="art-f" x="-30%" y="-30%" width="160%" height="160%"><feGaussianBlur stdDeviation="4" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter></defs><g fill="none" stroke="url(#art-g)" stroke-width="5" filter="url(#art-f)"><ellipse cx="52" cy="105" rx="16" ry="38" transform="rotate(-12 52 105)"/><ellipse cx="80" cy="105" rx="18" ry="42" transform="rotate(-8 80 105)"/><ellipse cx="105.5" cy="105" rx="4" ry="44"/><ellipse cx="131" cy="105" rx="18" ry="42" transform="rotate(8 131 105)"/><ellipse cx="159" cy="105" rx="16" ry="38" transform="rotate(12 159 105)"/></g></svg>`,
   cards: `<svg viewBox="0 0 211 211" aria-hidden="true"><defs><linearGradient id="art-c" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#c9d2ff"/><stop offset=".5" stop-color="#4b5cff"/><stop offset="1" stop-color="#1b2bd6"/></linearGradient><filter id="art-cf" x="-30%" y="-30%" width="160%" height="160%"><feGaussianBlur stdDeviation="4" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter></defs><g fill="rgba(79,92,255,.08)" stroke="url(#art-c)" stroke-width="4" filter="url(#art-cf)"><rect x="62" y="58" width="44" height="96" rx="8" transform="skewY(-8)"/><rect x="84" y="62" width="44" height="96" rx="8" transform="skewY(-8)"/><rect x="106" y="66" width="44" height="96" rx="8" transform="skewY(-8)"/></g></svg>`,
-  tick: `<svg viewBox="0 0 211 211" aria-hidden="true"><defs><linearGradient id="art-t" x1="0" y1="1" x2="1" y2="0"><stop offset="0" stop-color="#4b5cff"/><stop offset="1" stop-color="#e6ebff"/></linearGradient><filter id="art-tf" x="-30%" y="-30%" width="160%" height="160%"><feGaussianBlur stdDeviation="5" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter></defs><path d="M58 112 L92 146 L156 66" fill="none" stroke="url(#art-t)" stroke-width="10" stroke-linecap="round" stroke-linejoin="round" filter="url(#art-tf)"/></svg>`,
 };
 
 /** An empty state: the artwork, a title, a line or two, and Add funds. */
@@ -948,7 +947,9 @@ function addFundsPage(state, value) {
 }
 
 /**
- * Funds added (node 1341:24174): the wordmark, a glowing tick, the amount,
+ * Funds added (node 1341:24174): the wordmark, the glass tick turning into
+ * place (assets/ds/success-tick.mp4, played once and held on its last frame;
+ * under Reduce Motion just that frame, success-tick.jpg), the amount,
  * and back to the dashboard or on to the top-up's details.
  */
 function addedPage(state) {
@@ -957,7 +958,10 @@ function addedPage(state) {
     <section class="db-added" aria-labelledby="db-added-title">
       <a href="#home" class="db-logo db-added__logo">Paymesh</a>
       <div class="db-added__body">
-        <span class="db-added__art">${ART.tick}</span>
+        <span class="db-added__art">
+          <video class="db-added__video" src="${ICON}success-tick.mp4" poster="${ICON}success-tick.jpg" muted playsinline preload="auto"
+            ${matchMedia("(prefers-reduced-motion: reduce)").matches ? "" : "autoplay"} aria-hidden="true"></video>
+        </span>
         <h2 id="db-added-title" class="db-added__title">$${num(t.amount)}<br />added to your wallet</h2>
         <p class="db-added__text">${TRANSACTIONS.length ? "It’s in your balance now, ready to pay anyone, anywhere." : "Transactions, payees, and analysis will show up after your first transaction."}</p>
       </div>
