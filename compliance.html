@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Edytor szablonu — Compliance</title>
+<meta name="description" content="Edytor szablonu ankiety compliance: slajd wprowadzający z sekcjami." />
+<link rel="icon" href="assets/favicon.svg" type="image/svg+xml" />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="styles/compliance.css" />
+</head>
+<body>
+<div class="page">
+  <!-- Top nav -->
+  <header class="topnav">
+    <div class="tabs" role="tablist" aria-label="Język">
+      <button class="tab" role="tab" aria-selected="false" data-lang="en">EN</button>
+      <button class="tab" role="tab" aria-selected="true" data-lang="pl">PL</button>
+    </div>
+    <button class="btn btn-outline btn-icon" id="theme-toggle" aria-label="Przełącz motyw" data-icon="moon"></button>
+  </header>
+
+  <!-- Editor bar -->
+  <div class="editor-bar">
+    <a class="btn btn-ghost" href="#"><span data-icon="arrow-left"></span>Szablony</a>
+    <input class="input editor-title" type="text" value="Szablon bez nazwy" aria-label="Nazwa szablonu" />
+    <span class="caption" id="save-state">Zapisano</span>
+    <button class="btn btn-primary"><span data-icon="play"></span>Podgląd</button>
+  </div>
+
+  <!-- Editor -->
+  <main class="editor">
+    <nav class="panel outline" aria-label="Struktura szablonu">
+      <button class="outline-row">
+        <span data-icon="settings" data-size="14"></span>
+        <span class="row-text">Ustawienia szablonu</span>
+      </button>
+      <button class="outline-row is-active">
+        <span data-icon="presentation" data-size="14"></span>
+        <span class="caption">Wstęp</span>
+        <span class="row-text">Pomóż nam dostrzec ryzyka w twoim obszarze</span>
+      </button>
+      <button class="outline-row">
+        <span class="grip" data-icon="grip-vertical"></span>
+        <span data-icon="list" data-size="14"></span>
+        <span class="caption">1</span>
+        <span class="row-text">Jakie ryzyka widzisz w codziennej pracy?</span>
+      </button>
+      <button class="outline-row">
+        <span class="grip" data-icon="grip-vertical"></span>
+        <span data-icon="list" data-size="14"></span>
+        <span class="caption">2</span>
+        <span class="row-text">Ipsum lorem ipsum lorem ipsum lorem</span>
+      </button>
+      <button class="outline-row">
+        <span class="grip" data-icon="grip-vertical"></span>
+        <span data-icon="list" data-size="14"></span>
+        <span class="caption">3</span>
+        <span class="row-text">Ipsum lorem ipsum lorem ipsum lorem</span>
+      </button>
+      <button class="outline-row">
+        <span data-icon="presentation" data-size="14"></span>
+        <span class="caption">Zakończenie</span>
+        <span class="row-text">Pomóż nam dostrzec ryzyka w twoim obszarze</span>
+      </button>
+      <button class="btn btn-primary btn-block"><span data-icon="plus"></span>Pytanie</button>
+      <button class="btn btn-outline btn-block"><span data-icon="plus"></span>Slajd między pytaniami</button>
+    </nav>
+
+    <section class="panel canvas" aria-label="Podgląd slajdu">
+      <div class="slide">
+        <h1 class="h1" contenteditable="true" spellcheck="false">Pomóż nam dostrzec ryzyka w twoim obszarze</h1>
+        <p class="lead" contenteditable="true" spellcheck="false">Wypełnienie zajmie około 5 minut. Twoje odpowiedzi trafią do zespołu compliance.</p>
+
+        <ol class="sections" id="sections" aria-label="Sekcje slajdu"></ol>
+
+        <div class="add-section">
+          <button class="btn btn-outline btn-block" id="add-section" aria-haspopup="menu" aria-expanded="false">+ Dodaj sekcję</button>
+          <div class="menu" id="add-menu" role="menu" hidden>
+            <button class="menu-item" role="menuitem" data-type="text"><span data-icon="type"></span>Tekst</button>
+            <button class="menu-item" role="menuitem" data-type="image"><span data-icon="image"></span>Obraz</button>
+            <button class="menu-item" role="menuitem" data-type="video"><span data-icon="video"></span>Wideo</button>
+            <button class="menu-item" role="menuitem" data-type="input"><span data-icon="text-cursor-input"></span>Pole z etykietą</button>
+          </div>
+        </div>
+
+        <div class="slide-actions">
+          <button class="btn btn-primary">Rozpocznij</button>
+        </div>
+      </div>
+    </section>
+
+    <aside class="panel inspector" aria-label="Właściwości">
+      <div class="inspector-head">
+        <span class="small-semibold">Slajd wprowadzający</span>
+        <span class="flex"></span>
+        <button class="btn btn-ghost btn-icon" aria-label="Zwiń" data-icon="chevron-down"></button>
+        <button class="btn btn-ghost btn-icon" aria-label="Duplikuj" data-icon="copy"></button>
+        <button class="btn btn-ghost btn-icon" aria-label="Usuń slajd" data-icon="trash-2"></button>
+      </div>
+    </aside>
+  </main>
+</div>
+<script type="module" src="src/compliance.js"></script>
+</body>
+</html>
